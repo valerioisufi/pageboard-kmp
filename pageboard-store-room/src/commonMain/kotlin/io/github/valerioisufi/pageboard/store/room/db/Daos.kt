@@ -59,7 +59,13 @@ internal data class PageWithContent(
         parentColumn = "id",
         entityColumn = "pageId"
     )
-    val customs: List<CustomElementEntity>
+    val customs: List<CustomElementEntity>,
+
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "pageId"
+    )
+    val layers: List<PageLayerEntity>
 )
 
 /**
@@ -85,7 +91,13 @@ internal data class PageOutlineRows(
         parentColumn = "id",
         entityColumn = "pageId"
     )
-    val customs: List<CustomElementEntity>
+    val customs: List<CustomElementEntity>,
+
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "pageId"
+    )
+    val layers: List<PageLayerEntity>
 )
 
 /**
@@ -99,6 +111,7 @@ internal data class ShownElementStamps(
     val placed: String,
     val ordered: String,
     val updated: String,
+    val layerVersion: String,
     val contentVersions: String?,
     val resourceId: String?
 )
@@ -243,14 +256,23 @@ internal interface PageDao {
     suspend fun getPageWithContent(pageId: String): PageWithContent?
 
     @Query(
-        "SELECT id, added, placed, ordered, updated, NULL AS contentVersions, NULL AS resourceId FROM strokes WHERE pageId = :pageId AND removed IS NULL " +
-            "UNION ALL SELECT id, added, placed, ordered, updated, contentVersions, NULL FROM texts WHERE pageId = :pageId AND removed IS NULL " +
-            "UNION ALL SELECT id, added, placed, ordered, updated, NULL, resourceId FROM images WHERE pageId = :pageId AND removed IS NULL " +
-            "UNION ALL SELECT id, added, placed, ordered, updated, NULL, resourceId FROM pdfs WHERE pageId = :pageId AND removed IS NULL " +
-            "UNION ALL SELECT id, added, placed, ordered, updated, NULL, resourceId FROM text_markups WHERE pageId = :pageId AND removed IS NULL " +
-            "UNION ALL SELECT id, added, placed, ordered, updated, NULL, NULL FROM custom_elements WHERE pageId = :pageId AND removed IS NULL"
+        "SELECT id, added, placed, ordered, updated, layerVersion, NULL AS contentVersions, NULL AS resourceId FROM strokes WHERE pageId = :pageId AND removed IS NULL " +
+            "UNION ALL SELECT id, added, placed, ordered, updated, layerVersion, contentVersions, NULL FROM texts WHERE pageId = :pageId AND removed IS NULL " +
+            "UNION ALL SELECT id, added, placed, ordered, updated, layerVersion, NULL, resourceId FROM images WHERE pageId = :pageId AND removed IS NULL " +
+            "UNION ALL SELECT id, added, placed, ordered, updated, layerVersion, NULL, resourceId FROM pdfs WHERE pageId = :pageId AND removed IS NULL " +
+            "UNION ALL SELECT id, added, placed, ordered, updated, layerVersion, NULL, resourceId FROM text_markups WHERE pageId = :pageId AND removed IS NULL " +
+            "UNION ALL SELECT id, added, placed, ordered, updated, layerVersion, NULL, NULL FROM custom_elements WHERE pageId = :pageId AND removed IS NULL"
     )
     suspend fun getShownElementStamps(pageId: String): List<ShownElementStamps>
+}
+
+@Dao
+internal interface PageLayerDao {
+    @Upsert
+    suspend fun upsertAll(layers: List<PageLayerEntity>)
+
+    @Query("SELECT * FROM page_layers WHERE pageId = :pageId AND removed IS NULL ORDER BY id")
+    suspend fun getShownForPage(pageId: String): List<PageLayerEntity>
 }
 
 /**

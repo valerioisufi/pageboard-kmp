@@ -35,6 +35,8 @@ public object FractionalIndex {
         return keys
     }
 
+    public fun isValidKey(key: String): Boolean = key.isNotEmpty() && key.last() != '0' && key.all { it in DIGITS }
+
     private fun digit(c: Char): Int = DIGITS.indexOf(c).also { require(it >= 0) { "$c is not a key digit" } }
 
     private fun midpoint(a: String, b: String?): String {

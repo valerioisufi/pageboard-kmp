@@ -36,7 +36,7 @@ import kotlinx.serialization.json.putJsonObject
 
 /** The migrations from version 16 to [PageboardDatabase]'s version. */
 internal val PAGEBOARD_DATABASE_MIGRATIONS: Array<Migration> =
-    arrayOf(Migration16To17, Migration17To18, Migration18To19, Migration19To20, Migration20To21, Migration21To22, Migration22To23, Migration23To24, Migration24To25)
+    arrayOf(Migration16To17, Migration17To18, Migration18To19, Migration19To20, Migration20To21, Migration21To22, Migration22To23, Migration23To24, Migration24To25, Migration25To26)
 
 /** 17: the elements of the types added by the applications. */
 internal object Migration16To17 : Migration(16, 17) {
@@ -352,5 +352,29 @@ internal object Migration24To25 : Migration(24, 25) {
                 "`sequence` INTEGER NOT NULL, `proof` BLOB NOT NULL, PRIMARY KEY(`spaceId`, `replica`, `sequence`), " +
                 "FOREIGN KEY(`spaceId`) REFERENCES `spaces`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
         )
+    }
+}
+
+/**
+ * 26: element locking, per-page layers, and layer assignments (docs/plans/z-order-layers.md).
+ * Elements created before v26 default to unlocked (`locked = 0`) and unlayered (`layerId = NULL`),
+ * with empty version stamps treated as [Stamp.ZERO].
+ */
+internal object Migration25To26 : Migration(25, 26) {
+    override fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `page_layers` (`id` TEXT NOT NULL, `pageId` TEXT NOT NULL, " +
+                "`name` TEXT NOT NULL, `orderKey` TEXT NOT NULL, `visible` INTEGER NOT NULL, " +
+                "`locked` INTEGER NOT NULL, `added` TEXT NOT NULL, " +
+                "`removed` TEXT, `updated` TEXT NOT NULL, PRIMARY KEY(`id`), " +
+                "FOREIGN KEY(`pageId`) REFERENCES `pages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
+        )
+        connection.execSQL("CREATE INDEX IF NOT EXISTS `index_page_layers_pageId` ON `page_layers` (`pageId`)")
+        for (table in listOf("strokes", "texts", "images", "custom_elements", "pdfs", "text_markups")) {
+            connection.execSQL("ALTER TABLE `$table` ADD COLUMN `locked` INTEGER NOT NULL DEFAULT 0")
+            connection.execSQL("ALTER TABLE `$table` ADD COLUMN `lockVersion` TEXT NOT NULL DEFAULT ''")
+            connection.execSQL("ALTER TABLE `$table` ADD COLUMN `layerId` TEXT")
+            connection.execSQL("ALTER TABLE `$table` ADD COLUMN `layerVersion` TEXT NOT NULL DEFAULT ''")
+        }
     }
 }

@@ -40,10 +40,14 @@ internal fun Document.pageFingerprint(index: Int): String? {
     val resourceIds = mutableSetOf<String>()
     for (element in page.elements().sortedBy { it.id }) {
         text.append(element.id).append('|').append(element.added).append('|').append(element.placed).append('|')
-            .append(element.ordered).append('|').append(element.updated)
+            .append(element.ordered).append('|').append(element.updated).append('|').append(element.layerVersion)
         if (element is TextElement) text.append('|').append(element.contentVersions)
         text.append('\n')
         resourceIdOf(element)?.let { resourceIds.add(it) }
+    }
+    for (layer in page.layers.sortedBy { it.id }) {
+        text.append("L|").append(layer.id).append('|').append(layer.orderKey).append('|')
+            .append(layer.visible).append('|').append(layer.updated).append('\n')
     }
     for (id in resourceIds.sorted()) {
         val resource = resources.firstOrNull { it.id == id }

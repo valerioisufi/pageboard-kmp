@@ -55,6 +55,10 @@ public class TextMarkupElement(
     override var placed: Stamp = Stamp.ZERO
     override var ordered: Stamp = Stamp.ZERO
     override var updated: Stamp = Stamp.ZERO
+    @kotlin.concurrent.Volatile override var locked: Boolean = false
+    override var lockVersion: Stamp = Stamp.ZERO
+    @kotlin.concurrent.Volatile override var layerId: String? = null
+    override var layerVersion: Stamp = Stamp.ZERO
 
     @Volatile
     public var kind: TextMarkupKind = kind

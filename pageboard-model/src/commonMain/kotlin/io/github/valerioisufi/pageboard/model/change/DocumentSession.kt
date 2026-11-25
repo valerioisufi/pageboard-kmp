@@ -139,7 +139,8 @@ public class DocumentSession(
         val stamp = operation.stamp
         return stamp.replica == operation.id.replica && clock.admits(stamp) &&
             operation.change.stamps().all { clock.admits(it) && it <= stamp } &&
-            operation.change.orders().all { it.isWellFormed && it.isNotAfter(stamp) }
+            operation.change.orders().all { it.isWellFormed && it.isNotAfter(stamp) } &&
+            operation.change.isValid()
     }
 
     /**

@@ -329,6 +329,7 @@ sealed interface io.github.valerioisufi.pageboard.model.change/DocumentChange { 
         open fun <get-changesNothing>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/DocumentChange.changesNothing.<get-changesNothing>|<get-changesNothing>(){}[0]
 
     abstract fun applyTo(io.github.valerioisufi.pageboard.model.change/ChangeContext): io.github.valerioisufi.pageboard.model.change/DocumentChange? // io.github.valerioisufi.pageboard.model.change/DocumentChange.applyTo|applyTo(io.github.valerioisufi.pageboard.model.change.ChangeContext){}[0]
+    open fun isValid(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/DocumentChange.isValid|isValid(){}[0]
     open fun orders(): kotlin.sequences/Sequence<io.github.valerioisufi.pageboard.model/ElementOrder> // io.github.valerioisufi.pageboard.model.change/DocumentChange.orders|orders(){}[0]
     open fun prepare(io.github.valerioisufi.pageboard.model/StrokeModeller) // io.github.valerioisufi.pageboard.model.change/DocumentChange.prepare|prepare(io.github.valerioisufi.pageboard.model.StrokeModeller){}[0]
     open fun stamps(): kotlin.sequences/Sequence<io.github.valerioisufi.pageboard.model/Stamp> // io.github.valerioisufi.pageboard.model.change/DocumentChange.stamps|stamps(){}[0]
@@ -344,6 +345,10 @@ sealed interface io.github.valerioisufi.pageboard.model.change/ElementData { // 
         abstract fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.model.change/ElementData.id.<get-id>|<get-id>(){}[0]
     abstract val order // io.github.valerioisufi.pageboard.model.change/ElementData.order|{}order[0]
         abstract fun <get-order>(): io.github.valerioisufi.pageboard.model/ElementOrder? // io.github.valerioisufi.pageboard.model.change/ElementData.order.<get-order>|<get-order>(){}[0]
+    open val layerId // io.github.valerioisufi.pageboard.model.change/ElementData.layerId|{}layerId[0]
+        open fun <get-layerId>(): kotlin/String? // io.github.valerioisufi.pageboard.model.change/ElementData.layerId.<get-layerId>|<get-layerId>(){}[0]
+    open val locked // io.github.valerioisufi.pageboard.model.change/ElementData.locked|{}locked[0]
+        open fun <get-locked>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/ElementData.locked.<get-locked>|<get-locked>(){}[0]
 
     abstract fun toElement(io.github.valerioisufi.pageboard.model/StrokeModeller = ...): io.github.valerioisufi.pageboard.model/PageElement // io.github.valerioisufi.pageboard.model.change/ElementData.toElement|toElement(io.github.valerioisufi.pageboard.model.StrokeModeller){}[0]
 
@@ -381,6 +386,18 @@ sealed interface io.github.valerioisufi.pageboard.model/PageElement { // io.gith
     abstract var added // io.github.valerioisufi.pageboard.model/PageElement.added|{}added[0]
         abstract fun <get-added>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/PageElement.added.<get-added>|<get-added>(){}[0]
         abstract fun <set-added>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/PageElement.added.<set-added>|<set-added>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    abstract var layerId // io.github.valerioisufi.pageboard.model/PageElement.layerId|{}layerId[0]
+        abstract fun <get-layerId>(): kotlin/String? // io.github.valerioisufi.pageboard.model/PageElement.layerId.<get-layerId>|<get-layerId>(){}[0]
+        abstract fun <set-layerId>(kotlin/String?) // io.github.valerioisufi.pageboard.model/PageElement.layerId.<set-layerId>|<set-layerId>(kotlin.String?){}[0]
+    abstract var layerVersion // io.github.valerioisufi.pageboard.model/PageElement.layerVersion|{}layerVersion[0]
+        abstract fun <get-layerVersion>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/PageElement.layerVersion.<get-layerVersion>|<get-layerVersion>(){}[0]
+        abstract fun <set-layerVersion>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/PageElement.layerVersion.<set-layerVersion>|<set-layerVersion>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    abstract var lockVersion // io.github.valerioisufi.pageboard.model/PageElement.lockVersion|{}lockVersion[0]
+        abstract fun <get-lockVersion>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/PageElement.lockVersion.<get-lockVersion>|<get-lockVersion>(){}[0]
+        abstract fun <set-lockVersion>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/PageElement.lockVersion.<set-lockVersion>|<set-lockVersion>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    abstract var locked // io.github.valerioisufi.pageboard.model/PageElement.locked|{}locked[0]
+        abstract fun <get-locked>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PageElement.locked.<get-locked>|<get-locked>(){}[0]
+        abstract fun <set-locked>(kotlin/Boolean) // io.github.valerioisufi.pageboard.model/PageElement.locked.<set-locked>|<set-locked>(kotlin.Boolean){}[0]
     abstract var order // io.github.valerioisufi.pageboard.model/PageElement.order|{}order[0]
         abstract fun <get-order>(): io.github.valerioisufi.pageboard.model/ElementOrder // io.github.valerioisufi.pageboard.model/PageElement.order.<get-order>|<get-order>(){}[0]
         abstract fun <set-order>(io.github.valerioisufi.pageboard.model/ElementOrder) // io.github.valerioisufi.pageboard.model/PageElement.order.<set-order>|<set-order>(io.github.valerioisufi.pageboard.model.ElementOrder){}[0]
@@ -495,6 +512,42 @@ final class io.github.valerioisufi.pageboard.model.change/AddResource : io.githu
     }
 }
 
+final class io.github.valerioisufi.pageboard.model.change/AssignElementsLayer : io.github.valerioisufi.pageboard.model.change/DocumentChange { // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer|null[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<kotlin/String>, kotlin/String?) // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.<init>|<init>(kotlin.String;kotlin.collections.List<kotlin.String>;kotlin.String?){}[0]
+
+    final val ids // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.ids|{}ids[0]
+        final fun <get-ids>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.ids.<get-ids>|<get-ids>(){}[0]
+    final val layerId // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.layerId|{}layerId[0]
+        final fun <get-layerId>(): kotlin/String? // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.layerId.<get-layerId>|<get-layerId>(){}[0]
+    final val pageId // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.pageId|{}pageId[0]
+        final fun <get-pageId>(): kotlin/String // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.pageId.<get-pageId>|<get-pageId>(){}[0]
+
+    final fun applyTo(io.github.valerioisufi.pageboard.model.change/ChangeContext): io.github.valerioisufi.pageboard.model.change/DocumentChange? // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.applyTo|applyTo(io.github.valerioisufi.pageboard.model.change.ChangeContext){}[0]
+    final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.component1|component1(){}[0]
+    final fun component2(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.component2|component2(){}[0]
+    final fun component3(): kotlin/String? // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.component3|component3(){}[0]
+    final fun copy(kotlin/String = ..., kotlin.collections/List<kotlin/String> = ..., kotlin/String? = ...): io.github.valerioisufi.pageboard.model.change/AssignElementsLayer // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.copy|copy(kotlin.String;kotlin.collections.List<kotlin.String>;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.hashCode|hashCode(){}[0]
+    final fun isValid(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.isValid|isValid(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.pageboard.model.change/AssignElementsLayer> { // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.pageboard.model.change/AssignElementsLayer // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.pageboard.model.change/AssignElementsLayer) // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.pageboard.model.change.AssignElementsLayer){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.Companion|null[0]
+        final val $childSerializers // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model.change/AssignElementsLayer> // io.github.valerioisufi.pageboard.model.change/AssignElementsLayer.Companion.serializer|serializer(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.pageboard.model.change/BoxPlacement : io.github.valerioisufi.pageboard.model.change/Placement { // io.github.valerioisufi.pageboard.model.change/BoxPlacement|null[0]
     constructor <init>(kotlin/String, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, io.github.valerioisufi.pageboard.model/ElementOrder? = ...) // io.github.valerioisufi.pageboard.model.change/BoxPlacement.<init>|<init>(kotlin.String;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.ElementOrder?){}[0]
 
@@ -596,6 +649,7 @@ final class io.github.valerioisufi.pageboard.model.change/CompositeChange : io.g
     final fun copy(kotlin.collections/List<io.github.valerioisufi.pageboard.model.change/DocumentChange> = ...): io.github.valerioisufi.pageboard.model.change/CompositeChange // io.github.valerioisufi.pageboard.model.change/CompositeChange.copy|copy(kotlin.collections.List<io.github.valerioisufi.pageboard.model.change.DocumentChange>){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/CompositeChange.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/CompositeChange.hashCode|hashCode(){}[0]
+    final fun isValid(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/CompositeChange.isValid|isValid(){}[0]
     final fun orders(): kotlin.sequences/Sequence<io.github.valerioisufi.pageboard.model/ElementOrder> // io.github.valerioisufi.pageboard.model.change/CompositeChange.orders|orders(){}[0]
     final fun prepare(io.github.valerioisufi.pageboard.model/StrokeModeller) // io.github.valerioisufi.pageboard.model.change/CompositeChange.prepare|prepare(io.github.valerioisufi.pageboard.model.StrokeModeller){}[0]
     final fun stamps(): kotlin.sequences/Sequence<io.github.valerioisufi.pageboard.model/Stamp> // io.github.valerioisufi.pageboard.model.change/CompositeChange.stamps|stamps(){}[0]
@@ -655,12 +709,16 @@ final class io.github.valerioisufi.pageboard.model.change/CopiedResource { // io
 }
 
 final class io.github.valerioisufi.pageboard.model.change/CustomElementData : io.github.valerioisufi.pageboard.model.change/ElementData { // io.github.valerioisufi.pageboard.model.change/CustomElementData|null[0]
-    constructor <init>(kotlin/String, kotlin/String, kotlin/Int, kotlin/ByteArray, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ...) // io.github.valerioisufi.pageboard.model.change/CustomElementData.<init>|<init>(kotlin.String;kotlin.String;kotlin.Int;kotlin.ByteArray;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.ElementOrder?){}[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/Int, kotlin/ByteArray, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ..., kotlin/Boolean = ..., kotlin/String? = ...) // io.github.valerioisufi.pageboard.model.change/CustomElementData.<init>|<init>(kotlin.String;kotlin.String;kotlin.Int;kotlin.ByteArray;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.ElementOrder?;kotlin.Boolean;kotlin.String?){}[0]
 
     final val height // io.github.valerioisufi.pageboard.model.change/CustomElementData.height|{}height[0]
         final fun <get-height>(): kotlin/Float // io.github.valerioisufi.pageboard.model.change/CustomElementData.height.<get-height>|<get-height>(){}[0]
     final val id // io.github.valerioisufi.pageboard.model.change/CustomElementData.id|{}id[0]
         final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.model.change/CustomElementData.id.<get-id>|<get-id>(){}[0]
+    final val layerId // io.github.valerioisufi.pageboard.model.change/CustomElementData.layerId|{}layerId[0]
+        final fun <get-layerId>(): kotlin/String? // io.github.valerioisufi.pageboard.model.change/CustomElementData.layerId.<get-layerId>|<get-layerId>(){}[0]
+    final val locked // io.github.valerioisufi.pageboard.model.change/CustomElementData.locked|{}locked[0]
+        final fun <get-locked>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/CustomElementData.locked.<get-locked>|<get-locked>(){}[0]
     final val order // io.github.valerioisufi.pageboard.model.change/CustomElementData.order|{}order[0]
         final fun <get-order>(): io.github.valerioisufi.pageboard.model/ElementOrder? // io.github.valerioisufi.pageboard.model.change/CustomElementData.order.<get-order>|<get-order>(){}[0]
     final val payload // io.github.valerioisufi.pageboard.model.change/CustomElementData.payload|{}payload[0]
@@ -678,7 +736,7 @@ final class io.github.valerioisufi.pageboard.model.change/CustomElementData : io
     final val y // io.github.valerioisufi.pageboard.model.change/CustomElementData.y|{}y[0]
         final fun <get-y>(): kotlin/Float // io.github.valerioisufi.pageboard.model.change/CustomElementData.y.<get-y>|<get-y>(){}[0]
 
-    final fun copy(kotlin/String = ..., kotlin/Float = ..., kotlin/Float = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ...): io.github.valerioisufi.pageboard.model.change/CustomElementData // io.github.valerioisufi.pageboard.model.change/CustomElementData.copy|copy(kotlin.String;kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.ElementOrder?){}[0]
+    final fun copy(kotlin/String = ..., kotlin/Float = ..., kotlin/Float = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ..., kotlin/Boolean = ..., kotlin/String? = ...): io.github.valerioisufi.pageboard.model.change/CustomElementData // io.github.valerioisufi.pageboard.model.change/CustomElementData.copy|copy(kotlin.String;kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.ElementOrder?;kotlin.Boolean;kotlin.String?){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/CustomElementData.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/CustomElementData.hashCode|hashCode(){}[0]
     final fun toElement(io.github.valerioisufi.pageboard.model/StrokeModeller): io.github.valerioisufi.pageboard.model/CustomElement // io.github.valerioisufi.pageboard.model.change/CustomElementData.toElement|toElement(io.github.valerioisufi.pageboard.model.StrokeModeller){}[0]
@@ -810,10 +868,14 @@ final class io.github.valerioisufi.pageboard.model.change/ElementOrdering { // i
 }
 
 final class io.github.valerioisufi.pageboard.model.change/ElementVersions { // io.github.valerioisufi.pageboard.model.change/ElementVersions|null[0]
-    constructor <init>(io.github.valerioisufi.pageboard.model/Stamp, io.github.valerioisufi.pageboard.model/Stamp? = ..., io.github.valerioisufi.pageboard.model/Stamp, io.github.valerioisufi.pageboard.model/Stamp, io.github.valerioisufi.pageboard.model/Stamp? = ...) // io.github.valerioisufi.pageboard.model.change/ElementVersions.<init>|<init>(io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp?;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp?){}[0]
+    constructor <init>(io.github.valerioisufi.pageboard.model/Stamp, io.github.valerioisufi.pageboard.model/Stamp? = ..., io.github.valerioisufi.pageboard.model/Stamp, io.github.valerioisufi.pageboard.model/Stamp, io.github.valerioisufi.pageboard.model/Stamp? = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp = ...) // io.github.valerioisufi.pageboard.model.change/ElementVersions.<init>|<init>(io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp?;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp?;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp){}[0]
 
     final val added // io.github.valerioisufi.pageboard.model.change/ElementVersions.added|{}added[0]
         final fun <get-added>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model.change/ElementVersions.added.<get-added>|<get-added>(){}[0]
+    final val layerVersion // io.github.valerioisufi.pageboard.model.change/ElementVersions.layerVersion|{}layerVersion[0]
+        final fun <get-layerVersion>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model.change/ElementVersions.layerVersion.<get-layerVersion>|<get-layerVersion>(){}[0]
+    final val lockVersion // io.github.valerioisufi.pageboard.model.change/ElementVersions.lockVersion|{}lockVersion[0]
+        final fun <get-lockVersion>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model.change/ElementVersions.lockVersion.<get-lockVersion>|<get-lockVersion>(){}[0]
     final val ordered // io.github.valerioisufi.pageboard.model.change/ElementVersions.ordered|{}ordered[0]
         final fun <get-ordered>(): io.github.valerioisufi.pageboard.model/Stamp? // io.github.valerioisufi.pageboard.model.change/ElementVersions.ordered.<get-ordered>|<get-ordered>(){}[0]
     final val placed // io.github.valerioisufi.pageboard.model.change/ElementVersions.placed|{}placed[0]
@@ -829,7 +891,9 @@ final class io.github.valerioisufi.pageboard.model.change/ElementVersions { // i
     final fun component3(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model.change/ElementVersions.component3|component3(){}[0]
     final fun component4(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model.change/ElementVersions.component4|component4(){}[0]
     final fun component5(): io.github.valerioisufi.pageboard.model/Stamp? // io.github.valerioisufi.pageboard.model.change/ElementVersions.component5|component5(){}[0]
-    final fun copy(io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp? = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp? = ...): io.github.valerioisufi.pageboard.model.change/ElementVersions // io.github.valerioisufi.pageboard.model.change/ElementVersions.copy|copy(io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp?;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp?){}[0]
+    final fun component6(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model.change/ElementVersions.component6|component6(){}[0]
+    final fun component7(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model.change/ElementVersions.component7|component7(){}[0]
+    final fun copy(io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp? = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp? = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp = ...): io.github.valerioisufi.pageboard.model.change/ElementVersions // io.github.valerioisufi.pageboard.model.change/ElementVersions.copy|copy(io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp?;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp?;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/ElementVersions.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/ElementVersions.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model.change/ElementVersions.toString|toString(){}[0]
@@ -865,12 +929,16 @@ final class io.github.valerioisufi.pageboard.model.change/HybridClock { // io.gi
 }
 
 final class io.github.valerioisufi.pageboard.model.change/ImageData : io.github.valerioisufi.pageboard.model.change/ElementData { // io.github.valerioisufi.pageboard.model.change/ImageData|null[0]
-    constructor <init>(kotlin/String, kotlin/String, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ...) // io.github.valerioisufi.pageboard.model.change/ImageData.<init>|<init>(kotlin.String;kotlin.String;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.ElementOrder?){}[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ..., kotlin/Boolean = ..., kotlin/String? = ...) // io.github.valerioisufi.pageboard.model.change/ImageData.<init>|<init>(kotlin.String;kotlin.String;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.ElementOrder?;kotlin.Boolean;kotlin.String?){}[0]
 
     final val height // io.github.valerioisufi.pageboard.model.change/ImageData.height|{}height[0]
         final fun <get-height>(): kotlin/Float // io.github.valerioisufi.pageboard.model.change/ImageData.height.<get-height>|<get-height>(){}[0]
     final val id // io.github.valerioisufi.pageboard.model.change/ImageData.id|{}id[0]
         final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.model.change/ImageData.id.<get-id>|<get-id>(){}[0]
+    final val layerId // io.github.valerioisufi.pageboard.model.change/ImageData.layerId|{}layerId[0]
+        final fun <get-layerId>(): kotlin/String? // io.github.valerioisufi.pageboard.model.change/ImageData.layerId.<get-layerId>|<get-layerId>(){}[0]
+    final val locked // io.github.valerioisufi.pageboard.model.change/ImageData.locked|{}locked[0]
+        final fun <get-locked>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/ImageData.locked.<get-locked>|<get-locked>(){}[0]
     final val order // io.github.valerioisufi.pageboard.model.change/ImageData.order|{}order[0]
         final fun <get-order>(): io.github.valerioisufi.pageboard.model/ElementOrder? // io.github.valerioisufi.pageboard.model.change/ImageData.order.<get-order>|<get-order>(){}[0]
     final val resourceId // io.github.valerioisufi.pageboard.model.change/ImageData.resourceId|{}resourceId[0]
@@ -885,6 +953,7 @@ final class io.github.valerioisufi.pageboard.model.change/ImageData : io.github.
         final fun <get-y>(): kotlin/Float // io.github.valerioisufi.pageboard.model.change/ImageData.y.<get-y>|<get-y>(){}[0]
 
     final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.model.change/ImageData.component1|component1(){}[0]
+    final fun component10(): kotlin/String? // io.github.valerioisufi.pageboard.model.change/ImageData.component10|component10(){}[0]
     final fun component2(): kotlin/String // io.github.valerioisufi.pageboard.model.change/ImageData.component2|component2(){}[0]
     final fun component3(): kotlin/Float // io.github.valerioisufi.pageboard.model.change/ImageData.component3|component3(){}[0]
     final fun component4(): kotlin/Float // io.github.valerioisufi.pageboard.model.change/ImageData.component4|component4(){}[0]
@@ -892,7 +961,8 @@ final class io.github.valerioisufi.pageboard.model.change/ImageData : io.github.
     final fun component6(): kotlin/Float // io.github.valerioisufi.pageboard.model.change/ImageData.component6|component6(){}[0]
     final fun component7(): kotlin/Float // io.github.valerioisufi.pageboard.model.change/ImageData.component7|component7(){}[0]
     final fun component8(): io.github.valerioisufi.pageboard.model/ElementOrder? // io.github.valerioisufi.pageboard.model.change/ImageData.component8|component8(){}[0]
-    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ...): io.github.valerioisufi.pageboard.model.change/ImageData // io.github.valerioisufi.pageboard.model.change/ImageData.copy|copy(kotlin.String;kotlin.String;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.ElementOrder?){}[0]
+    final fun component9(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/ImageData.component9|component9(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ..., kotlin/Boolean = ..., kotlin/String? = ...): io.github.valerioisufi.pageboard.model.change/ImageData // io.github.valerioisufi.pageboard.model.change/ImageData.copy|copy(kotlin.String;kotlin.String;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.ElementOrder?;kotlin.Boolean;kotlin.String?){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/ImageData.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/ImageData.hashCode|hashCode(){}[0]
     final fun toElement(io.github.valerioisufi.pageboard.model/StrokeModeller): io.github.valerioisufi.pageboard.model/ImageElement // io.github.valerioisufi.pageboard.model.change/ImageData.toElement|toElement(io.github.valerioisufi.pageboard.model.StrokeModeller){}[0]
@@ -909,6 +979,42 @@ final class io.github.valerioisufi.pageboard.model.change/ImageData : io.github.
 
     final object Companion { // io.github.valerioisufi.pageboard.model.change/ImageData.Companion|null[0]
         final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model.change/ImageData> // io.github.valerioisufi.pageboard.model.change/ImageData.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.pageboard.model.change/LockElements : io.github.valerioisufi.pageboard.model.change/DocumentChange { // io.github.valerioisufi.pageboard.model.change/LockElements|null[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<kotlin/String>, kotlin/Boolean) // io.github.valerioisufi.pageboard.model.change/LockElements.<init>|<init>(kotlin.String;kotlin.collections.List<kotlin.String>;kotlin.Boolean){}[0]
+
+    final val ids // io.github.valerioisufi.pageboard.model.change/LockElements.ids|{}ids[0]
+        final fun <get-ids>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.model.change/LockElements.ids.<get-ids>|<get-ids>(){}[0]
+    final val locked // io.github.valerioisufi.pageboard.model.change/LockElements.locked|{}locked[0]
+        final fun <get-locked>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/LockElements.locked.<get-locked>|<get-locked>(){}[0]
+    final val pageId // io.github.valerioisufi.pageboard.model.change/LockElements.pageId|{}pageId[0]
+        final fun <get-pageId>(): kotlin/String // io.github.valerioisufi.pageboard.model.change/LockElements.pageId.<get-pageId>|<get-pageId>(){}[0]
+
+    final fun applyTo(io.github.valerioisufi.pageboard.model.change/ChangeContext): io.github.valerioisufi.pageboard.model.change/DocumentChange? // io.github.valerioisufi.pageboard.model.change/LockElements.applyTo|applyTo(io.github.valerioisufi.pageboard.model.change.ChangeContext){}[0]
+    final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.model.change/LockElements.component1|component1(){}[0]
+    final fun component2(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.model.change/LockElements.component2|component2(){}[0]
+    final fun component3(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/LockElements.component3|component3(){}[0]
+    final fun copy(kotlin/String = ..., kotlin.collections/List<kotlin/String> = ..., kotlin/Boolean = ...): io.github.valerioisufi.pageboard.model.change/LockElements // io.github.valerioisufi.pageboard.model.change/LockElements.copy|copy(kotlin.String;kotlin.collections.List<kotlin.String>;kotlin.Boolean){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/LockElements.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/LockElements.hashCode|hashCode(){}[0]
+    final fun isValid(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/LockElements.isValid|isValid(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model.change/LockElements.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.pageboard.model.change/LockElements> { // io.github.valerioisufi.pageboard.model.change/LockElements.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.pageboard.model.change/LockElements.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.pageboard.model.change/LockElements.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.pageboard.model.change/LockElements.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.pageboard.model.change/LockElements // io.github.valerioisufi.pageboard.model.change/LockElements.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.pageboard.model.change/LockElements) // io.github.valerioisufi.pageboard.model.change/LockElements.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.pageboard.model.change.LockElements){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.pageboard.model.change/LockElements.Companion|null[0]
+        final val $childSerializers // io.github.valerioisufi.pageboard.model.change/LockElements.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model.change/LockElements> // io.github.valerioisufi.pageboard.model.change/LockElements.Companion.serializer|serializer(){}[0]
     }
 }
 
@@ -1040,7 +1146,7 @@ final class io.github.valerioisufi.pageboard.model.change/OperationId { // io.gi
 }
 
 final class io.github.valerioisufi.pageboard.model.change/PageData { // io.github.valerioisufi.pageboard.model.change/PageData|null[0]
-    constructor <init>(kotlin/String, kotlin/String, kotlin/Float, kotlin/Float, io.github.valerioisufi.pageboard.model/PageBackground? = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model.change/ElementData> = ...) // io.github.valerioisufi.pageboard.model.change/PageData.<init>|<init>(kotlin.String;kotlin.String;kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.PageBackground?;kotlin.collections.List<io.github.valerioisufi.pageboard.model.change.ElementData>){}[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/Float, kotlin/Float, io.github.valerioisufi.pageboard.model/PageBackground? = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model.change/ElementData> = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageLayerData> = ...) // io.github.valerioisufi.pageboard.model.change/PageData.<init>|<init>(kotlin.String;kotlin.String;kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.PageBackground?;kotlin.collections.List<io.github.valerioisufi.pageboard.model.change.ElementData>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.PageLayerData>){}[0]
 
     final val background // io.github.valerioisufi.pageboard.model.change/PageData.background|{}background[0]
         final fun <get-background>(): io.github.valerioisufi.pageboard.model/PageBackground? // io.github.valerioisufi.pageboard.model.change/PageData.background.<get-background>|<get-background>(){}[0]
@@ -1050,6 +1156,8 @@ final class io.github.valerioisufi.pageboard.model.change/PageData { // io.githu
         final fun <get-heightMm>(): kotlin/Float // io.github.valerioisufi.pageboard.model.change/PageData.heightMm.<get-heightMm>|<get-heightMm>(){}[0]
     final val id // io.github.valerioisufi.pageboard.model.change/PageData.id|{}id[0]
         final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.model.change/PageData.id.<get-id>|<get-id>(){}[0]
+    final val layers // io.github.valerioisufi.pageboard.model.change/PageData.layers|{}layers[0]
+        final fun <get-layers>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageLayerData> // io.github.valerioisufi.pageboard.model.change/PageData.layers.<get-layers>|<get-layers>(){}[0]
     final val orderKey // io.github.valerioisufi.pageboard.model.change/PageData.orderKey|{}orderKey[0]
         final fun <get-orderKey>(): kotlin/String // io.github.valerioisufi.pageboard.model.change/PageData.orderKey.<get-orderKey>|<get-orderKey>(){}[0]
     final val widthMm // io.github.valerioisufi.pageboard.model.change/PageData.widthMm|{}widthMm[0]
@@ -1061,7 +1169,8 @@ final class io.github.valerioisufi.pageboard.model.change/PageData { // io.githu
     final fun component4(): kotlin/Float // io.github.valerioisufi.pageboard.model.change/PageData.component4|component4(){}[0]
     final fun component5(): io.github.valerioisufi.pageboard.model/PageBackground? // io.github.valerioisufi.pageboard.model.change/PageData.component5|component5(){}[0]
     final fun component6(): kotlin.collections/List<io.github.valerioisufi.pageboard.model.change/ElementData> // io.github.valerioisufi.pageboard.model.change/PageData.component6|component6(){}[0]
-    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/Float = ..., kotlin/Float = ..., io.github.valerioisufi.pageboard.model/PageBackground? = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model.change/ElementData> = ...): io.github.valerioisufi.pageboard.model.change/PageData // io.github.valerioisufi.pageboard.model.change/PageData.copy|copy(kotlin.String;kotlin.String;kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.PageBackground?;kotlin.collections.List<io.github.valerioisufi.pageboard.model.change.ElementData>){}[0]
+    final fun component7(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageLayerData> // io.github.valerioisufi.pageboard.model.change/PageData.component7|component7(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/Float = ..., kotlin/Float = ..., io.github.valerioisufi.pageboard.model/PageBackground? = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model.change/ElementData> = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageLayerData> = ...): io.github.valerioisufi.pageboard.model.change/PageData // io.github.valerioisufi.pageboard.model.change/PageData.copy|copy(kotlin.String;kotlin.String;kotlin.Float;kotlin.Float;io.github.valerioisufi.pageboard.model.PageBackground?;kotlin.collections.List<io.github.valerioisufi.pageboard.model.change.ElementData>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.PageLayerData>){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/PageData.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/PageData.hashCode|hashCode(){}[0]
     final fun toPage(io.github.valerioisufi.pageboard.model/Document): io.github.valerioisufi.pageboard.model/Page // io.github.valerioisufi.pageboard.model.change/PageData.toPage|toPage(io.github.valerioisufi.pageboard.model.Document){}[0]
@@ -1113,7 +1222,7 @@ final class io.github.valerioisufi.pageboard.model.change/PageMove { // io.githu
 }
 
 final class io.github.valerioisufi.pageboard.model.change/PageSnapshot { // io.github.valerioisufi.pageboard.model.change/PageSnapshot|null[0]
-    constructor <init>(io.github.valerioisufi.pageboard.model.change/PageData, io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp? = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model.change/ElementData> = ..., kotlin.collections/Map<kotlin/String, io.github.valerioisufi.pageboard.model.change/ElementVersions> = ..., io.github.valerioisufi.pageboard.model/Versions = ..., io.github.valerioisufi.pageboard.model/Versions? = ...) // io.github.valerioisufi.pageboard.model.change/PageSnapshot.<init>|<init>(io.github.valerioisufi.pageboard.model.change.PageData;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp?;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp;kotlin.collections.List<io.github.valerioisufi.pageboard.model.change.ElementData>;kotlin.collections.Map<kotlin.String,io.github.valerioisufi.pageboard.model.change.ElementVersions>;io.github.valerioisufi.pageboard.model.Versions;io.github.valerioisufi.pageboard.model.Versions?){}[0]
+    constructor <init>(io.github.valerioisufi.pageboard.model.change/PageData, io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp? = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model.change/ElementData> = ..., kotlin.collections/Map<kotlin/String, io.github.valerioisufi.pageboard.model.change/ElementVersions> = ..., io.github.valerioisufi.pageboard.model/Versions = ..., io.github.valerioisufi.pageboard.model/Versions? = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageLayerData> = ...) // io.github.valerioisufi.pageboard.model.change/PageSnapshot.<init>|<init>(io.github.valerioisufi.pageboard.model.change.PageData;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp?;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp;kotlin.collections.List<io.github.valerioisufi.pageboard.model.change.ElementData>;kotlin.collections.Map<kotlin.String,io.github.valerioisufi.pageboard.model.change.ElementVersions>;io.github.valerioisufi.pageboard.model.Versions;io.github.valerioisufi.pageboard.model.Versions?;kotlin.collections.List<io.github.valerioisufi.pageboard.model.PageLayerData>){}[0]
 
     final val added // io.github.valerioisufi.pageboard.model.change/PageSnapshot.added|{}added[0]
         final fun <get-added>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model.change/PageSnapshot.added.<get-added>|<get-added>(){}[0]
@@ -1131,10 +1240,13 @@ final class io.github.valerioisufi.pageboard.model.change/PageSnapshot { // io.g
         final fun <get-removed>(): io.github.valerioisufi.pageboard.model/Stamp? // io.github.valerioisufi.pageboard.model.change/PageSnapshot.removed.<get-removed>|<get-removed>(){}[0]
     final val removedElements // io.github.valerioisufi.pageboard.model.change/PageSnapshot.removedElements|{}removedElements[0]
         final fun <get-removedElements>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model.change/ElementData> // io.github.valerioisufi.pageboard.model.change/PageSnapshot.removedElements.<get-removedElements>|<get-removedElements>(){}[0]
+    final val removedLayers // io.github.valerioisufi.pageboard.model.change/PageSnapshot.removedLayers|{}removedLayers[0]
+        final fun <get-removedLayers>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageLayerData> // io.github.valerioisufi.pageboard.model.change/PageSnapshot.removedLayers.<get-removedLayers>|<get-removedLayers>(){}[0]
     final val versions // io.github.valerioisufi.pageboard.model.change/PageSnapshot.versions|{}versions[0]
         final fun <get-versions>(): kotlin.collections/Map<kotlin/String, io.github.valerioisufi.pageboard.model.change/ElementVersions> // io.github.valerioisufi.pageboard.model.change/PageSnapshot.versions.<get-versions>|<get-versions>(){}[0]
 
     final fun component1(): io.github.valerioisufi.pageboard.model.change/PageData // io.github.valerioisufi.pageboard.model.change/PageSnapshot.component1|component1(){}[0]
+    final fun component10(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageLayerData> // io.github.valerioisufi.pageboard.model.change/PageSnapshot.component10|component10(){}[0]
     final fun component2(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model.change/PageSnapshot.component2|component2(){}[0]
     final fun component3(): io.github.valerioisufi.pageboard.model/Stamp? // io.github.valerioisufi.pageboard.model.change/PageSnapshot.component3|component3(){}[0]
     final fun component4(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model.change/PageSnapshot.component4|component4(){}[0]
@@ -1143,7 +1255,7 @@ final class io.github.valerioisufi.pageboard.model.change/PageSnapshot { // io.g
     final fun component7(): kotlin.collections/Map<kotlin/String, io.github.valerioisufi.pageboard.model.change/ElementVersions> // io.github.valerioisufi.pageboard.model.change/PageSnapshot.component7|component7(){}[0]
     final fun component8(): io.github.valerioisufi.pageboard.model/Versions // io.github.valerioisufi.pageboard.model.change/PageSnapshot.component8|component8(){}[0]
     final fun component9(): io.github.valerioisufi.pageboard.model/Versions? // io.github.valerioisufi.pageboard.model.change/PageSnapshot.component9|component9(){}[0]
-    final fun copy(io.github.valerioisufi.pageboard.model.change/PageData = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp? = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model.change/ElementData> = ..., kotlin.collections/Map<kotlin/String, io.github.valerioisufi.pageboard.model.change/ElementVersions> = ..., io.github.valerioisufi.pageboard.model/Versions = ..., io.github.valerioisufi.pageboard.model/Versions? = ...): io.github.valerioisufi.pageboard.model.change/PageSnapshot // io.github.valerioisufi.pageboard.model.change/PageSnapshot.copy|copy(io.github.valerioisufi.pageboard.model.change.PageData;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp?;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp;kotlin.collections.List<io.github.valerioisufi.pageboard.model.change.ElementData>;kotlin.collections.Map<kotlin.String,io.github.valerioisufi.pageboard.model.change.ElementVersions>;io.github.valerioisufi.pageboard.model.Versions;io.github.valerioisufi.pageboard.model.Versions?){}[0]
+    final fun copy(io.github.valerioisufi.pageboard.model.change/PageData = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp? = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model.change/ElementData> = ..., kotlin.collections/Map<kotlin/String, io.github.valerioisufi.pageboard.model.change/ElementVersions> = ..., io.github.valerioisufi.pageboard.model/Versions = ..., io.github.valerioisufi.pageboard.model/Versions? = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageLayerData> = ...): io.github.valerioisufi.pageboard.model.change/PageSnapshot // io.github.valerioisufi.pageboard.model.change/PageSnapshot.copy|copy(io.github.valerioisufi.pageboard.model.change.PageData;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp?;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp;kotlin.collections.List<io.github.valerioisufi.pageboard.model.change.ElementData>;kotlin.collections.Map<kotlin.String,io.github.valerioisufi.pageboard.model.change.ElementVersions>;io.github.valerioisufi.pageboard.model.Versions;io.github.valerioisufi.pageboard.model.Versions?;kotlin.collections.List<io.github.valerioisufi.pageboard.model.PageLayerData>){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/PageSnapshot.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/PageSnapshot.hashCode|hashCode(){}[0]
     final fun toPage(io.github.valerioisufi.pageboard.model/Document): io.github.valerioisufi.pageboard.model/Page // io.github.valerioisufi.pageboard.model.change/PageSnapshot.toPage|toPage(io.github.valerioisufi.pageboard.model.Document){}[0]
@@ -1192,10 +1304,14 @@ final class io.github.valerioisufi.pageboard.model.change/PastedPages { // io.gi
 }
 
 final class io.github.valerioisufi.pageboard.model.change/PdfData : io.github.valerioisufi.pageboard.model.change/ElementData { // io.github.valerioisufi.pageboard.model.change/PdfData|null[0]
-    constructor <init>(kotlin/String, kotlin/String, kotlin/Int, io.github.valerioisufi.pageboard.model/ElementOrder? = ...) // io.github.valerioisufi.pageboard.model.change/PdfData.<init>|<init>(kotlin.String;kotlin.String;kotlin.Int;io.github.valerioisufi.pageboard.model.ElementOrder?){}[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/Int, io.github.valerioisufi.pageboard.model/ElementOrder? = ..., kotlin/Boolean = ..., kotlin/String? = ...) // io.github.valerioisufi.pageboard.model.change/PdfData.<init>|<init>(kotlin.String;kotlin.String;kotlin.Int;io.github.valerioisufi.pageboard.model.ElementOrder?;kotlin.Boolean;kotlin.String?){}[0]
 
     final val id // io.github.valerioisufi.pageboard.model.change/PdfData.id|{}id[0]
         final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.model.change/PdfData.id.<get-id>|<get-id>(){}[0]
+    final val layerId // io.github.valerioisufi.pageboard.model.change/PdfData.layerId|{}layerId[0]
+        final fun <get-layerId>(): kotlin/String? // io.github.valerioisufi.pageboard.model.change/PdfData.layerId.<get-layerId>|<get-layerId>(){}[0]
+    final val locked // io.github.valerioisufi.pageboard.model.change/PdfData.locked|{}locked[0]
+        final fun <get-locked>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/PdfData.locked.<get-locked>|<get-locked>(){}[0]
     final val order // io.github.valerioisufi.pageboard.model.change/PdfData.order|{}order[0]
         final fun <get-order>(): io.github.valerioisufi.pageboard.model/ElementOrder? // io.github.valerioisufi.pageboard.model.change/PdfData.order.<get-order>|<get-order>(){}[0]
     final val pdfPageIndex // io.github.valerioisufi.pageboard.model.change/PdfData.pdfPageIndex|{}pdfPageIndex[0]
@@ -1207,7 +1323,9 @@ final class io.github.valerioisufi.pageboard.model.change/PdfData : io.github.va
     final fun component2(): kotlin/String // io.github.valerioisufi.pageboard.model.change/PdfData.component2|component2(){}[0]
     final fun component3(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/PdfData.component3|component3(){}[0]
     final fun component4(): io.github.valerioisufi.pageboard.model/ElementOrder? // io.github.valerioisufi.pageboard.model.change/PdfData.component4|component4(){}[0]
-    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/Int = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ...): io.github.valerioisufi.pageboard.model.change/PdfData // io.github.valerioisufi.pageboard.model.change/PdfData.copy|copy(kotlin.String;kotlin.String;kotlin.Int;io.github.valerioisufi.pageboard.model.ElementOrder?){}[0]
+    final fun component5(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/PdfData.component5|component5(){}[0]
+    final fun component6(): kotlin/String? // io.github.valerioisufi.pageboard.model.change/PdfData.component6|component6(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/Int = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ..., kotlin/Boolean = ..., kotlin/String? = ...): io.github.valerioisufi.pageboard.model.change/PdfData // io.github.valerioisufi.pageboard.model.change/PdfData.copy|copy(kotlin.String;kotlin.String;kotlin.Int;io.github.valerioisufi.pageboard.model.ElementOrder?;kotlin.Boolean;kotlin.String?){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/PdfData.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/PdfData.hashCode|hashCode(){}[0]
     final fun toElement(io.github.valerioisufi.pageboard.model/StrokeModeller): io.github.valerioisufi.pageboard.model/PdfElement // io.github.valerioisufi.pageboard.model.change/PdfData.toElement|toElement(io.github.valerioisufi.pageboard.model.StrokeModeller){}[0]
@@ -1334,6 +1452,37 @@ final class io.github.valerioisufi.pageboard.model.change/RemovePage : io.github
 
     final object Companion { // io.github.valerioisufi.pageboard.model.change/RemovePage.Companion|null[0]
         final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model.change/RemovePage> // io.github.valerioisufi.pageboard.model.change/RemovePage.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.pageboard.model.change/RemovePageLayer : io.github.valerioisufi.pageboard.model.change/DocumentChange { // io.github.valerioisufi.pageboard.model.change/RemovePageLayer|null[0]
+    constructor <init>(kotlin/String, kotlin/String) // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.<init>|<init>(kotlin.String;kotlin.String){}[0]
+
+    final val layerId // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.layerId|{}layerId[0]
+        final fun <get-layerId>(): kotlin/String // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.layerId.<get-layerId>|<get-layerId>(){}[0]
+    final val pageId // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.pageId|{}pageId[0]
+        final fun <get-pageId>(): kotlin/String // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.pageId.<get-pageId>|<get-pageId>(){}[0]
+
+    final fun applyTo(io.github.valerioisufi.pageboard.model.change/ChangeContext): io.github.valerioisufi.pageboard.model.change/DocumentChange? // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.applyTo|applyTo(io.github.valerioisufi.pageboard.model.change.ChangeContext){}[0]
+    final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.component1|component1(){}[0]
+    final fun component2(): kotlin/String // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.component2|component2(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ...): io.github.valerioisufi.pageboard.model.change/RemovePageLayer // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.copy|copy(kotlin.String;kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.hashCode|hashCode(){}[0]
+    final fun isValid(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.isValid|isValid(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.pageboard.model.change/RemovePageLayer> { // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.pageboard.model.change/RemovePageLayer // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.pageboard.model.change/RemovePageLayer) // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.pageboard.model.change.RemovePageLayer){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model.change/RemovePageLayer> // io.github.valerioisufi.pageboard.model.change/RemovePageLayer.Companion.serializer|serializer(){}[0]
     }
 }
 
@@ -1540,7 +1689,7 @@ final class io.github.valerioisufi.pageboard.model.change/SetPageFormat : io.git
 }
 
 final class io.github.valerioisufi.pageboard.model.change/StrokeData : io.github.valerioisufi.pageboard.model.change/ElementData { // io.github.valerioisufi.pageboard.model.change/StrokeData|null[0]
-    constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokePoint>, io.github.valerioisufi.pageboard.model/StrokeTool, kotlin/Float, kotlin/Int, io.github.valerioisufi.pageboard.model/InputToolType = ..., io.github.valerioisufi.pageboard.model.geometry/AffineTransform = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ...) // io.github.valerioisufi.pageboard.model.change/StrokeData.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokePoint>;io.github.valerioisufi.pageboard.model.StrokeTool;kotlin.Float;kotlin.Int;io.github.valerioisufi.pageboard.model.InputToolType;io.github.valerioisufi.pageboard.model.geometry.AffineTransform;io.github.valerioisufi.pageboard.model.ElementOrder?){}[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokePoint>, io.github.valerioisufi.pageboard.model/StrokeTool, kotlin/Float, kotlin/Int, io.github.valerioisufi.pageboard.model/InputToolType = ..., io.github.valerioisufi.pageboard.model.geometry/AffineTransform = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ..., kotlin/Boolean = ..., kotlin/String? = ...) // io.github.valerioisufi.pageboard.model.change/StrokeData.<init>|<init>(kotlin.String;kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokePoint>;io.github.valerioisufi.pageboard.model.StrokeTool;kotlin.Float;kotlin.Int;io.github.valerioisufi.pageboard.model.InputToolType;io.github.valerioisufi.pageboard.model.geometry.AffineTransform;io.github.valerioisufi.pageboard.model.ElementOrder?;kotlin.Boolean;kotlin.String?){}[0]
 
     final val color // io.github.valerioisufi.pageboard.model.change/StrokeData.color|{}color[0]
         final fun <get-color>(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/StrokeData.color.<get-color>|<get-color>(){}[0]
@@ -1548,6 +1697,10 @@ final class io.github.valerioisufi.pageboard.model.change/StrokeData : io.github
         final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.model.change/StrokeData.id.<get-id>|<get-id>(){}[0]
     final val inputToolType // io.github.valerioisufi.pageboard.model.change/StrokeData.inputToolType|{}inputToolType[0]
         final fun <get-inputToolType>(): io.github.valerioisufi.pageboard.model/InputToolType // io.github.valerioisufi.pageboard.model.change/StrokeData.inputToolType.<get-inputToolType>|<get-inputToolType>(){}[0]
+    final val layerId // io.github.valerioisufi.pageboard.model.change/StrokeData.layerId|{}layerId[0]
+        final fun <get-layerId>(): kotlin/String? // io.github.valerioisufi.pageboard.model.change/StrokeData.layerId.<get-layerId>|<get-layerId>(){}[0]
+    final val locked // io.github.valerioisufi.pageboard.model.change/StrokeData.locked|{}locked[0]
+        final fun <get-locked>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/StrokeData.locked.<get-locked>|<get-locked>(){}[0]
     final val order // io.github.valerioisufi.pageboard.model.change/StrokeData.order|{}order[0]
         final fun <get-order>(): io.github.valerioisufi.pageboard.model/ElementOrder? // io.github.valerioisufi.pageboard.model.change/StrokeData.order.<get-order>|<get-order>(){}[0]
     final val points // io.github.valerioisufi.pageboard.model.change/StrokeData.points|{}points[0]
@@ -1560,6 +1713,7 @@ final class io.github.valerioisufi.pageboard.model.change/StrokeData : io.github
         final fun <get-transform>(): io.github.valerioisufi.pageboard.model.geometry/AffineTransform // io.github.valerioisufi.pageboard.model.change/StrokeData.transform.<get-transform>|<get-transform>(){}[0]
 
     final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.model.change/StrokeData.component1|component1(){}[0]
+    final fun component10(): kotlin/String? // io.github.valerioisufi.pageboard.model.change/StrokeData.component10|component10(){}[0]
     final fun component2(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokePoint> // io.github.valerioisufi.pageboard.model.change/StrokeData.component2|component2(){}[0]
     final fun component3(): io.github.valerioisufi.pageboard.model/StrokeTool // io.github.valerioisufi.pageboard.model.change/StrokeData.component3|component3(){}[0]
     final fun component4(): kotlin/Float // io.github.valerioisufi.pageboard.model.change/StrokeData.component4|component4(){}[0]
@@ -1567,7 +1721,8 @@ final class io.github.valerioisufi.pageboard.model.change/StrokeData : io.github
     final fun component6(): io.github.valerioisufi.pageboard.model/InputToolType // io.github.valerioisufi.pageboard.model.change/StrokeData.component6|component6(){}[0]
     final fun component7(): io.github.valerioisufi.pageboard.model.geometry/AffineTransform // io.github.valerioisufi.pageboard.model.change/StrokeData.component7|component7(){}[0]
     final fun component8(): io.github.valerioisufi.pageboard.model/ElementOrder? // io.github.valerioisufi.pageboard.model.change/StrokeData.component8|component8(){}[0]
-    final fun copy(kotlin/String = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokePoint> = ..., io.github.valerioisufi.pageboard.model/StrokeTool = ..., kotlin/Float = ..., kotlin/Int = ..., io.github.valerioisufi.pageboard.model/InputToolType = ..., io.github.valerioisufi.pageboard.model.geometry/AffineTransform = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ...): io.github.valerioisufi.pageboard.model.change/StrokeData // io.github.valerioisufi.pageboard.model.change/StrokeData.copy|copy(kotlin.String;kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokePoint>;io.github.valerioisufi.pageboard.model.StrokeTool;kotlin.Float;kotlin.Int;io.github.valerioisufi.pageboard.model.InputToolType;io.github.valerioisufi.pageboard.model.geometry.AffineTransform;io.github.valerioisufi.pageboard.model.ElementOrder?){}[0]
+    final fun component9(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/StrokeData.component9|component9(){}[0]
+    final fun copy(kotlin/String = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokePoint> = ..., io.github.valerioisufi.pageboard.model/StrokeTool = ..., kotlin/Float = ..., kotlin/Int = ..., io.github.valerioisufi.pageboard.model/InputToolType = ..., io.github.valerioisufi.pageboard.model.geometry/AffineTransform = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ..., kotlin/Boolean = ..., kotlin/String? = ...): io.github.valerioisufi.pageboard.model.change/StrokeData // io.github.valerioisufi.pageboard.model.change/StrokeData.copy|copy(kotlin.String;kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokePoint>;io.github.valerioisufi.pageboard.model.StrokeTool;kotlin.Float;kotlin.Int;io.github.valerioisufi.pageboard.model.InputToolType;io.github.valerioisufi.pageboard.model.geometry.AffineTransform;io.github.valerioisufi.pageboard.model.ElementOrder?;kotlin.Boolean;kotlin.String?){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/StrokeData.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/StrokeData.hashCode|hashCode(){}[0]
     final fun toElement(io.github.valerioisufi.pageboard.model/StrokeModeller): io.github.valerioisufi.pageboard.model/StrokeElement // io.github.valerioisufi.pageboard.model.change/StrokeData.toElement|toElement(io.github.valerioisufi.pageboard.model.StrokeModeller){}[0]
@@ -1623,7 +1778,7 @@ final class io.github.valerioisufi.pageboard.model.change/StrokePlacement : io.g
 }
 
 final class io.github.valerioisufi.pageboard.model.change/TextData : io.github.valerioisufi.pageboard.model.change/ElementData { // io.github.valerioisufi.pageboard.model.change/TextData|null[0]
-    constructor <init>(kotlin/String, kotlin/String, io.github.valerioisufi.pageboard.model/TextAlignment = ..., kotlin/Boolean = ..., kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float = ..., kotlin/Int, kotlin/Float, kotlin/Int? = ..., kotlin/String? = ..., kotlin/Boolean = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ..., io.github.valerioisufi.pageboard.model/Versions = ...) // io.github.valerioisufi.pageboard.model.change/TextData.<init>|<init>(kotlin.String;kotlin.String;io.github.valerioisufi.pageboard.model.TextAlignment;kotlin.Boolean;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Float;kotlin.Int?;kotlin.String?;kotlin.Boolean;io.github.valerioisufi.pageboard.model.ElementOrder?;io.github.valerioisufi.pageboard.model.Versions){}[0]
+    constructor <init>(kotlin/String, kotlin/String, io.github.valerioisufi.pageboard.model/TextAlignment = ..., kotlin/Boolean = ..., kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float = ..., kotlin/Int, kotlin/Float, kotlin/Int? = ..., kotlin/String? = ..., kotlin/Boolean = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ..., io.github.valerioisufi.pageboard.model/Versions = ..., kotlin/Boolean = ..., kotlin/String? = ...) // io.github.valerioisufi.pageboard.model.change/TextData.<init>|<init>(kotlin.String;kotlin.String;io.github.valerioisufi.pageboard.model.TextAlignment;kotlin.Boolean;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Float;kotlin.Int?;kotlin.String?;kotlin.Boolean;io.github.valerioisufi.pageboard.model.ElementOrder?;io.github.valerioisufi.pageboard.model.Versions;kotlin.Boolean;kotlin.String?){}[0]
 
     final val alignment // io.github.valerioisufi.pageboard.model.change/TextData.alignment|{}alignment[0]
         final fun <get-alignment>(): io.github.valerioisufi.pageboard.model/TextAlignment // io.github.valerioisufi.pageboard.model.change/TextData.alignment.<get-alignment>|<get-alignment>(){}[0]
@@ -1639,6 +1794,10 @@ final class io.github.valerioisufi.pageboard.model.change/TextData : io.github.v
         final fun <get-fontSize>(): kotlin/Float // io.github.valerioisufi.pageboard.model.change/TextData.fontSize.<get-fontSize>|<get-fontSize>(){}[0]
     final val id // io.github.valerioisufi.pageboard.model.change/TextData.id|{}id[0]
         final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.model.change/TextData.id.<get-id>|<get-id>(){}[0]
+    final val layerId // io.github.valerioisufi.pageboard.model.change/TextData.layerId|{}layerId[0]
+        final fun <get-layerId>(): kotlin/String? // io.github.valerioisufi.pageboard.model.change/TextData.layerId.<get-layerId>|<get-layerId>(){}[0]
+    final val locked // io.github.valerioisufi.pageboard.model.change/TextData.locked|{}locked[0]
+        final fun <get-locked>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/TextData.locked.<get-locked>|<get-locked>(){}[0]
     final val next // io.github.valerioisufi.pageboard.model.change/TextData.next|{}next[0]
         final fun <get-next>(): kotlin/String? // io.github.valerioisufi.pageboard.model.change/TextData.next.<get-next>|<get-next>(){}[0]
     final val order // io.github.valerioisufi.pageboard.model.change/TextData.order|{}order[0]
@@ -1664,6 +1823,8 @@ final class io.github.valerioisufi.pageboard.model.change/TextData : io.github.v
     final fun component13(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/TextData.component13|component13(){}[0]
     final fun component14(): io.github.valerioisufi.pageboard.model/ElementOrder? // io.github.valerioisufi.pageboard.model.change/TextData.component14|component14(){}[0]
     final fun component15(): io.github.valerioisufi.pageboard.model/Versions // io.github.valerioisufi.pageboard.model.change/TextData.component15|component15(){}[0]
+    final fun component16(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/TextData.component16|component16(){}[0]
+    final fun component17(): kotlin/String? // io.github.valerioisufi.pageboard.model.change/TextData.component17|component17(){}[0]
     final fun component2(): kotlin/String // io.github.valerioisufi.pageboard.model.change/TextData.component2|component2(){}[0]
     final fun component3(): io.github.valerioisufi.pageboard.model/TextAlignment // io.github.valerioisufi.pageboard.model.change/TextData.component3|component3(){}[0]
     final fun component4(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/TextData.component4|component4(){}[0]
@@ -1672,7 +1833,7 @@ final class io.github.valerioisufi.pageboard.model.change/TextData : io.github.v
     final fun component7(): kotlin/Float // io.github.valerioisufi.pageboard.model.change/TextData.component7|component7(){}[0]
     final fun component8(): kotlin/Float // io.github.valerioisufi.pageboard.model.change/TextData.component8|component8(){}[0]
     final fun component9(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/TextData.component9|component9(){}[0]
-    final fun copy(kotlin/String = ..., kotlin/String = ..., io.github.valerioisufi.pageboard.model/TextAlignment = ..., kotlin/Boolean = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Int = ..., kotlin/Float = ..., kotlin/Int? = ..., kotlin/String? = ..., kotlin/Boolean = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ..., io.github.valerioisufi.pageboard.model/Versions = ...): io.github.valerioisufi.pageboard.model.change/TextData // io.github.valerioisufi.pageboard.model.change/TextData.copy|copy(kotlin.String;kotlin.String;io.github.valerioisufi.pageboard.model.TextAlignment;kotlin.Boolean;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Float;kotlin.Int?;kotlin.String?;kotlin.Boolean;io.github.valerioisufi.pageboard.model.ElementOrder?;io.github.valerioisufi.pageboard.model.Versions){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., io.github.valerioisufi.pageboard.model/TextAlignment = ..., kotlin/Boolean = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Int = ..., kotlin/Float = ..., kotlin/Int? = ..., kotlin/String? = ..., kotlin/Boolean = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ..., io.github.valerioisufi.pageboard.model/Versions = ..., kotlin/Boolean = ..., kotlin/String? = ...): io.github.valerioisufi.pageboard.model.change/TextData // io.github.valerioisufi.pageboard.model.change/TextData.copy|copy(kotlin.String;kotlin.String;io.github.valerioisufi.pageboard.model.TextAlignment;kotlin.Boolean;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Float;kotlin.Int?;kotlin.String?;kotlin.Boolean;io.github.valerioisufi.pageboard.model.ElementOrder?;io.github.valerioisufi.pageboard.model.Versions;kotlin.Boolean;kotlin.String?){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/TextData.equals|equals(kotlin.Any?){}[0]
     final fun estimatedHeight(): kotlin/Float // io.github.valerioisufi.pageboard.model.change/TextData.estimatedHeight|estimatedHeight(){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/TextData.hashCode|hashCode(){}[0]
@@ -1696,7 +1857,7 @@ final class io.github.valerioisufi.pageboard.model.change/TextData : io.github.v
 }
 
 final class io.github.valerioisufi.pageboard.model.change/TextMarkupData : io.github.valerioisufi.pageboard.model.change/ElementData { // io.github.valerioisufi.pageboard.model.change/TextMarkupData|null[0]
-    constructor <init>(kotlin/String, kotlin/String, kotlin/Int, kotlin/Float, kotlin/Float, kotlin/Int, kotlin/Int, kotlin/String, kotlin.collections/List<kotlin/Float>, io.github.valerioisufi.pageboard.model/TextMarkupKind, kotlin/Int, io.github.valerioisufi.pageboard.model/ElementOrder? = ...) // io.github.valerioisufi.pageboard.model.change/TextMarkupData.<init>|<init>(kotlin.String;kotlin.String;kotlin.Int;kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Int;kotlin.String;kotlin.collections.List<kotlin.Float>;io.github.valerioisufi.pageboard.model.TextMarkupKind;kotlin.Int;io.github.valerioisufi.pageboard.model.ElementOrder?){}[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/Int, kotlin/Float, kotlin/Float, kotlin/Int, kotlin/Int, kotlin/String, kotlin.collections/List<kotlin/Float>, io.github.valerioisufi.pageboard.model/TextMarkupKind, kotlin/Int, io.github.valerioisufi.pageboard.model/ElementOrder? = ..., kotlin/Boolean = ..., kotlin/String? = ...) // io.github.valerioisufi.pageboard.model.change/TextMarkupData.<init>|<init>(kotlin.String;kotlin.String;kotlin.Int;kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Int;kotlin.String;kotlin.collections.List<kotlin.Float>;io.github.valerioisufi.pageboard.model.TextMarkupKind;kotlin.Int;io.github.valerioisufi.pageboard.model.ElementOrder?;kotlin.Boolean;kotlin.String?){}[0]
 
     final val color // io.github.valerioisufi.pageboard.model.change/TextMarkupData.color|{}color[0]
         final fun <get-color>(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/TextMarkupData.color.<get-color>|<get-color>(){}[0]
@@ -1706,6 +1867,10 @@ final class io.github.valerioisufi.pageboard.model.change/TextMarkupData : io.gi
         final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.model.change/TextMarkupData.id.<get-id>|<get-id>(){}[0]
     final val kind // io.github.valerioisufi.pageboard.model.change/TextMarkupData.kind|{}kind[0]
         final fun <get-kind>(): io.github.valerioisufi.pageboard.model/TextMarkupKind // io.github.valerioisufi.pageboard.model.change/TextMarkupData.kind.<get-kind>|<get-kind>(){}[0]
+    final val layerId // io.github.valerioisufi.pageboard.model.change/TextMarkupData.layerId|{}layerId[0]
+        final fun <get-layerId>(): kotlin/String? // io.github.valerioisufi.pageboard.model.change/TextMarkupData.layerId.<get-layerId>|<get-layerId>(){}[0]
+    final val locked // io.github.valerioisufi.pageboard.model.change/TextMarkupData.locked|{}locked[0]
+        final fun <get-locked>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/TextMarkupData.locked.<get-locked>|<get-locked>(){}[0]
     final val order // io.github.valerioisufi.pageboard.model.change/TextMarkupData.order|{}order[0]
         final fun <get-order>(): io.github.valerioisufi.pageboard.model/ElementOrder? // io.github.valerioisufi.pageboard.model.change/TextMarkupData.order.<get-order>|<get-order>(){}[0]
     final val pdfHeightPt // io.github.valerioisufi.pageboard.model.change/TextMarkupData.pdfHeightPt|{}pdfHeightPt[0]
@@ -1727,6 +1892,8 @@ final class io.github.valerioisufi.pageboard.model.change/TextMarkupData : io.gi
     final fun component10(): io.github.valerioisufi.pageboard.model/TextMarkupKind // io.github.valerioisufi.pageboard.model.change/TextMarkupData.component10|component10(){}[0]
     final fun component11(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/TextMarkupData.component11|component11(){}[0]
     final fun component12(): io.github.valerioisufi.pageboard.model/ElementOrder? // io.github.valerioisufi.pageboard.model.change/TextMarkupData.component12|component12(){}[0]
+    final fun component13(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/TextMarkupData.component13|component13(){}[0]
+    final fun component14(): kotlin/String? // io.github.valerioisufi.pageboard.model.change/TextMarkupData.component14|component14(){}[0]
     final fun component2(): kotlin/String // io.github.valerioisufi.pageboard.model.change/TextMarkupData.component2|component2(){}[0]
     final fun component3(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/TextMarkupData.component3|component3(){}[0]
     final fun component4(): kotlin/Float // io.github.valerioisufi.pageboard.model.change/TextMarkupData.component4|component4(){}[0]
@@ -1735,7 +1902,7 @@ final class io.github.valerioisufi.pageboard.model.change/TextMarkupData : io.gi
     final fun component7(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/TextMarkupData.component7|component7(){}[0]
     final fun component8(): kotlin/String // io.github.valerioisufi.pageboard.model.change/TextMarkupData.component8|component8(){}[0]
     final fun component9(): kotlin.collections/List<kotlin/Float> // io.github.valerioisufi.pageboard.model.change/TextMarkupData.component9|component9(){}[0]
-    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/Int = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/String = ..., kotlin.collections/List<kotlin/Float> = ..., io.github.valerioisufi.pageboard.model/TextMarkupKind = ..., kotlin/Int = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ...): io.github.valerioisufi.pageboard.model.change/TextMarkupData // io.github.valerioisufi.pageboard.model.change/TextMarkupData.copy|copy(kotlin.String;kotlin.String;kotlin.Int;kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Int;kotlin.String;kotlin.collections.List<kotlin.Float>;io.github.valerioisufi.pageboard.model.TextMarkupKind;kotlin.Int;io.github.valerioisufi.pageboard.model.ElementOrder?){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/Int = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/String = ..., kotlin.collections/List<kotlin/Float> = ..., io.github.valerioisufi.pageboard.model/TextMarkupKind = ..., kotlin/Int = ..., io.github.valerioisufi.pageboard.model/ElementOrder? = ..., kotlin/Boolean = ..., kotlin/String? = ...): io.github.valerioisufi.pageboard.model.change/TextMarkupData // io.github.valerioisufi.pageboard.model.change/TextMarkupData.copy|copy(kotlin.String;kotlin.String;kotlin.Int;kotlin.Float;kotlin.Float;kotlin.Int;kotlin.Int;kotlin.String;kotlin.collections.List<kotlin.Float>;io.github.valerioisufi.pageboard.model.TextMarkupKind;kotlin.Int;io.github.valerioisufi.pageboard.model.ElementOrder?;kotlin.Boolean;kotlin.String?){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/TextMarkupData.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/TextMarkupData.hashCode|hashCode(){}[0]
     final fun toElement(io.github.valerioisufi.pageboard.model/StrokeModeller): io.github.valerioisufi.pageboard.model/TextMarkupElement // io.github.valerioisufi.pageboard.model.change/TextMarkupData.toElement|toElement(io.github.valerioisufi.pageboard.model.StrokeModeller){}[0]
@@ -1867,6 +2034,37 @@ final class io.github.valerioisufi.pageboard.model.change/UpdateTexts : io.githu
         final val $childSerializers // io.github.valerioisufi.pageboard.model.change/UpdateTexts.Companion.$childSerializers|{}$childSerializers[0]
 
         final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model.change/UpdateTexts> // io.github.valerioisufi.pageboard.model.change/UpdateTexts.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.pageboard.model.change/UpsertPageLayer : io.github.valerioisufi.pageboard.model.change/DocumentChange { // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer|null[0]
+    constructor <init>(kotlin/String, io.github.valerioisufi.pageboard.model/PageLayerData) // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.<init>|<init>(kotlin.String;io.github.valerioisufi.pageboard.model.PageLayerData){}[0]
+
+    final val layer // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.layer|{}layer[0]
+        final fun <get-layer>(): io.github.valerioisufi.pageboard.model/PageLayerData // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.layer.<get-layer>|<get-layer>(){}[0]
+    final val pageId // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.pageId|{}pageId[0]
+        final fun <get-pageId>(): kotlin/String // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.pageId.<get-pageId>|<get-pageId>(){}[0]
+
+    final fun applyTo(io.github.valerioisufi.pageboard.model.change/ChangeContext): io.github.valerioisufi.pageboard.model.change/DocumentChange? // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.applyTo|applyTo(io.github.valerioisufi.pageboard.model.change.ChangeContext){}[0]
+    final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.component1|component1(){}[0]
+    final fun component2(): io.github.valerioisufi.pageboard.model/PageLayerData // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.component2|component2(){}[0]
+    final fun copy(kotlin/String = ..., io.github.valerioisufi.pageboard.model/PageLayerData = ...): io.github.valerioisufi.pageboard.model.change/UpsertPageLayer // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.copy|copy(kotlin.String;io.github.valerioisufi.pageboard.model.PageLayerData){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.hashCode|hashCode(){}[0]
+    final fun isValid(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.isValid|isValid(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.pageboard.model.change/UpsertPageLayer> { // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.pageboard.model.change/UpsertPageLayer // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.pageboard.model.change/UpsertPageLayer) // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.pageboard.model.change.UpsertPageLayer){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model.change/UpsertPageLayer> // io.github.valerioisufi.pageboard.model.change/UpsertPageLayer.Companion.serializer|serializer(){}[0]
     }
 }
 
@@ -2982,6 +3180,18 @@ final class io.github.valerioisufi.pageboard.model/CustomElement : io.github.val
     final var height // io.github.valerioisufi.pageboard.model/CustomElement.height|{}height[0]
         final fun <get-height>(): kotlin/Float // io.github.valerioisufi.pageboard.model/CustomElement.height.<get-height>|<get-height>(){}[0]
         final fun <set-height>(kotlin/Float) // io.github.valerioisufi.pageboard.model/CustomElement.height.<set-height>|<set-height>(kotlin.Float){}[0]
+    final var layerId // io.github.valerioisufi.pageboard.model/CustomElement.layerId|{}layerId[0]
+        final fun <get-layerId>(): kotlin/String? // io.github.valerioisufi.pageboard.model/CustomElement.layerId.<get-layerId>|<get-layerId>(){}[0]
+        final fun <set-layerId>(kotlin/String?) // io.github.valerioisufi.pageboard.model/CustomElement.layerId.<set-layerId>|<set-layerId>(kotlin.String?){}[0]
+    final var layerVersion // io.github.valerioisufi.pageboard.model/CustomElement.layerVersion|{}layerVersion[0]
+        final fun <get-layerVersion>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/CustomElement.layerVersion.<get-layerVersion>|<get-layerVersion>(){}[0]
+        final fun <set-layerVersion>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/CustomElement.layerVersion.<set-layerVersion>|<set-layerVersion>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final var lockVersion // io.github.valerioisufi.pageboard.model/CustomElement.lockVersion|{}lockVersion[0]
+        final fun <get-lockVersion>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/CustomElement.lockVersion.<get-lockVersion>|<get-lockVersion>(){}[0]
+        final fun <set-lockVersion>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/CustomElement.lockVersion.<set-lockVersion>|<set-lockVersion>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final var locked // io.github.valerioisufi.pageboard.model/CustomElement.locked|{}locked[0]
+        final fun <get-locked>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/CustomElement.locked.<get-locked>|<get-locked>(){}[0]
+        final fun <set-locked>(kotlin/Boolean) // io.github.valerioisufi.pageboard.model/CustomElement.locked.<set-locked>|<set-locked>(kotlin.Boolean){}[0]
     final var order // io.github.valerioisufi.pageboard.model/CustomElement.order|{}order[0]
         final fun <get-order>(): io.github.valerioisufi.pageboard.model/ElementOrder // io.github.valerioisufi.pageboard.model/CustomElement.order.<get-order>|<get-order>(){}[0]
         final fun <set-order>(io.github.valerioisufi.pageboard.model/ElementOrder) // io.github.valerioisufi.pageboard.model/CustomElement.order.<set-order>|<set-order>(io.github.valerioisufi.pageboard.model.ElementOrder){}[0]
@@ -3143,6 +3353,18 @@ final class io.github.valerioisufi.pageboard.model/ImageElement : io.github.vale
     final var height // io.github.valerioisufi.pageboard.model/ImageElement.height|{}height[0]
         final fun <get-height>(): kotlin/Float // io.github.valerioisufi.pageboard.model/ImageElement.height.<get-height>|<get-height>(){}[0]
         final fun <set-height>(kotlin/Float) // io.github.valerioisufi.pageboard.model/ImageElement.height.<set-height>|<set-height>(kotlin.Float){}[0]
+    final var layerId // io.github.valerioisufi.pageboard.model/ImageElement.layerId|{}layerId[0]
+        final fun <get-layerId>(): kotlin/String? // io.github.valerioisufi.pageboard.model/ImageElement.layerId.<get-layerId>|<get-layerId>(){}[0]
+        final fun <set-layerId>(kotlin/String?) // io.github.valerioisufi.pageboard.model/ImageElement.layerId.<set-layerId>|<set-layerId>(kotlin.String?){}[0]
+    final var layerVersion // io.github.valerioisufi.pageboard.model/ImageElement.layerVersion|{}layerVersion[0]
+        final fun <get-layerVersion>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/ImageElement.layerVersion.<get-layerVersion>|<get-layerVersion>(){}[0]
+        final fun <set-layerVersion>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/ImageElement.layerVersion.<set-layerVersion>|<set-layerVersion>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final var lockVersion // io.github.valerioisufi.pageboard.model/ImageElement.lockVersion|{}lockVersion[0]
+        final fun <get-lockVersion>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/ImageElement.lockVersion.<get-lockVersion>|<get-lockVersion>(){}[0]
+        final fun <set-lockVersion>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/ImageElement.lockVersion.<set-lockVersion>|<set-lockVersion>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final var locked // io.github.valerioisufi.pageboard.model/ImageElement.locked|{}locked[0]
+        final fun <get-locked>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/ImageElement.locked.<get-locked>|<get-locked>(){}[0]
+        final fun <set-locked>(kotlin/Boolean) // io.github.valerioisufi.pageboard.model/ImageElement.locked.<set-locked>|<set-locked>(kotlin.Boolean){}[0]
     final var order // io.github.valerioisufi.pageboard.model/ImageElement.order|{}order[0]
         final fun <get-order>(): io.github.valerioisufi.pageboard.model/ElementOrder // io.github.valerioisufi.pageboard.model/ImageElement.order.<get-order>|<get-order>(){}[0]
         final fun <set-order>(io.github.valerioisufi.pageboard.model/ElementOrder) // io.github.valerioisufi.pageboard.model/ImageElement.order.<set-order>|<set-order>(io.github.valerioisufi.pageboard.model.ElementOrder){}[0]
@@ -3221,6 +3443,8 @@ final class io.github.valerioisufi.pageboard.model/Page { // io.github.valeriois
         final fun <get-pdfs>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/PdfElement> // io.github.valerioisufi.pageboard.model/Page.pdfs.<get-pdfs>|<get-pdfs>(){}[0]
     final val removedElements // io.github.valerioisufi.pageboard.model/Page.removedElements|{}removedElements[0]
         final fun <get-removedElements>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageElement> // io.github.valerioisufi.pageboard.model/Page.removedElements.<get-removedElements>|<get-removedElements>(){}[0]
+    final val removedLayers // io.github.valerioisufi.pageboard.model/Page.removedLayers|{}removedLayers[0]
+        final fun <get-removedLayers>(): kotlin.collections/MutableMap<kotlin/String, io.github.valerioisufi.pageboard.model/PageLayer> // io.github.valerioisufi.pageboard.model/Page.removedLayers.<get-removedLayers>|<get-removedLayers>(){}[0]
     final val renderKey // io.github.valerioisufi.pageboard.model/Page.renderKey|{}renderKey[0]
         final fun <get-renderKey>(): kotlin/Long // io.github.valerioisufi.pageboard.model/Page.renderKey.<get-renderKey>|<get-renderKey>(){}[0]
     final val stack // io.github.valerioisufi.pageboard.model/Page.stack|{}stack[0]
@@ -3253,6 +3477,8 @@ final class io.github.valerioisufi.pageboard.model/Page { // io.github.valeriois
     final var index // io.github.valerioisufi.pageboard.model/Page.index|{}index[0]
         final fun <get-index>(): kotlin/Int // io.github.valerioisufi.pageboard.model/Page.index.<get-index>|<get-index>(){}[0]
         final fun <set-index>(kotlin/Int) // io.github.valerioisufi.pageboard.model/Page.index.<set-index>|<set-index>(kotlin.Int){}[0]
+    final var layers // io.github.valerioisufi.pageboard.model/Page.layers|{}layers[0]
+        final fun <get-layers>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageLayer> // io.github.valerioisufi.pageboard.model/Page.layers.<get-layers>|<get-layers>(){}[0]
     final var orderKey // io.github.valerioisufi.pageboard.model/Page.orderKey|{}orderKey[0]
         final fun <get-orderKey>(): kotlin/String // io.github.valerioisufi.pageboard.model/Page.orderKey.<get-orderKey>|<get-orderKey>(){}[0]
         final fun <set-orderKey>(kotlin/String) // io.github.valerioisufi.pageboard.model/Page.orderKey.<set-orderKey>|<set-orderKey>(kotlin.String){}[0]
@@ -3270,10 +3496,17 @@ final class io.github.valerioisufi.pageboard.model/Page { // io.github.valeriois
         final fun <set-widthMm>(kotlin/Float) // io.github.valerioisufi.pageboard.model/Page.widthMm.<set-widthMm>|<set-widthMm>(kotlin.Float){}[0]
 
     final fun add(io.github.valerioisufi.pageboard.model/PageElement) // io.github.valerioisufi.pageboard.model/Page.add|add(io.github.valerioisufi.pageboard.model.PageElement){}[0]
+    final fun allLayers(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageLayer> // io.github.valerioisufi.pageboard.model/Page.allLayers|allLayers(){}[0]
     final fun boundsOf(io.github.valerioisufi.pageboard.model/PageElement): io.github.valerioisufi.pageboard.model.geometry/Rect? // io.github.valerioisufi.pageboard.model/Page.boundsOf|boundsOf(io.github.valerioisufi.pageboard.model.PageElement){}[0]
     final fun elements(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageElement> // io.github.valerioisufi.pageboard.model/Page.elements|elements(){}[0]
     final fun find(kotlin/String): io.github.valerioisufi.pageboard.model/PageElement? // io.github.valerioisufi.pageboard.model/Page.find|find(kotlin.String){}[0]
+    final fun findLayer(kotlin/String): io.github.valerioisufi.pageboard.model/PageLayer? // io.github.valerioisufi.pageboard.model/Page.findLayer|findLayer(kotlin.String){}[0]
+    final fun isElementLocked(io.github.valerioisufi.pageboard.model/PageElement): kotlin/Boolean // io.github.valerioisufi.pageboard.model/Page.isElementLocked|isElementLocked(io.github.valerioisufi.pageboard.model.PageElement){}[0]
+    final fun isElementVisible(io.github.valerioisufi.pageboard.model/PageElement): kotlin/Boolean // io.github.valerioisufi.pageboard.model/Page.isElementVisible|isElementVisible(io.github.valerioisufi.pageboard.model.PageElement){}[0]
+    final fun layerOrderKeyAt(kotlin/Int): kotlin/String // io.github.valerioisufi.pageboard.model/Page.layerOrderKeyAt|layerOrderKeyAt(kotlin.Int){}[0]
     final fun load(kotlin.collections/Collection<io.github.valerioisufi.pageboard.model/PageElement>, kotlin.collections/Collection<io.github.valerioisufi.pageboard.model/PageElement> = ...) // io.github.valerioisufi.pageboard.model/Page.load|load(kotlin.collections.Collection<io.github.valerioisufi.pageboard.model.PageElement>;kotlin.collections.Collection<io.github.valerioisufi.pageboard.model.PageElement>){}[0]
+    final fun loadLayers(kotlin.collections/Collection<io.github.valerioisufi.pageboard.model/PageLayer>) // io.github.valerioisufi.pageboard.model/Page.loadLayers|loadLayers(kotlin.collections.Collection<io.github.valerioisufi.pageboard.model.PageLayer>){}[0]
+    final fun putLayer(io.github.valerioisufi.pageboard.model/PageLayer) // io.github.valerioisufi.pageboard.model/Page.putLayer|putLayer(io.github.valerioisufi.pageboard.model.PageLayer){}[0]
     final fun rect(): io.github.valerioisufi.pageboard.model.geometry/Rect // io.github.valerioisufi.pageboard.model/Page.rect|rect(){}[0]
     final fun remove(io.github.valerioisufi.pageboard.model/PageElement): kotlin/Int // io.github.valerioisufi.pageboard.model/Page.remove|remove(io.github.valerioisufi.pageboard.model.PageElement){}[0]
     final fun snapshotContent(): io.github.valerioisufi.pageboard.model/PageContentSnapshot // io.github.valerioisufi.pageboard.model/Page.snapshotContent|snapshotContent(){}[0]
@@ -3285,7 +3518,7 @@ final class io.github.valerioisufi.pageboard.model/Page { // io.github.valeriois
 }
 
 final class io.github.valerioisufi.pageboard.model/PageContentSnapshot { // io.github.valerioisufi.pageboard.model/PageContentSnapshot|null[0]
-    constructor <init>(kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokeElement>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/TextElement>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/ImageElement>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/PdfElement>, io.github.valerioisufi.pageboard.model/PageBackground, kotlin/Float, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.pageboard.model/TextMarkupElement> = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/CustomElement> = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageElement>? = ...) // io.github.valerioisufi.pageboard.model/PageContentSnapshot.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokeElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.TextElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.ImageElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.PdfElement>;io.github.valerioisufi.pageboard.model.PageBackground;kotlin.Float;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.pageboard.model.TextMarkupElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.CustomElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.PageElement>?){}[0]
+    constructor <init>(kotlin.collections/List<io.github.valerioisufi.pageboard.model/StrokeElement>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/TextElement>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/ImageElement>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/PdfElement>, io.github.valerioisufi.pageboard.model/PageBackground, kotlin/Float, kotlin/Float, kotlin.collections/List<io.github.valerioisufi.pageboard.model/TextMarkupElement> = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/CustomElement> = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageElement>? = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageLayer> = ...) // io.github.valerioisufi.pageboard.model/PageContentSnapshot.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.pageboard.model.StrokeElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.TextElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.ImageElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.PdfElement>;io.github.valerioisufi.pageboard.model.PageBackground;kotlin.Float;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.pageboard.model.TextMarkupElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.CustomElement>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.PageElement>?;kotlin.collections.List<io.github.valerioisufi.pageboard.model.PageLayer>){}[0]
 
     final val background // io.github.valerioisufi.pageboard.model/PageContentSnapshot.background|{}background[0]
         final fun <get-background>(): io.github.valerioisufi.pageboard.model/PageBackground // io.github.valerioisufi.pageboard.model/PageContentSnapshot.background.<get-background>|<get-background>(){}[0]
@@ -3295,6 +3528,8 @@ final class io.github.valerioisufi.pageboard.model/PageContentSnapshot { // io.g
         final fun <get-heightMm>(): kotlin/Float // io.github.valerioisufi.pageboard.model/PageContentSnapshot.heightMm.<get-heightMm>|<get-heightMm>(){}[0]
     final val images // io.github.valerioisufi.pageboard.model/PageContentSnapshot.images|{}images[0]
         final fun <get-images>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/ImageElement> // io.github.valerioisufi.pageboard.model/PageContentSnapshot.images.<get-images>|<get-images>(){}[0]
+    final val layers // io.github.valerioisufi.pageboard.model/PageContentSnapshot.layers|{}layers[0]
+        final fun <get-layers>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/PageLayer> // io.github.valerioisufi.pageboard.model/PageContentSnapshot.layers.<get-layers>|<get-layers>(){}[0]
     final val markups // io.github.valerioisufi.pageboard.model/PageContentSnapshot.markups|{}markups[0]
         final fun <get-markups>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/TextMarkupElement> // io.github.valerioisufi.pageboard.model/PageContentSnapshot.markups.<get-markups>|<get-markups>(){}[0]
     final val paintOrder // io.github.valerioisufi.pageboard.model/PageContentSnapshot.paintOrder|{}paintOrder[0]
@@ -3314,6 +3549,94 @@ final class io.github.valerioisufi.pageboard.model/PageContentSnapshot { // io.g
     final fun rect(): io.github.valerioisufi.pageboard.model.geometry/Rect // io.github.valerioisufi.pageboard.model/PageContentSnapshot.rect|rect(){}[0]
 }
 
+final class io.github.valerioisufi.pageboard.model/PageLayer { // io.github.valerioisufi.pageboard.model/PageLayer|null[0]
+    constructor <init>(kotlin/String = ..., kotlin/String = ..., kotlin/String = ..., kotlin/Boolean = ..., kotlin/Boolean = ...) // io.github.valerioisufi.pageboard.model/PageLayer.<init>|<init>(kotlin.String;kotlin.String;kotlin.String;kotlin.Boolean;kotlin.Boolean){}[0]
+
+    final val id // io.github.valerioisufi.pageboard.model/PageLayer.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.model/PageLayer.id.<get-id>|<get-id>(){}[0]
+    final val isRemoved // io.github.valerioisufi.pageboard.model/PageLayer.isRemoved|{}isRemoved[0]
+        final fun <get-isRemoved>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PageLayer.isRemoved.<get-isRemoved>|<get-isRemoved>(){}[0]
+
+    final var added // io.github.valerioisufi.pageboard.model/PageLayer.added|{}added[0]
+        final fun <get-added>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/PageLayer.added.<get-added>|<get-added>(){}[0]
+        final fun <set-added>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/PageLayer.added.<set-added>|<set-added>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final var locked // io.github.valerioisufi.pageboard.model/PageLayer.locked|{}locked[0]
+        final fun <get-locked>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PageLayer.locked.<get-locked>|<get-locked>(){}[0]
+        final fun <set-locked>(kotlin/Boolean) // io.github.valerioisufi.pageboard.model/PageLayer.locked.<set-locked>|<set-locked>(kotlin.Boolean){}[0]
+    final var name // io.github.valerioisufi.pageboard.model/PageLayer.name|{}name[0]
+        final fun <get-name>(): kotlin/String // io.github.valerioisufi.pageboard.model/PageLayer.name.<get-name>|<get-name>(){}[0]
+        final fun <set-name>(kotlin/String) // io.github.valerioisufi.pageboard.model/PageLayer.name.<set-name>|<set-name>(kotlin.String){}[0]
+    final var orderKey // io.github.valerioisufi.pageboard.model/PageLayer.orderKey|{}orderKey[0]
+        final fun <get-orderKey>(): kotlin/String // io.github.valerioisufi.pageboard.model/PageLayer.orderKey.<get-orderKey>|<get-orderKey>(){}[0]
+        final fun <set-orderKey>(kotlin/String) // io.github.valerioisufi.pageboard.model/PageLayer.orderKey.<set-orderKey>|<set-orderKey>(kotlin.String){}[0]
+    final var removed // io.github.valerioisufi.pageboard.model/PageLayer.removed|{}removed[0]
+        final fun <get-removed>(): io.github.valerioisufi.pageboard.model/Stamp? // io.github.valerioisufi.pageboard.model/PageLayer.removed.<get-removed>|<get-removed>(){}[0]
+        final fun <set-removed>(io.github.valerioisufi.pageboard.model/Stamp?) // io.github.valerioisufi.pageboard.model/PageLayer.removed.<set-removed>|<set-removed>(io.github.valerioisufi.pageboard.model.Stamp?){}[0]
+    final var updated // io.github.valerioisufi.pageboard.model/PageLayer.updated|{}updated[0]
+        final fun <get-updated>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/PageLayer.updated.<get-updated>|<get-updated>(){}[0]
+        final fun <set-updated>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/PageLayer.updated.<set-updated>|<set-updated>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final var visible // io.github.valerioisufi.pageboard.model/PageLayer.visible|{}visible[0]
+        final fun <get-visible>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PageLayer.visible.<get-visible>|<get-visible>(){}[0]
+        final fun <set-visible>(kotlin/Boolean) // io.github.valerioisufi.pageboard.model/PageLayer.visible.<set-visible>|<set-visible>(kotlin.Boolean){}[0]
+
+    final fun toData(): io.github.valerioisufi.pageboard.model/PageLayerData // io.github.valerioisufi.pageboard.model/PageLayer.toData|toData(){}[0]
+
+    final object Companion { // io.github.valerioisufi.pageboard.model/PageLayer.Companion|null[0]
+        final const val MAX_LAYERS_PER_PAGE // io.github.valerioisufi.pageboard.model/PageLayer.Companion.MAX_LAYERS_PER_PAGE|{}MAX_LAYERS_PER_PAGE[0]
+            final fun <get-MAX_LAYERS_PER_PAGE>(): kotlin/Int // io.github.valerioisufi.pageboard.model/PageLayer.Companion.MAX_LAYERS_PER_PAGE.<get-MAX_LAYERS_PER_PAGE>|<get-MAX_LAYERS_PER_PAGE>(){}[0]
+        final const val MAX_NAME_LENGTH // io.github.valerioisufi.pageboard.model/PageLayer.Companion.MAX_NAME_LENGTH|{}MAX_NAME_LENGTH[0]
+            final fun <get-MAX_NAME_LENGTH>(): kotlin/Int // io.github.valerioisufi.pageboard.model/PageLayer.Companion.MAX_NAME_LENGTH.<get-MAX_NAME_LENGTH>|<get-MAX_NAME_LENGTH>(){}[0]
+
+        final val order // io.github.valerioisufi.pageboard.model/PageLayer.Companion.order|{}order[0]
+            final fun <get-order>(): kotlin/Comparator<io.github.valerioisufi.pageboard.model/PageLayer> // io.github.valerioisufi.pageboard.model/PageLayer.Companion.order.<get-order>|<get-order>(){}[0]
+    }
+}
+
+final class io.github.valerioisufi.pageboard.model/PageLayerData { // io.github.valerioisufi.pageboard.model/PageLayerData|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String, kotlin/Boolean = ..., kotlin/Boolean = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp? = ..., io.github.valerioisufi.pageboard.model/Stamp = ...) // io.github.valerioisufi.pageboard.model/PageLayerData.<init>|<init>(kotlin.String;kotlin.String;kotlin.String;kotlin.Boolean;kotlin.Boolean;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp?;io.github.valerioisufi.pageboard.model.Stamp){}[0]
+
+    final val added // io.github.valerioisufi.pageboard.model/PageLayerData.added|{}added[0]
+        final fun <get-added>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/PageLayerData.added.<get-added>|<get-added>(){}[0]
+    final val id // io.github.valerioisufi.pageboard.model/PageLayerData.id|{}id[0]
+        final fun <get-id>(): kotlin/String // io.github.valerioisufi.pageboard.model/PageLayerData.id.<get-id>|<get-id>(){}[0]
+    final val locked // io.github.valerioisufi.pageboard.model/PageLayerData.locked|{}locked[0]
+        final fun <get-locked>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PageLayerData.locked.<get-locked>|<get-locked>(){}[0]
+    final val name // io.github.valerioisufi.pageboard.model/PageLayerData.name|{}name[0]
+        final fun <get-name>(): kotlin/String // io.github.valerioisufi.pageboard.model/PageLayerData.name.<get-name>|<get-name>(){}[0]
+    final val orderKey // io.github.valerioisufi.pageboard.model/PageLayerData.orderKey|{}orderKey[0]
+        final fun <get-orderKey>(): kotlin/String // io.github.valerioisufi.pageboard.model/PageLayerData.orderKey.<get-orderKey>|<get-orderKey>(){}[0]
+    final val removed // io.github.valerioisufi.pageboard.model/PageLayerData.removed|{}removed[0]
+        final fun <get-removed>(): io.github.valerioisufi.pageboard.model/Stamp? // io.github.valerioisufi.pageboard.model/PageLayerData.removed.<get-removed>|<get-removed>(){}[0]
+    final val updated // io.github.valerioisufi.pageboard.model/PageLayerData.updated|{}updated[0]
+        final fun <get-updated>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/PageLayerData.updated.<get-updated>|<get-updated>(){}[0]
+    final val visible // io.github.valerioisufi.pageboard.model/PageLayerData.visible|{}visible[0]
+        final fun <get-visible>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PageLayerData.visible.<get-visible>|<get-visible>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.model/PageLayerData.component1|component1(){}[0]
+    final fun component2(): kotlin/String // io.github.valerioisufi.pageboard.model/PageLayerData.component2|component2(){}[0]
+    final fun component3(): kotlin/String // io.github.valerioisufi.pageboard.model/PageLayerData.component3|component3(){}[0]
+    final fun component4(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PageLayerData.component4|component4(){}[0]
+    final fun component5(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PageLayerData.component5|component5(){}[0]
+    final fun component6(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/PageLayerData.component6|component6(){}[0]
+    final fun component7(): io.github.valerioisufi.pageboard.model/Stamp? // io.github.valerioisufi.pageboard.model/PageLayerData.component7|component7(){}[0]
+    final fun component8(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/PageLayerData.component8|component8(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., io.github.valerioisufi.pageboard.model/Stamp = ..., io.github.valerioisufi.pageboard.model/Stamp? = ..., io.github.valerioisufi.pageboard.model/Stamp = ...): io.github.valerioisufi.pageboard.model/PageLayerData // io.github.valerioisufi.pageboard.model/PageLayerData.copy|copy(kotlin.String;kotlin.String;kotlin.String;kotlin.Boolean;kotlin.Boolean;io.github.valerioisufi.pageboard.model.Stamp;io.github.valerioisufi.pageboard.model.Stamp?;io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PageLayerData.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model/PageLayerData.hashCode|hashCode(){}[0]
+    final fun isValid(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PageLayerData.isValid|isValid(){}[0]
+    final fun toLayer(): io.github.valerioisufi.pageboard.model/PageLayer // io.github.valerioisufi.pageboard.model/PageLayerData.toLayer|toLayer(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model/PageLayerData.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.pageboard.model/PageLayerData> { // io.github.valerioisufi.pageboard.model/PageLayerData.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.pageboard.model/PageLayerData.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.pageboard.model/PageLayerData.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.pageboard.model/PageLayerData.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.pageboard.model/PageLayerData // io.github.valerioisufi.pageboard.model/PageLayerData.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.pageboard.model/PageLayerData) // io.github.valerioisufi.pageboard.model/PageLayerData.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.pageboard.model.PageLayerData){}[0]
+    }
+}
+
 final class io.github.valerioisufi.pageboard.model/PdfElement : io.github.valerioisufi.pageboard.model/PageElement { // io.github.valerioisufi.pageboard.model/PdfElement|null[0]
     constructor <init>(kotlin/Int = ..., kotlin/String = ...) // io.github.valerioisufi.pageboard.model/PdfElement.<init>|<init>(kotlin.Int;kotlin.String){}[0]
 
@@ -3323,6 +3646,18 @@ final class io.github.valerioisufi.pageboard.model/PdfElement : io.github.valeri
     final var added // io.github.valerioisufi.pageboard.model/PdfElement.added|{}added[0]
         final fun <get-added>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/PdfElement.added.<get-added>|<get-added>(){}[0]
         final fun <set-added>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/PdfElement.added.<set-added>|<set-added>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final var layerId // io.github.valerioisufi.pageboard.model/PdfElement.layerId|{}layerId[0]
+        final fun <get-layerId>(): kotlin/String? // io.github.valerioisufi.pageboard.model/PdfElement.layerId.<get-layerId>|<get-layerId>(){}[0]
+        final fun <set-layerId>(kotlin/String?) // io.github.valerioisufi.pageboard.model/PdfElement.layerId.<set-layerId>|<set-layerId>(kotlin.String?){}[0]
+    final var layerVersion // io.github.valerioisufi.pageboard.model/PdfElement.layerVersion|{}layerVersion[0]
+        final fun <get-layerVersion>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/PdfElement.layerVersion.<get-layerVersion>|<get-layerVersion>(){}[0]
+        final fun <set-layerVersion>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/PdfElement.layerVersion.<set-layerVersion>|<set-layerVersion>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final var lockVersion // io.github.valerioisufi.pageboard.model/PdfElement.lockVersion|{}lockVersion[0]
+        final fun <get-lockVersion>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/PdfElement.lockVersion.<get-lockVersion>|<get-lockVersion>(){}[0]
+        final fun <set-lockVersion>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/PdfElement.lockVersion.<set-lockVersion>|<set-lockVersion>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final var locked // io.github.valerioisufi.pageboard.model/PdfElement.locked|{}locked[0]
+        final fun <get-locked>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/PdfElement.locked.<get-locked>|<get-locked>(){}[0]
+        final fun <set-locked>(kotlin/Boolean) // io.github.valerioisufi.pageboard.model/PdfElement.locked.<set-locked>|<set-locked>(kotlin.Boolean){}[0]
     final var order // io.github.valerioisufi.pageboard.model/PdfElement.order|{}order[0]
         final fun <get-order>(): io.github.valerioisufi.pageboard.model/ElementOrder // io.github.valerioisufi.pageboard.model/PdfElement.order.<get-order>|<get-order>(){}[0]
         final fun <set-order>(io.github.valerioisufi.pageboard.model/ElementOrder) // io.github.valerioisufi.pageboard.model/PdfElement.order.<set-order>|<set-order>(io.github.valerioisufi.pageboard.model.ElementOrder){}[0]
@@ -3478,6 +3813,18 @@ final class io.github.valerioisufi.pageboard.model/StrokeElement : io.github.val
         final fun <get-bounds>(): io.github.valerioisufi.pageboard.model.geometry/Rect // io.github.valerioisufi.pageboard.model/StrokeElement.bounds.<get-bounds>|<get-bounds>(){}[0]
     final var brushConfig // io.github.valerioisufi.pageboard.model/StrokeElement.brushConfig|{}brushConfig[0]
         final fun <get-brushConfig>(): io.github.valerioisufi.pageboard.model/BrushConfig // io.github.valerioisufi.pageboard.model/StrokeElement.brushConfig.<get-brushConfig>|<get-brushConfig>(){}[0]
+    final var layerId // io.github.valerioisufi.pageboard.model/StrokeElement.layerId|{}layerId[0]
+        final fun <get-layerId>(): kotlin/String? // io.github.valerioisufi.pageboard.model/StrokeElement.layerId.<get-layerId>|<get-layerId>(){}[0]
+        final fun <set-layerId>(kotlin/String?) // io.github.valerioisufi.pageboard.model/StrokeElement.layerId.<set-layerId>|<set-layerId>(kotlin.String?){}[0]
+    final var layerVersion // io.github.valerioisufi.pageboard.model/StrokeElement.layerVersion|{}layerVersion[0]
+        final fun <get-layerVersion>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/StrokeElement.layerVersion.<get-layerVersion>|<get-layerVersion>(){}[0]
+        final fun <set-layerVersion>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/StrokeElement.layerVersion.<set-layerVersion>|<set-layerVersion>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final var lockVersion // io.github.valerioisufi.pageboard.model/StrokeElement.lockVersion|{}lockVersion[0]
+        final fun <get-lockVersion>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/StrokeElement.lockVersion.<get-lockVersion>|<get-lockVersion>(){}[0]
+        final fun <set-lockVersion>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/StrokeElement.lockVersion.<set-lockVersion>|<set-lockVersion>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final var locked // io.github.valerioisufi.pageboard.model/StrokeElement.locked|{}locked[0]
+        final fun <get-locked>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/StrokeElement.locked.<get-locked>|<get-locked>(){}[0]
+        final fun <set-locked>(kotlin/Boolean) // io.github.valerioisufi.pageboard.model/StrokeElement.locked.<set-locked>|<set-locked>(kotlin.Boolean){}[0]
     final var mesh // io.github.valerioisufi.pageboard.model/StrokeElement.mesh|{}mesh[0]
         final fun <get-mesh>(): io.github.valerioisufi.pageboard.model/StrokeMesh // io.github.valerioisufi.pageboard.model/StrokeElement.mesh.<get-mesh>|<get-mesh>(){}[0]
     final var order // io.github.valerioisufi.pageboard.model/StrokeElement.order|{}order[0]
@@ -3631,6 +3978,18 @@ final class io.github.valerioisufi.pageboard.model/TextElement : io.github.valer
     final var height // io.github.valerioisufi.pageboard.model/TextElement.height|{}height[0]
         final fun <get-height>(): kotlin/Float // io.github.valerioisufi.pageboard.model/TextElement.height.<get-height>|<get-height>(){}[0]
         final fun <set-height>(kotlin/Float) // io.github.valerioisufi.pageboard.model/TextElement.height.<set-height>|<set-height>(kotlin.Float){}[0]
+    final var layerId // io.github.valerioisufi.pageboard.model/TextElement.layerId|{}layerId[0]
+        final fun <get-layerId>(): kotlin/String? // io.github.valerioisufi.pageboard.model/TextElement.layerId.<get-layerId>|<get-layerId>(){}[0]
+        final fun <set-layerId>(kotlin/String?) // io.github.valerioisufi.pageboard.model/TextElement.layerId.<set-layerId>|<set-layerId>(kotlin.String?){}[0]
+    final var layerVersion // io.github.valerioisufi.pageboard.model/TextElement.layerVersion|{}layerVersion[0]
+        final fun <get-layerVersion>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/TextElement.layerVersion.<get-layerVersion>|<get-layerVersion>(){}[0]
+        final fun <set-layerVersion>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/TextElement.layerVersion.<set-layerVersion>|<set-layerVersion>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final var lockVersion // io.github.valerioisufi.pageboard.model/TextElement.lockVersion|{}lockVersion[0]
+        final fun <get-lockVersion>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/TextElement.lockVersion.<get-lockVersion>|<get-lockVersion>(){}[0]
+        final fun <set-lockVersion>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/TextElement.lockVersion.<set-lockVersion>|<set-lockVersion>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final var locked // io.github.valerioisufi.pageboard.model/TextElement.locked|{}locked[0]
+        final fun <get-locked>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/TextElement.locked.<get-locked>|<get-locked>(){}[0]
+        final fun <set-locked>(kotlin/Boolean) // io.github.valerioisufi.pageboard.model/TextElement.locked.<set-locked>|<set-locked>(kotlin.Boolean){}[0]
     final var naturalWidth // io.github.valerioisufi.pageboard.model/TextElement.naturalWidth|{}naturalWidth[0]
         final fun <get-naturalWidth>(): kotlin/Float // io.github.valerioisufi.pageboard.model/TextElement.naturalWidth.<get-naturalWidth>|<get-naturalWidth>(){}[0]
         final fun <set-naturalWidth>(kotlin/Float) // io.github.valerioisufi.pageboard.model/TextElement.naturalWidth.<set-naturalWidth>|<set-naturalWidth>(kotlin.Float){}[0]
@@ -3714,6 +4073,18 @@ final class io.github.valerioisufi.pageboard.model/TextMarkupElement : io.github
     final var kind // io.github.valerioisufi.pageboard.model/TextMarkupElement.kind|{}kind[0]
         final fun <get-kind>(): io.github.valerioisufi.pageboard.model/TextMarkupKind // io.github.valerioisufi.pageboard.model/TextMarkupElement.kind.<get-kind>|<get-kind>(){}[0]
         final fun <set-kind>(io.github.valerioisufi.pageboard.model/TextMarkupKind) // io.github.valerioisufi.pageboard.model/TextMarkupElement.kind.<set-kind>|<set-kind>(io.github.valerioisufi.pageboard.model.TextMarkupKind){}[0]
+    final var layerId // io.github.valerioisufi.pageboard.model/TextMarkupElement.layerId|{}layerId[0]
+        final fun <get-layerId>(): kotlin/String? // io.github.valerioisufi.pageboard.model/TextMarkupElement.layerId.<get-layerId>|<get-layerId>(){}[0]
+        final fun <set-layerId>(kotlin/String?) // io.github.valerioisufi.pageboard.model/TextMarkupElement.layerId.<set-layerId>|<set-layerId>(kotlin.String?){}[0]
+    final var layerVersion // io.github.valerioisufi.pageboard.model/TextMarkupElement.layerVersion|{}layerVersion[0]
+        final fun <get-layerVersion>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/TextMarkupElement.layerVersion.<get-layerVersion>|<get-layerVersion>(){}[0]
+        final fun <set-layerVersion>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/TextMarkupElement.layerVersion.<set-layerVersion>|<set-layerVersion>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final var lockVersion // io.github.valerioisufi.pageboard.model/TextMarkupElement.lockVersion|{}lockVersion[0]
+        final fun <get-lockVersion>(): io.github.valerioisufi.pageboard.model/Stamp // io.github.valerioisufi.pageboard.model/TextMarkupElement.lockVersion.<get-lockVersion>|<get-lockVersion>(){}[0]
+        final fun <set-lockVersion>(io.github.valerioisufi.pageboard.model/Stamp) // io.github.valerioisufi.pageboard.model/TextMarkupElement.lockVersion.<set-lockVersion>|<set-lockVersion>(io.github.valerioisufi.pageboard.model.Stamp){}[0]
+    final var locked // io.github.valerioisufi.pageboard.model/TextMarkupElement.locked|{}locked[0]
+        final fun <get-locked>(): kotlin/Boolean // io.github.valerioisufi.pageboard.model/TextMarkupElement.locked.<get-locked>|<get-locked>(){}[0]
+        final fun <set-locked>(kotlin/Boolean) // io.github.valerioisufi.pageboard.model/TextMarkupElement.locked.<set-locked>|<set-locked>(kotlin.Boolean){}[0]
     final var order // io.github.valerioisufi.pageboard.model/TextMarkupElement.order|{}order[0]
         final fun <get-order>(): io.github.valerioisufi.pageboard.model/ElementOrder // io.github.valerioisufi.pageboard.model/TextMarkupElement.order.<get-order>|<get-order>(){}[0]
         final fun <set-order>(io.github.valerioisufi.pageboard.model/ElementOrder) // io.github.valerioisufi.pageboard.model/TextMarkupElement.order.<set-order>|<set-order>(io.github.valerioisufi.pageboard.model.ElementOrder){}[0]
@@ -4300,6 +4671,7 @@ final object io.github.valerioisufi.pageboard.model.text/TextSymbols { // io.git
 final object io.github.valerioisufi.pageboard.model/FractionalIndex { // io.github.valerioisufi.pageboard.model/FractionalIndex|null[0]
     final fun after(kotlin/String?, kotlin/Int): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.model/FractionalIndex.after|after(kotlin.String?;kotlin.Int){}[0]
     final fun between(kotlin/String?, kotlin/String?): kotlin/String // io.github.valerioisufi.pageboard.model/FractionalIndex.between|between(kotlin.String?;kotlin.String?){}[0]
+    final fun isValidKey(kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.model/FractionalIndex.isValidKey|isValidKey(kotlin.String){}[0]
     final fun reorder(kotlin.collections/List<kotlin/String>): kotlin.collections/Map<kotlin/Int, kotlin/String> // io.github.valerioisufi.pageboard.model/FractionalIndex.reorder|reorder(kotlin.collections.List<kotlin.String>){}[0]
 }
 

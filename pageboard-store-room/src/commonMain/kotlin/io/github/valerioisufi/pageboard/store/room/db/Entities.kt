@@ -96,6 +96,33 @@ internal data class PageEntity(
 )
 
 /**
+ * Per-page organizational layer (`PageLayer`): ordering key, visibility, lock protection and CRDT stamps.
+ */
+@Entity(
+    tableName = "page_layers",
+    foreignKeys = [
+        ForeignKey(
+            entity = PageEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["pageId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index("pageId")]
+)
+internal data class PageLayerEntity(
+    @PrimaryKey val id: String,
+    val pageId: String,
+    val name: String,
+    val orderKey: String,
+    val visible: Boolean = true,
+    val locked: Boolean = false,
+    val added: Stamp = Stamp.ZERO,
+    val removed: Stamp? = null,
+    val updated: Stamp = Stamp.ZERO
+)
+
+/**
  * EXCLUSIVE table for Strokes: the inputs and the brush the stroke was drawn with (native binary
  * encoding, BLOB) and its placement on the page ([transform]).
  */
@@ -126,7 +153,11 @@ internal data class StrokeEntity(
     val placed: Stamp,
     /** The stamp of the last change of its order (see `PageElement.ordered`). */
     val ordered: Stamp,
-    val updated: Stamp
+    val updated: Stamp,
+    val locked: Boolean = false,
+    val lockVersion: Stamp = Stamp.ZERO,
+    val layerId: String? = null,
+    val layerVersion: Stamp = Stamp.ZERO
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -134,7 +165,8 @@ internal data class StrokeEntity(
         return id == other.id && pageId == other.pageId && orderKey == other.orderKey && color == other.color &&
             size == other.size && toolType == other.toolType && brushFamily == other.brushFamily &&
             inputs.contentEquals(other.inputs) && transform == other.transform && added == other.added &&
-            removed == other.removed && placed == other.placed && ordered == other.ordered && updated == other.updated
+            removed == other.removed && placed == other.placed && ordered == other.ordered && updated == other.updated &&
+            locked == other.locked && lockVersion == other.lockVersion && layerId == other.layerId && layerVersion == other.layerVersion
     }
 
     override fun hashCode(): Int {
@@ -146,6 +178,10 @@ internal data class StrokeEntity(
         result = 31 * result + (removed?.hashCode() ?: 0)
         result = 31 * result + placed.hashCode()
         result = 31 * result + updated.hashCode()
+        result = 31 * result + locked.hashCode()
+        result = 31 * result + lockVersion.hashCode()
+        result = 31 * result + (layerId?.hashCode() ?: 0)
+        result = 31 * result + layerVersion.hashCode()
         return result
     }
 }
@@ -191,7 +227,11 @@ internal data class TextEntity(
     /** The stamp of the last change of its order (see `PageElement.ordered`). */
     val ordered: Stamp,
     val updated: Stamp,
-    val contentVersions: Versions = Versions.NONE
+    val contentVersions: Versions = Versions.NONE,
+    val locked: Boolean = false,
+    val lockVersion: Stamp = Stamp.ZERO,
+    val layerId: String? = null,
+    val layerVersion: Stamp = Stamp.ZERO
 )
 
 @Entity(
@@ -221,7 +261,11 @@ internal data class ImageEntity(
     val placed: Stamp,
     /** The stamp of the last change of its order (see `PageElement.ordered`). */
     val ordered: Stamp,
-    val updated: Stamp
+    val updated: Stamp,
+    val locked: Boolean = false,
+    val lockVersion: Stamp = Stamp.ZERO,
+    val layerId: String? = null,
+    val layerVersion: Stamp = Stamp.ZERO
 )
 
 /**
@@ -257,7 +301,11 @@ internal class CustomElementEntity(
     val placed: Stamp,
     /** The stamp of the last change of its order (see `PageElement.ordered`). */
     val ordered: Stamp,
-    val updated: Stamp
+    val updated: Stamp,
+    val locked: Boolean = false,
+    val lockVersion: Stamp = Stamp.ZERO,
+    val layerId: String? = null,
+    val layerVersion: Stamp = Stamp.ZERO
 )
 
 @Entity(
@@ -283,7 +331,11 @@ internal data class PdfEntity(
     val placed: Stamp,
     /** The stamp of the last change of its order (see `PageElement.ordered`). */
     val ordered: Stamp,
-    val updated: Stamp
+    val updated: Stamp,
+    val locked: Boolean = false,
+    val lockVersion: Stamp = Stamp.ZERO,
+    val layerId: String? = null,
+    val layerVersion: Stamp = Stamp.ZERO
 )
 
 /**
@@ -324,7 +376,11 @@ internal data class TextMarkupEntity(
     val placed: Stamp,
     /** The stamp of the last change of its order (see `PageElement.ordered`). */
     val ordered: Stamp,
-    val updated: Stamp
+    val updated: Stamp,
+    val locked: Boolean = false,
+    val lockVersion: Stamp = Stamp.ZERO,
+    val layerId: String? = null,
+    val layerVersion: Stamp = Stamp.ZERO
 )
 
 @Entity(

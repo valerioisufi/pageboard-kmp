@@ -5,14 +5,19 @@ import androidx.room.testing.MigrationTestHelper
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.execSQL
 import io.github.valerioisufi.pageboard.ink.InkStrokeModeller
+import io.github.valerioisufi.pageboard.model.PageLayerData
 import io.github.valerioisufi.pageboard.model.Stamp
 import io.github.valerioisufi.pageboard.model.change.AddElements
+import io.github.valerioisufi.pageboard.model.change.AssignElementsLayer
 import io.github.valerioisufi.pageboard.model.change.BoxPlacement
+import io.github.valerioisufi.pageboard.model.change.LockElements
 import io.github.valerioisufi.pageboard.model.change.OperationId
 import io.github.valerioisufi.pageboard.model.change.PlaceElements
 import io.github.valerioisufi.pageboard.model.change.TextData
 import io.github.valerioisufi.pageboard.model.change.TextPlacement
 import io.github.valerioisufi.pageboard.model.change.UpdateTexts
+import io.github.valerioisufi.pageboard.model.change.UpsertPageLayer
+import io.github.valerioisufi.pageboard.store.OpenDocuments
 import io.github.valerioisufi.pageboard.store.room.db.PAGEBOARD_DATABASE_MIGRATIONS
 import io.github.valerioisufi.pageboard.store.room.db.PageboardDatabase
 import io.github.valerioisufi.pageboard.store.room.db.Migration18To19
@@ -22,6 +27,7 @@ import io.github.valerioisufi.pageboard.store.room.db.Migration21To22
 import io.github.valerioisufi.pageboard.store.room.db.Migration22To23
 import io.github.valerioisufi.pageboard.store.room.db.Migration23To24
 import io.github.valerioisufi.pageboard.store.room.db.Migration24To25
+import io.github.valerioisufi.pageboard.store.room.db.Migration25To26
 import io.github.valerioisufi.pageboard.store.space.SpaceLibrary
 import io.github.valerioisufi.pageboard.store.room.db.createPageboardDatabase
 import io.github.valerioisufi.pageboard.store.room.repository.DocumentRepository
@@ -74,7 +80,7 @@ class PageboardDatabaseMigrationTest {
             )
         }
 
-        helper.runMigrationsAndValidate(25, PAGEBOARD_DATABASE_MIGRATIONS.toList()).close()
+        helper.runMigrationsAndValidate(26, PAGEBOARD_DATABASE_MIGRATIONS.toList()).close()
 
         val database = createPageboardDatabase(Room.databaseBuilder<PageboardDatabase>(databaseFile.toString()))
         try {
@@ -452,6 +458,59 @@ class PageboardDatabaseMigrationTest {
             assertEquals(setOf(notes.id, DOCUMENT), library.view(space.id).map { it.id }.toSet(), "shared on its own and in the space")
             assertEquals(listOf(space), store.spaces())
             library.stop()
+        } finally {
+            database.close()
+        }
+    }
+
+    @Test
+    fun version25ElementsMigrateUnlockedAndSupportLayersInVersion26() = runTest {
+        helper.createDatabase(25).use { connection ->
+            connection.execSQL(
+                "INSERT INTO documents (id, name, folderId, createdAt, modifiedAt, lastOpenedAt, defaultBackground, " +
+                    "defaultWidth, defaultHeight, defaultsVersion, titleVersion, trashedAt) VALUES ('$DOCUMENT', 'Lectures', NULL, " +
+                    "1, 2, NULL, '{\"type\":\"Solid\"}', 210.0, 297.0, '$STAMP', '$STAMP', NULL)"
+            )
+            connection.execSQL(
+                "INSERT INTO pages (id, documentId, orderKey, width, height, background, added, removed, orderVersion, " +
+                    "formatVersion, contentVersions, removalSaw) VALUES ('$PAGE', '$DOCUMENT', 'k', 210.0, 297.0, NULL, " +
+                    "'$STAMP', NULL, '$STAMP', '$STAMP', '', NULL)"
+            )
+            connection.execSQL(
+                "INSERT INTO texts (id, pageId, orderKey, text, x, y, width, rotation, color, fontSize, alignment, " +
+                    "autoWidth, background, next, continuesLine, added, removed, placed, ordered, updated, contentVersions) " +
+                    "VALUES ('t1', '$PAGE', '$STAMP/00000000', 'hello', 10.0, 10.0, 40.0, 0.0, -16777216, 16.0, 'START', " +
+                    "0, NULL, NULL, 0, '$STAMP', NULL, '$STAMP', '$STAMP', '$STAMP', '')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(26, listOf(Migration25To26)).close()
+
+        val database = createPageboardDatabase(Room.databaseBuilder<PageboardDatabase>(databaseFile.toString()))
+        try {
+            val store = RoomDocumentStore(database, InkStrokeModeller)
+            val loaded = assertNotNull(store.loadDocument(DOCUMENT))
+            val text = assertNotNull(loaded.pages.single().find("t1"))
+            assertFalse(text.locked)
+            assertNull(text.layerId)
+            assertEquals(Stamp.ZERO, text.lockVersion)
+            assertEquals(Stamp.ZERO, text.layerVersion)
+
+            val documents = OpenDocuments(store, kotlinx.coroutines.Dispatchers.Unconfined)
+            val open = assertNotNull(documents.open(DOCUMENT))
+            open.edit { session ->
+                session.submit(UpsertPageLayer(PAGE, PageLayerData("layer-bg", "Background", "V", visible = true, locked = false)))
+                session.submit(AssignElementsLayer(PAGE, listOf("t1"), "layer-bg"))
+                session.submit(LockElements(PAGE, listOf("t1"), true))
+            }
+            open.flush()
+
+            val reloaded = assertNotNull(store.loadDocument(DOCUMENT))
+            val reloadedPage = reloaded.pages.single()
+            assertEquals(listOf("layer-bg"), reloadedPage.layers.map { it.id })
+            val reloadedText = assertNotNull(reloadedPage.find("t1"))
+            assertTrue(reloadedText.locked)
+            assertEquals("layer-bg", reloadedText.layerId)
         } finally {
             database.close()
         }

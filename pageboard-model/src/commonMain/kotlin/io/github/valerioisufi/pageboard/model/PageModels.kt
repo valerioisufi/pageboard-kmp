@@ -62,6 +62,10 @@ public sealed interface PageElement {
     public var placed: Stamp
     public var ordered: Stamp
     public var updated: Stamp
+    public var locked: Boolean
+    public var lockVersion: Stamp
+    public var layerId: String?
+    public var layerVersion: Stamp
 }
 
 /**
@@ -87,6 +91,10 @@ public class StrokeElement(
     override var placed: Stamp = Stamp.ZERO
     override var ordered: Stamp = Stamp.ZERO
     override var updated: Stamp = Stamp.ZERO
+    @Volatile override var locked: Boolean = false
+    override var lockVersion: Stamp = Stamp.ZERO
+    @Volatile override var layerId: String? = null
+    override var layerVersion: Stamp = Stamp.ZERO
 
     /** Geometry of the stroke as it was drawn. */
     public val baseMesh: StrokeMesh = mesh
@@ -202,6 +210,10 @@ public class TextElement(override val id: String = newElementId()) : RotatableIt
     override var placed: Stamp = Stamp.ZERO
     override var ordered: Stamp = Stamp.ZERO
     override var updated: Stamp = Stamp.ZERO
+    @Volatile override var locked: Boolean = false
+    override var lockVersion: Stamp = Stamp.ZERO
+    @Volatile override var layerId: String? = null
+    override var layerVersion: Stamp = Stamp.ZERO
 
     /**
      * The changes of the content its content includes: two contents made apart are told apart
@@ -358,6 +370,8 @@ public class TextElement(override val id: String = newElementId()) : RotatableIt
         background = other.background
         next = other.next
         continuesLine = other.continuesLine
+        locked = other.locked
+        layerId = other.layerId
         markDirty()
     }
 }
@@ -378,6 +392,10 @@ public class ImageElement(override val id: String = newElementId()) : RotatableI
     override var placed: Stamp = Stamp.ZERO
     override var ordered: Stamp = Stamp.ZERO
     override var updated: Stamp = Stamp.ZERO
+    @Volatile override var locked: Boolean = false
+    override var lockVersion: Stamp = Stamp.ZERO
+    @Volatile override var layerId: String? = null
+    override var layerVersion: Stamp = Stamp.ZERO
     public var resourceId: String = ""
 
     @Volatile override var x: Float = 0f
@@ -412,6 +430,10 @@ public class CustomElement(
     override var placed: Stamp = Stamp.ZERO
     override var ordered: Stamp = Stamp.ZERO
     override var updated: Stamp = Stamp.ZERO
+    @Volatile override var locked: Boolean = false
+    override var lockVersion: Stamp = Stamp.ZERO
+    @Volatile override var layerId: String? = null
+    override var layerVersion: Stamp = Stamp.ZERO
 
     /** The format of [payload] ([ElementType.version] when it was written). */
     @Volatile public var version: Int = 1
@@ -435,6 +457,8 @@ public class CustomElement(
         it.width = width
         it.height = height
         it.rotation = rotation
+        it.locked = locked
+        it.layerId = layerId
     }
 }
 
@@ -454,6 +478,10 @@ public class PdfElement(public var pdfPageIndex: Int = 0, override val id: Strin
     override var placed: Stamp = Stamp.ZERO
     override var ordered: Stamp = Stamp.ZERO
     override var updated: Stamp = Stamp.ZERO
+    @Volatile override var locked: Boolean = false
+    override var lockVersion: Stamp = Stamp.ZERO
+    @Volatile override var layerId: String? = null
+    override var layerVersion: Stamp = Stamp.ZERO
     public var resourceId: String = ""
 }
 
@@ -554,9 +582,79 @@ public class Page(
     /** The elements of the kinds added by the applications ([ElementType]). */
     public val customElements: List<CustomElement> get() = content.customs
 
+    /** Per-page organizational layers sorted from bottom to top by [PageLayer.order]. */
+    @Volatile public var layers: List<PageLayer> = emptyList()
+        private set
+
+    /** Removed layers kept hidden for CRDT convergence and undo. */
+    public val removedLayers: MutableMap<String, PageLayer> = mutableMapOf()
+
+    /** Every layer on this page (shown and removed). */
+    public fun allLayers(): List<PageLayer> = layers + removedLayers.values
+
+    /** Finds a shown layer by [id], or `null`. */
+    public fun findLayer(id: String): PageLayer? = layers.firstOrNull { it.id == id }
+
+    internal fun findAnyLayer(id: String): PageLayer? = findLayer(id) ?: removedLayers[id]
+
+    /** Adds or updates [layer] among the live layers and refreshes the page stack. */
+    public fun putLayer(layer: PageLayer) {
+        removedLayers.remove(layer.id)
+        layer.removed = null
+        val updated = (layers.filter { it.id != layer.id } + layer).sortedWith(PageLayer.order)
+        layers = updated
+        content = content.copy(layers = updated)
+    }
+
+    /** Hides a removed [layer] into [removedLayers] and refreshes the page stack. */
+    internal fun hideLayer(layer: PageLayer) {
+        val updated = layers.filter { it.id != layer.id }
+        layers = updated
+        removedLayers[layer.id] = layer
+        content = content.copy(layers = updated)
+    }
+
+    /** Loads shown and removed [all] layers on this page (store initialization). */
+    public fun loadLayers(all: Collection<PageLayer>) {
+        removedLayers.clear()
+        val live = mutableListOf<PageLayer>()
+        for (layer in all) {
+            if (layer.removed != null) removedLayers[layer.id] = layer else live += layer
+        }
+        val sorted = live.sortedWith(PageLayer.order)
+        layers = sorted
+        content = content.copy(layers = sorted)
+    }
+
+    /** A fractional index key placing a new layer at [index] among [layers]. */
+    public fun layerOrderKeyAt(index: Int): String {
+        val before = layers.getOrNull(index - 1)?.orderKey
+        val after = layers.drop(index.coerceAtLeast(0)).firstOrNull { before == null || it.orderKey > before }?.orderKey
+        return FractionalIndex.between(before, after)
+    }
+
+    /** Whether [element] is visible according to its layer (unassigned or empty layers are always visible). */
+    public fun isElementVisible(element: PageElement): Boolean {
+        if (layers.isEmpty()) return true
+        val lid = element.layerId ?: return true
+        return findLayer(lid)?.visible != false
+    }
+
+    /** Whether [element] is locked directly or via a locked layer. */
+    public fun isElementLocked(element: PageElement): Boolean {
+        if (element.locked) return true
+        val lid = element.layerId ?: return false
+        return findLayer(lid)?.locked == true
+    }
+
+    internal fun refreshStack() {
+        content = content.copy(layers = layers)
+    }
+
     /**
      * The content of the page in its stack, from the bottom: the images, the elements of the
-     * applications, the texts and the strokes, by their order (see [stackOrder]). The PDF pages and
+     * applications, the texts and the strokes, by their order (see [stackOrder]), ordered and
+     * visibility-filtered by [layers] when layers are present. The PDF pages and
      * the marks of their text are under it, apart (the paper).
      */
     public val stack: List<PageElement> get() = content.stack
@@ -644,7 +742,8 @@ public class Page(
             images = images.sortedWith(stackOrder),
             pdfs = pdfs.sortedWith(stackOrder),
             markups = markups.sortedWith(stackOrder),
-            customs = customs.sortedWith(stackOrder)
+            customs = customs.sortedWith(stackOrder),
+            layers = c.layers
         )
         removed.forEach(::keepRemoved)
     }
@@ -730,7 +829,8 @@ public class Page(
             heightMm = heightMm,
             markups = c.markups,
             customs = c.customs,
-            stack = c.stack
+            stack = c.stack,
+            layers = layers
         )
     }
 
@@ -747,10 +847,11 @@ private data class PageElements(
     val images: List<ImageElement> = emptyList(),
     val pdfs: List<PdfElement> = emptyList(),
     val markups: List<TextMarkupElement> = emptyList(),
-    val customs: List<CustomElement> = emptyList()
+    val customs: List<CustomElement> = emptyList(),
+    val layers: List<PageLayer> = emptyList()
 ) {
     /** The content in its stack (see [Page.stack]), made once when it is read. */
-    val stack: List<PageElement> by lazy { stackOf(images, customs, texts, strokes) }
+    val stack: List<PageElement> by lazy { stackOf(images, customs, texts, strokes, layers) }
 }
 
 /** [images], [customs], [texts] and [strokes] (each in its order) as one stack (see [Page.stack]). */
@@ -758,8 +859,20 @@ private fun stackOf(
     images: List<ImageElement>,
     customs: List<CustomElement>,
     texts: List<TextElement>,
-    strokes: List<StrokeElement>
-): List<PageElement> = (images + customs + texts + strokes).sortedWith(Page.stackOrder)
+    strokes: List<StrokeElement>,
+    layers: List<PageLayer> = emptyList()
+): List<PageElement> {
+    val combined = images + customs + texts + strokes
+    if (layers.isEmpty()) return combined.sortedWith(Page.stackOrder)
+    val rank = HashMap<String, Int>(layers.size * 2)
+    layers.forEachIndexed { i, layer -> rank[layer.id] = if (layer.visible) i + 1 else -1 }
+    return combined
+        .filter { element ->
+            val lid = element.layerId
+            lid == null || rank[lid] != -1
+        }
+        .sortedWith(compareBy<PageElement>({ it.layerId?.let { id -> rank[id] } ?: 0 }, { it.order }, { it.id }))
+}
 
 /**
  * Immutable view of the content of a [Page].
@@ -776,12 +889,13 @@ public class PageContentSnapshot(
     /** The elements of the kinds added by the applications. */
     public val customs: List<CustomElement> = emptyList(),
     /** The content in its stack (see [Page.stack]); `null`: made from the lists of the kinds. */
-    stack: List<PageElement>? = null
+    stack: List<PageElement>? = null,
+    public val layers: List<PageLayer> = emptyList()
 ) {
     public fun rect(): Rect = Rect(0f, 0f, widthMm, heightMm)
 
     /** The content in its stack, from the bottom (see [Page.stack]). */
-    public val stack: List<PageElement> = stack ?: stackOf(images, customs, texts, strokes)
+    public val stack: List<PageElement> = stack ?: stackOf(images, customs, texts, strokes, layers)
 
     /**
      * The elements in the order they are painted, from the bottom: the PDF pages, the marks of
@@ -794,7 +908,13 @@ public class PageContentSnapshot(
      * place, this copy stays as it is (e.g. while a document is exported).
      */
     public fun detached(): PageContentSnapshot = PageContentSnapshot(
-        strokes = strokes.map { stroke -> StrokeElement(stroke.id, stroke.baseMesh, stroke.baseBrush, stroke.transform).also { it.order = stroke.order } },
+        strokes = strokes.map { stroke ->
+            StrokeElement(stroke.id, stroke.baseMesh, stroke.baseBrush, stroke.transform).also {
+                it.order = stroke.order
+                it.locked = stroke.locked
+                it.layerId = stroke.layerId
+            }
+        },
         texts = texts.map { text ->
             TextElement(text.id).also {
                 it.copyFrom(text)
@@ -810,12 +930,16 @@ public class PageContentSnapshot(
                 it.width = image.width
                 it.height = image.height
                 it.rotation = image.rotation
+                it.locked = image.locked
+                it.layerId = image.layerId
             }
         },
         pdfs = pdfs.map { pdf ->
             PdfElement(pdf.pdfPageIndex, pdf.id).also {
                 it.resourceId = pdf.resourceId
                 it.order = pdf.order
+                it.locked = pdf.locked
+                it.layerId = pdf.layerId
             }
         },
         background = background,
@@ -825,9 +949,14 @@ public class PageContentSnapshot(
             TextMarkupElement(
                 markup.id, markup.resourceId, markup.pdfPageIndex, markup.pdfWidthPt, markup.pdfHeightPt, markup.startIndex, markup.endIndex,
                 markup.text, markup.rects, markup.kind, markup.color
-            ).also { it.order = markup.order }
+            ).also {
+                it.order = markup.order
+                it.locked = markup.locked
+                it.layerId = markup.layerId
+            }
         },
-        customs = customs.map { it.copy() }
+        customs = customs.map { it.copy() },
+        layers = layers.map { it.toData().toLayer() }
     )
 }
 
@@ -1007,8 +1136,10 @@ public class Document(
             allPages().asSequence().flatMap { page ->
                 sequenceOf(page.added, page.removed ?: Stamp.ZERO, page.orderVersion, page.formatVersion) +
                     // The changes that changed nothing are among the versions only
-                    page.contentVersions.stamps.values + (page.elements() + page.removedElements).asSequence().flatMap {
-                        sequenceOf(it.added, it.removed ?: Stamp.ZERO, it.placed, it.ordered, it.updated) +
+                    page.contentVersions.stamps.values + page.allLayers().asSequence().flatMap { layer ->
+                        sequenceOf(layer.added, layer.removed ?: Stamp.ZERO, layer.updated)
+                    } + (page.elements() + page.removedElements).asSequence().flatMap {
+                        sequenceOf(it.added, it.removed ?: Stamp.ZERO, it.placed, it.ordered, it.updated, it.lockVersion, it.layerVersion) +
                             ((it as? TextElement)?.contentVersions?.stamps?.values ?: emptyList())
                     }
             }

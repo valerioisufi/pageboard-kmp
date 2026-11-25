@@ -11,6 +11,7 @@ import androidx.room.TypeConverters
         FolderEntity::class,
         DocumentEntity::class,
         PageEntity::class,
+        PageLayerEntity::class,
         StrokeEntity::class,
         TextEntity::class,
         ImageEntity::class,
@@ -30,7 +31,7 @@ import androidx.room.TypeConverters
         CatalogProofEntity::class
     ],
     // Every new version comes with its migration (see PAGEBOARD_DATABASE_MIGRATIONS)
-    version = 25
+    version = 26
 )
 @TypeConverters(
     PageBackgroundConverter::class,
@@ -47,6 +48,7 @@ public abstract class PageboardDatabase : RoomDatabase() {
     internal abstract fun folderDao(): FolderDao
     internal abstract fun documentDao(): DocumentDao
     internal abstract fun pageDao(): PageDao
+    internal abstract fun pageLayerDao(): PageLayerDao
     internal abstract fun strokeDao(): StrokeDao
     internal abstract fun textDao(): TextDao
     internal abstract fun imageDao(): ImageDao

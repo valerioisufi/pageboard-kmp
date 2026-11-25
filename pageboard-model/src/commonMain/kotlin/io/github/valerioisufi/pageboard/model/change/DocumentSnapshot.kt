@@ -6,6 +6,7 @@ import io.github.valerioisufi.pageboard.model.Page
 import io.github.valerioisufi.pageboard.model.DocumentResource
 import io.github.valerioisufi.pageboard.model.KotlinStrokeModeller
 import io.github.valerioisufi.pageboard.model.PageBackground
+import io.github.valerioisufi.pageboard.model.PageLayerData
 import io.github.valerioisufi.pageboard.model.Stamp
 import io.github.valerioisufi.pageboard.model.StrokeModeller
 import io.github.valerioisufi.pageboard.model.Versions
@@ -72,7 +73,8 @@ public data class PageSnapshot(
     val removedElements: List<ElementData> = emptyList(),
     val versions: Map<String, ElementVersions> = emptyMap(),
     val contentVersions: Versions = Versions.NONE,
-    val removalSaw: Versions? = null
+    val removalSaw: Versions? = null,
+    val removedLayers: List<PageLayerData> = emptyList()
 ) {
     /** A new page of [document] with this state. */
     public fun toPage(document: Document): Page {
@@ -84,6 +86,7 @@ public data class PageSnapshot(
         page.contentVersions = contentVersions
         page.removalSaw = removalSaw
         page.load(emptyList(), removedElements.map { it.toElement(document.strokeModeller) })
+        page.loadLayers(removedLayers.map { it.toLayer() } + data.layers.map { it.toLayer() })
         for (element in page.elements() + page.removedElements) versions[element.id]?.applyTo(element)
         return page
     }
@@ -99,7 +102,9 @@ public data class ElementVersions(
     val removed: Stamp? = null,
     val placed: Stamp,
     val updated: Stamp,
-    val ordered: Stamp? = null
+    val ordered: Stamp? = null,
+    val lockVersion: Stamp = Stamp.ZERO,
+    val layerVersion: Stamp = Stamp.ZERO
 ) {
     public fun applyTo(element: PageElement) {
         element.added = added
@@ -107,6 +112,8 @@ public data class ElementVersions(
         element.placed = placed
         element.ordered = ordered ?: placed
         element.updated = updated
+        element.lockVersion = lockVersion
+        element.layerVersion = layerVersion
     }
 }
 
@@ -133,7 +140,10 @@ public fun Page.snapshot(): PageSnapshot = PageSnapshot(
     formatVersion = formatVersion,
     // In a canonical order: the same state has the same snapshot
     removedElements = removedElements.sortedBy { it.id }.map { it.toData() },
-    versions = (elements() + removedElements).associate { it.id to ElementVersions(it.added, it.removed, it.placed, it.updated, it.ordered) },
+    versions = (elements() + removedElements).associate {
+        it.id to ElementVersions(it.added, it.removed, it.placed, it.updated, it.ordered, it.lockVersion, it.layerVersion)
+    },
     contentVersions = contentVersions,
-    removalSaw = removalSaw
+    removalSaw = removalSaw,
+    removedLayers = removedLayers.values.sortedBy { it.id }.map { it.toData() }
 )

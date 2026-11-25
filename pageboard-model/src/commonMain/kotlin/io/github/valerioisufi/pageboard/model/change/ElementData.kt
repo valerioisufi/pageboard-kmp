@@ -14,6 +14,7 @@ import io.github.valerioisufi.pageboard.model.ElementOrder
 import io.github.valerioisufi.pageboard.model.InputToolType
 import io.github.valerioisufi.pageboard.model.KotlinStrokeModeller
 import io.github.valerioisufi.pageboard.model.PageBackground
+import io.github.valerioisufi.pageboard.model.PageLayerData
 import io.github.valerioisufi.pageboard.model.StrokeMesh
 import io.github.valerioisufi.pageboard.model.StrokeModeller
 import io.github.valerioisufi.pageboard.model.StrokePoint
@@ -44,6 +45,8 @@ import kotlinx.serialization.Serializable
 public sealed interface ElementData {
     public val id: String
     public val order: ElementOrder?
+    public val locked: Boolean get() = false
+    public val layerId: String? get() = null
 
     /**
      * A new model element with this content (and [order], or none yet), its stroke (if any)
@@ -65,7 +68,9 @@ public data class StrokeData(
     val color: Int,
     val inputToolType: InputToolType = InputToolType.UNKNOWN,
     val transform: AffineTransform = AffineTransform.IDENTITY,
-    override val order: ElementOrder? = null
+    override val order: ElementOrder? = null,
+    override val locked: Boolean = false,
+    override val layerId: String? = null
 ) : ElementData {
     /** The stroke, modeled again from its inputs by [modeller]. */
     override fun toElement(modeller: StrokeModeller): StrokeElement {
@@ -80,7 +85,7 @@ public data class StrokeData(
             points = points,
             inputToolType = inputToolType
         )
-        return StrokeElement(id = id, mesh = mesh, brushConfig = brush, transform = transform).withOrder(order)
+        return StrokeElement(id = id, mesh = mesh, brushConfig = brush, transform = transform).withState(order, locked, layerId)
     }
 }
 
@@ -109,10 +114,12 @@ public data class TextData(
     /** Whether its first line goes on the last line of the text before it (see `TextElement.continuesLine`). */
     val continuesLine: Boolean = false,
     override val order: ElementOrder? = null,
-    val versions: Versions = Versions.NONE
+    val versions: Versions = Versions.NONE,
+    override val locked: Boolean = false,
+    override val layerId: String? = null
 ) : ElementData {
     override fun toElement(modeller: StrokeModeller): TextElement =
-        TextElement(id).also { applyTo(it); it.height = estimatedHeight() }.withOrder(order)
+        TextElement(id).also { applyTo(it); it.height = estimatedHeight() }.withState(order, locked, layerId)
 
     /** The height of its lines guessed without laying them out (see `TextElement.height`). */
     public fun estimatedHeight(): Float = TextSizes.estimatedHeightMm(text, fontSize)
@@ -152,9 +159,11 @@ public data class ImageData(
     val width: Float,
     val height: Float,
     val rotation: Float = 0f,
-    override val order: ElementOrder? = null
+    override val order: ElementOrder? = null,
+    override val locked: Boolean = false,
+    override val layerId: String? = null
 ) : ElementData {
-    override fun toElement(modeller: StrokeModeller): ImageElement = ImageElement(id).withOrder(order).also {
+    override fun toElement(modeller: StrokeModeller): ImageElement = ImageElement(id).withState(order, locked, layerId).also {
         it.resourceId = resourceId
         it.x = x
         it.y = y
@@ -171,9 +180,11 @@ public data class PdfData(
     override val id: String,
     val resourceId: String,
     val pdfPageIndex: Int,
-    override val order: ElementOrder? = null
+    override val order: ElementOrder? = null,
+    override val locked: Boolean = false,
+    override val layerId: String? = null
 ) : ElementData {
-    override fun toElement(modeller: StrokeModeller): PdfElement = PdfElement(pdfPageIndex, id).withOrder(order).also { it.resourceId = resourceId }
+    override fun toElement(modeller: StrokeModeller): PdfElement = PdfElement(pdfPageIndex, id).withState(order, locked, layerId).also { it.resourceId = resourceId }
 }
 
 /**
@@ -194,7 +205,9 @@ public data class TextMarkupData(
     val rects: List<Float>,
     val kind: TextMarkupKind,
     val color: Int,
-    override val order: ElementOrder? = null
+    override val order: ElementOrder? = null,
+    override val locked: Boolean = false,
+    override val layerId: String? = null
 ) : ElementData {
     override fun toElement(modeller: StrokeModeller): TextMarkupElement = TextMarkupElement(
         id = id,
@@ -208,7 +221,7 @@ public data class TextMarkupData(
         rects = rects.chunked(4).filter { it.size == 4 }.map { Rect(it[0], it[1], it[2], it[3]) },
         kind = kind,
         color = color
-    ).withOrder(order)
+    ).withState(order, locked, layerId)
 }
 
 /**
@@ -228,9 +241,11 @@ public class CustomElementData(
     public val width: Float,
     public val height: Float,
     public val rotation: Float = 0f,
-    override val order: ElementOrder? = null
+    override val order: ElementOrder? = null,
+    override val locked: Boolean = false,
+    override val layerId: String? = null
 ) : ElementData {
-    override fun toElement(modeller: StrokeModeller): CustomElement = CustomElement(type, id).withOrder(order).also {
+    override fun toElement(modeller: StrokeModeller): CustomElement = CustomElement(type, id).withState(order, locked, layerId).also {
         it.version = version
         it.payload = payload
         it.x = x
@@ -244,19 +259,31 @@ public class CustomElementData(
         id: String = this.id,
         x: Float = this.x,
         y: Float = this.y,
-        order: ElementOrder? = this.order
-    ): CustomElementData = CustomElementData(id, type, version, payload, x, y, width, height, rotation, order)
+        order: ElementOrder? = this.order,
+        locked: Boolean = this.locked,
+        layerId: String? = this.layerId
+    ): CustomElementData = CustomElementData(id, type, version, payload, x, y, width, height, rotation, order, locked, layerId)
 
     override fun equals(other: Any?): Boolean = other is CustomElementData && id == other.id && type == other.type &&
         version == other.version && payload.contentEquals(other.payload) && x == other.x && y == other.y &&
-        width == other.width && height == other.height && rotation == other.rotation && order == other.order
+        width == other.width && height == other.height && rotation == other.rotation && order == other.order &&
+        locked == other.locked && layerId == other.layerId
 
-    override fun hashCode(): Int = id.hashCode() * 31 + payload.contentHashCode()
+    override fun hashCode(): Int {
+        var result = id.hashCode() * 31 + payload.contentHashCode()
+        result = 31 * result + locked.hashCode()
+        result = 31 * result + (layerId?.hashCode() ?: 0)
+        return result
+    }
 
     override fun toString(): String = "CustomElementData(id=$id, type=$type, version=$version, ${payload.size} bytes)"
 }
 
-private fun <T : PageElement> T.withOrder(order: ElementOrder?): T = apply { this.order = order ?: ElementOrder.UNASSIGNED }
+private fun <T : PageElement> T.withState(order: ElementOrder?, locked: Boolean, layerId: String?): T = apply {
+    this.order = order ?: ElementOrder.UNASSIGNED
+    this.locked = locked
+    this.layerId = layerId
+}
 
 /** The order of [this] as data: `null` when it has none yet. */
 private val PageElement.dataOrder: ElementOrder? get() = order.takeIf { it != ElementOrder.UNASSIGNED }
@@ -272,7 +299,8 @@ public data class PageData(
     val widthMm: Float,
     val heightMm: Float,
     val background: PageBackground? = null,
-    val elements: List<ElementData> = emptyList()
+    val elements: List<ElementData> = emptyList(),
+    val layers: List<PageLayerData> = emptyList()
 ) {
     /** A new page of [document] with this content (the elements of every kind in this order). */
     public fun toPage(document: Document): Page {
@@ -284,6 +312,7 @@ public data class PageData(
             orderKey = orderKey
         )
         page.hasCustomBackground = background != null
+        page.loadLayers(layers.map { it.toLayer() })
         page.load(elements.map { it.toElement(document.strokeModeller) })
         return page
     }
@@ -306,7 +335,9 @@ public fun StrokeElement.toData(): StrokeData = StrokeData(
     color = baseBrush.color,
     inputToolType = baseMesh.inputToolType,
     transform = transform,
-    order = dataOrder
+    order = dataOrder,
+    locked = locked,
+    layerId = layerId
 )
 
 /** The values of a text, with its content versions (see [ElementData]). */
@@ -325,14 +356,16 @@ public fun TextElement.toData(): TextData = TextData(
     next = next,
     continuesLine = continuesLine,
     order = dataOrder,
-    versions = contentVersions
+    versions = contentVersions,
+    locked = locked,
+    layerId = layerId
 )
 
 /** The values of an image (see [ElementData]). */
-public fun ImageElement.toData(): ImageData = ImageData(id, resourceId, x, y, width, height, rotation, dataOrder)
+public fun ImageElement.toData(): ImageData = ImageData(id, resourceId, x, y, width, height, rotation, dataOrder, locked, layerId)
 
 /** The values of a page of a PDF (see [ElementData]). */
-public fun PdfElement.toData(): PdfData = PdfData(id, resourceId, pdfPageIndex, dataOrder)
+public fun PdfElement.toData(): PdfData = PdfData(id, resourceId, pdfPageIndex, dataOrder, locked, layerId)
 
 /** The values of a mark of the text of a PDF (see [ElementData]). */
 public fun TextMarkupElement.toData(): TextMarkupData = TextMarkupData(
@@ -347,11 +380,13 @@ public fun TextMarkupElement.toData(): TextMarkupData = TextMarkupData(
     rects = rects.flatMap { listOf(it.left, it.top, it.right, it.bottom) },
     kind = kind,
     color = color,
-    order = dataOrder
+    order = dataOrder,
+    locked = locked,
+    layerId = layerId
 )
 
 /** The values of an element of an application, its payload as it is (see [ElementData]). */
-public fun CustomElement.toData(): CustomElementData = CustomElementData(id, type, version, payload, x, y, width, height, rotation, dataOrder)
+public fun CustomElement.toData(): CustomElementData = CustomElementData(id, type, version, payload, x, y, width, height, rotation, dataOrder, locked, layerId)
 
 /** The values of any element, by its kind (see [ElementData]). */
 public fun PageElement.toData(): ElementData = when (this) {
@@ -370,7 +405,8 @@ public fun Page.toData(): PageData = PageData(
     widthMm = widthMm,
     heightMm = heightMm,
     background = if (hasCustomBackground) background else null,
-    elements = elements().map { it.toData() }
+    elements = elements().map { it.toData() },
+    layers = layers.map { it.toData() }
 )
 
 /**

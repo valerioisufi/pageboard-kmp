@@ -15,6 +15,7 @@ import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.ElementOrder
 import io.github.valerioisufi.pageboard.model.InputToolType
 import io.github.valerioisufi.pageboard.model.PageBackground
+import io.github.valerioisufi.pageboard.model.PageLayer
 import io.github.valerioisufi.pageboard.model.PurgedContent
 import io.github.valerioisufi.pageboard.model.Stamp
 import io.github.valerioisufi.pageboard.model.StrokeModeller
@@ -46,6 +47,7 @@ import io.github.valerioisufi.pageboard.store.room.db.OperationBaseEntity
 import io.github.valerioisufi.pageboard.store.room.db.OperationEntity
 import io.github.valerioisufi.pageboard.store.room.db.OperationProofEntity
 import io.github.valerioisufi.pageboard.store.room.db.PageEntity
+import io.github.valerioisufi.pageboard.store.room.db.PageLayerEntity
 import io.github.valerioisufi.pageboard.store.room.db.PageWithContent
 import io.github.valerioisufi.pageboard.store.room.db.PdfEntity
 import io.github.valerioisufi.pageboard.store.room.db.PreferenceEntity
@@ -80,6 +82,7 @@ internal class DocumentRepository(
 
     private val documentDao = database.documentDao()
     private val pageDao = database.pageDao()
+    private val pageLayerDao = database.pageLayerDao()
     private val strokeDao = database.strokeDao()
     private val textDao = database.textDao()
     private val imageDao = database.imageDao()
@@ -132,6 +135,7 @@ internal class DocumentRepository(
                 val pageStrokes = strokes.subList(nextStroke, nextStroke + pageWithContent.strokes.size)
                 nextStroke += pageStrokes.size
                 val (removed, shown) = (pageStrokes + elementsBesideStrokes(pageWithContent) { true }).sortedBy { it.order }.partition { it.removed != null }
+                page.loadLayers(pageWithContent.layers.map(::mapPageLayer))
                 // The removed elements are kept, hidden
                 page.load(shown, removed)
                 if (page.isHidden) doc.removedPages[page.id] = page else doc.appendPage(page)
@@ -151,6 +155,7 @@ internal class DocumentRepository(
         val resources = withContext(Dispatchers.IO) { resourceDao.getResourcesForDocument(documentId) }
         return withContext(Dispatchers.Default) {
             val page = mapPage(rows.page, docEntity)
+            page.loadLayers(rows.layers.map(::mapPageLayer))
             page.load((modelStrokes(rows.strokes.filter { it.removed == null }) + elementsBesideStrokes(rows) { it == null }).sortedBy { it.order })
             LoadedPage(page.id, page.snapshotContent(), resources.map(::mapResource))
         }
@@ -164,16 +169,22 @@ internal class DocumentRepository(
     suspend fun pageFingerprint(documentId: String, index: Int): String? {
         val (docEntity, page) = shownPage(documentId, index) ?: return null
         val elements = withContext(Dispatchers.IO) { pageDao.getShownElementStamps(page.id) }
+        val layers = withContext(Dispatchers.IO) { pageLayerDao.getShownForPage(page.id) }
         val resourceIds = elements.mapNotNullTo(mutableSetOf()) { it.resourceId }
         val resources = if (resourceIds.isEmpty()) emptyList() else withContext(Dispatchers.IO) { resourceDao.getResourcesForDocument(documentId) }
         val text = StringBuilder()
         text.append(page.id).append('|').append(page.width).append('|').append(page.height).append('|')
             .append(page.background ?: docEntity.defaultBackground).append('\n')
         for (element in elements.sortedBy { it.id }) {
+            val layerStamp = Stamp.parse(element.layerVersion) ?: Stamp.ZERO
             text.append(element.id).append('|').append(element.added).append('|').append(element.placed).append('|')
-                .append(element.ordered).append('|').append(element.updated)
+                .append(element.ordered).append('|').append(element.updated).append('|').append(layerStamp)
             element.contentVersions?.let { text.append('|').append(it) }
             text.append('\n')
+        }
+        for (layer in layers.sortedBy { it.id }) {
+            text.append("L|").append(layer.id).append('|').append(layer.orderKey).append('|')
+                .append(layer.visible).append('|').append(layer.updated).append('\n')
         }
         for (id in resourceIds.sorted()) {
             val resource = resources.firstOrNull { it.id == id }
@@ -195,17 +206,17 @@ internal class DocumentRepository(
     /** The strokes of [entities] modeled on every core, in their order, with their stamps. */
     private suspend fun modelStrokes(entities: List<StrokeEntity>): List<StrokeElement> = coroutineScope {
         entities.chunked(STROKES_PER_TASK).map { chunk ->
-            async { chunk.map { e -> mapStroke(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } }
+            async { chunk.map { e -> mapStroke(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated, e.locked, e.lockVersion, e.layerId, e.layerVersion) } }
         }.awaitAll().flatten()
     }
 
     /** The elements of [rows] but its strokes whose removal is [read], with their order and stamps. */
     private fun elementsBesideStrokes(rows: PageWithContent, read: (removed: Stamp?) -> Boolean): List<PageElement> =
-        rows.texts.filter { read(it.removed) }.map { e -> mapText(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
-            rows.images.filter { read(it.removed) }.map { e -> mapImage(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
-            rows.pdfs.filter { read(it.removed) }.map { e -> mapPdf(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
-            rows.markups.filter { read(it.removed) }.mapNotNull { e -> mapTextMarkup(e)?.stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) } +
-            rows.customs.filter { read(it.removed) }.map { e -> mapCustomElement(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) }
+        rows.texts.filter { read(it.removed) }.map { e -> mapText(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated, e.locked, e.lockVersion, e.layerId, e.layerVersion) } +
+            rows.images.filter { read(it.removed) }.map { e -> mapImage(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated, e.locked, e.lockVersion, e.layerId, e.layerVersion) } +
+            rows.pdfs.filter { read(it.removed) }.map { e -> mapPdf(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated, e.locked, e.lockVersion, e.layerId, e.layerVersion) } +
+            rows.markups.filter { read(it.removed) }.mapNotNull { e -> mapTextMarkup(e)?.stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated, e.locked, e.lockVersion, e.layerId, e.layerVersion) } +
+            rows.customs.filter { read(it.removed) }.map { e -> mapCustomElement(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated, e.locked, e.lockVersion, e.layerId, e.layerVersion) }
 
     /**
      * What can be read of a document without its strokes: its pages shown with their texts, PDF
@@ -221,13 +232,13 @@ internal class DocumentRepository(
                 PageOutline(
                     id = rows.page.id,
                     texts = rows.texts.filter { it.removed == null }
-                        .map { e -> mapText(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) }
+                        .map { e -> mapText(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated, e.locked, e.lockVersion, e.layerId, e.layerVersion) }
                         .sortedBy { it.order },
                     customElements = rows.customs.filter { it.removed == null }
-                        .map { e -> mapCustomElement(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) }
+                        .map { e -> mapCustomElement(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated, e.locked, e.lockVersion, e.layerId, e.layerVersion) }
                         .sortedBy { it.order },
                     pdfs = rows.pdfs.filter { it.removed == null }
-                        .map { e -> mapPdf(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated) }
+                        .map { e -> mapPdf(e).stored(e.orderKey, e.added, e.removed, e.placed, e.ordered, e.updated, e.locked, e.lockVersion, e.layerId, e.layerVersion) }
                         .sortedBy { it.order }
                 )
             }
@@ -272,15 +283,53 @@ internal class DocumentRepository(
         return DocumentResource(entity.id, type, entity.uri, entity.contentHash)
     }
 
-    private fun <T : PageElement> T.stored(order: ElementOrder, added: Stamp, removed: Stamp?, placed: Stamp, ordered: Stamp, updated: Stamp): T =
-        apply {
-            this.order = order
-            this.added = added
-            this.removed = removed
-            this.placed = placed
-            this.ordered = ordered
-            this.updated = updated
-        }
+    private fun mapPageLayer(entity: PageLayerEntity): PageLayer = PageLayer(
+        id = entity.id,
+        name = entity.name,
+        orderKey = entity.orderKey,
+        visible = entity.visible,
+        locked = entity.locked
+    ).also {
+        it.added = entity.added
+        it.removed = entity.removed
+        it.updated = entity.updated
+    }
+
+    private fun PageLayer.toEntity(pageId: String): PageLayerEntity = PageLayerEntity(
+        id = id,
+        pageId = pageId,
+        name = name,
+        orderKey = orderKey,
+        visible = visible,
+        locked = locked,
+        added = added,
+        removed = removed,
+        updated = updated
+    )
+
+    private fun <T : PageElement> T.stored(
+        order: ElementOrder,
+        added: Stamp,
+        removed: Stamp?,
+        placed: Stamp,
+        ordered: Stamp,
+        updated: Stamp,
+        locked: Boolean,
+        lockVersion: Stamp,
+        layerId: String?,
+        layerVersion: Stamp
+    ): T = apply {
+        this.order = order
+        this.added = added
+        this.removed = removed
+        this.placed = placed
+        this.ordered = ordered
+        this.updated = updated
+        this.locked = locked
+        this.lockVersion = lockVersion
+        this.layerId = layerId
+        this.layerVersion = layerVersion
+    }
 
     private fun mapStroke(entity: StrokeEntity): StrokeElement = strokeData(entity).toElement(strokeModeller)
 
@@ -564,7 +613,11 @@ internal class DocumentRepository(
         removed = removed,
         placed = placed,
         ordered = ordered,
-        updated = updated
+        updated = updated,
+        locked = locked,
+        lockVersion = lockVersion,
+        layerId = layerId,
+        layerVersion = layerVersion
     )
 
     /**
@@ -603,7 +656,11 @@ internal class DocumentRepository(
                 placed = text.placed,
                 ordered = text.ordered,
                 updated = text.updated,
-                contentVersions = text.contentVersions
+                contentVersions = text.contentVersions,
+                locked = text.locked,
+                lockVersion = text.lockVersion,
+                layerId = text.layerId,
+                layerVersion = text.layerVersion
             )
         )
     }
@@ -624,7 +681,11 @@ internal class DocumentRepository(
                 removed = image.removed,
                 placed = image.placed,
                 ordered = image.ordered,
-                updated = image.updated
+                updated = image.updated,
+                locked = image.locked,
+                lockVersion = image.lockVersion,
+                layerId = image.layerId,
+                layerVersion = image.layerVersion
             )
         )
     }
@@ -647,7 +708,11 @@ internal class DocumentRepository(
                 removed = element.removed,
                 placed = element.placed,
                 ordered = element.ordered,
-                updated = element.updated
+                updated = element.updated,
+                locked = element.locked,
+                lockVersion = element.lockVersion,
+                layerId = element.layerId,
+                layerVersion = element.layerVersion
             )
         )
     }
@@ -664,7 +729,11 @@ internal class DocumentRepository(
                 removed = pdf.removed,
                 placed = pdf.placed,
                 ordered = pdf.ordered,
-                updated = pdf.updated
+                updated = pdf.updated,
+                locked = pdf.locked,
+                lockVersion = pdf.lockVersion,
+                layerId = pdf.layerId,
+                layerVersion = pdf.layerVersion
             )
         )
     }
@@ -689,7 +758,11 @@ internal class DocumentRepository(
                 removed = markup.removed,
                 placed = markup.placed,
                 ordered = markup.ordered,
-                updated = markup.updated
+                updated = markup.updated,
+                locked = markup.locked,
+                lockVersion = markup.lockVersion,
+                layerId = markup.layerId,
+                layerVersion = markup.layerVersion
             )
         )
     }
@@ -718,6 +791,8 @@ internal class DocumentRepository(
                 removalSaw = page.removalSaw
             )
         )
+        val layers = page.allLayers().map { it.toEntity(page.id) }
+        if (layers.isNotEmpty()) pageLayerDao.upsertAll(layers)
     }
 
     override suspend fun updateDocumentDefaults(document: Document) = withContext(Dispatchers.IO) {

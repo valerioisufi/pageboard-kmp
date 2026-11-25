@@ -12,6 +12,8 @@ import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.ElementOrder
 import io.github.valerioisufi.pageboard.model.FractionalIndex
 import io.github.valerioisufi.pageboard.model.PageBackground
+import io.github.valerioisufi.pageboard.model.PageLayer
+import io.github.valerioisufi.pageboard.model.PageLayerData
 import io.github.valerioisufi.pageboard.model.Stamp
 import io.github.valerioisufi.pageboard.model.StrokeModeller
 import io.github.valerioisufi.pageboard.model.TextMarkupKind
@@ -72,6 +74,9 @@ public sealed interface DocumentChange {
      * put on top.
      */
     public fun orders(): Sequence<ElementOrder> = emptySequence()
+
+    /** Whether untrusted structural invariants on this change hold (see [DocumentSession.admits]). */
+    public fun isValid(): Boolean = true
 }
 
 /**
@@ -137,6 +142,8 @@ public data class AddElements(val pageId: String, val elements: List<ElementData
                 element.placed = stamp
                 element.ordered = stamp
                 element.updated = stamp
+                element.lockVersion = stamp
+                element.layerVersion = stamp
                 if (element is TextElement && data is TextData) element.contentVersions = data.versions + stamp
                 page.add(element)
                 context.effects.saved(page, element)
@@ -177,6 +184,21 @@ public data class AddElements(val pageId: String, val elements: List<ElementData
                 else -> false
             }
             if (contentChanged) valuesChanged = true
+            if (element.lockVersion < stamp) {
+                if (element.locked != data.locked) {
+                    element.locked = data.locked
+                    valuesChanged = true
+                }
+                element.lockVersion = stamp
+            }
+            if (element.layerVersion < stamp) {
+                if (element.layerId != data.layerId) {
+                    element.layerId = data.layerId
+                    holder.refreshStack()
+                    valuesChanged = true
+                }
+                element.layerVersion = stamp
+            }
             if (!touched && !valuesChanged) continue
             if (removed == null && valuesChanged) previous.getOrPut(from) { mutableListOf() }.add(before)
             context.effects.saved(holder, element)
@@ -702,7 +724,13 @@ public data class AddPage(val page: PageData) : DocumentChange {
             element.placed = context.stamp
             element.ordered = context.stamp
             element.updated = context.stamp
+            element.lockVersion = context.stamp
+            element.layerVersion = context.stamp
             if (element is TextElement) element.contentVersions += context.stamp
+        }
+        for (layer in newPage.allLayers()) {
+            layer.added = context.stamp
+            layer.updated = context.stamp
         }
         document.insertPage(newPage)
         context.effects.pageInserted(newPage)
@@ -894,6 +922,186 @@ internal data object NoChange : DocumentChange {
 }
 
 /**
+ * Locks or unlocks elements ([ids] on [pageId], or the page another device moved them to):
+ * LWW by `lockVersion`.
+ */
+@Serializable
+@SerialName("lockElements")
+public data class LockElements(
+    val pageId: String,
+    val ids: List<String>,
+    val locked: Boolean
+) : DocumentChange {
+    override fun isValid(): Boolean = pageId.isNotBlank() && ids.all { it.isNotBlank() }
+
+    override fun applyTo(context: ChangeContext): DocumentChange? {
+        val hint = context.document.anyPage(pageId)
+        val previous = LinkedHashMap<Pair<Page, Boolean>, MutableList<String>>()
+        for (id in ids) {
+            val (page, element) = context.document.findAnyElement(id, hint) ?: continue
+            if (element.lockVersion >= context.stamp) continue
+            previous.getOrPut(page to element.locked) { mutableListOf() }.add(id)
+            element.locked = locked
+            element.lockVersion = context.stamp
+            context.effects.saved(page, element)
+        }
+        val inverses = previous.map { (key, groupIds) -> LockElements(key.first.id, groupIds, key.second) }
+        val inverse = if (inverses.size <= 1) inverses.singleOrNull() else CompositeChange(inverses)
+        hint?.let { context.contentChanged(it, inverse) }
+        return inverse
+    }
+}
+
+/**
+ * Assigns elements ([ids] on [pageId], or the page another device moved them to) to [layerId]
+ * (`null` for unlayered default stack): LWW by `layerVersion`.
+ */
+@Serializable
+@SerialName("assignElementsLayer")
+public data class AssignElementsLayer(
+    val pageId: String,
+    val ids: List<String>,
+    val layerId: String?
+) : DocumentChange {
+    override fun isValid(): Boolean =
+        pageId.isNotBlank() && ids.all { it.isNotBlank() } && (layerId == null || (layerId.isNotBlank() && layerId.length <= 128))
+
+    override fun applyTo(context: ChangeContext): DocumentChange? {
+        val hint = context.document.anyPage(pageId)
+        val previous = LinkedHashMap<Pair<Page, String?>, MutableList<String>>()
+        val dirtyPages = LinkedHashSet<Page>()
+        for (id in ids) {
+            val (page, element) = context.document.findAnyElement(id, hint) ?: continue
+            if (element.layerVersion >= context.stamp) continue
+            val beforeLayer = element.layerId
+            previous.getOrPut(page to beforeLayer) { mutableListOf() }.add(id)
+            if (beforeLayer != layerId) {
+                element.layerId = layerId
+                dirtyPages += page
+            }
+            element.layerVersion = context.stamp
+            context.effects.saved(page, element)
+        }
+        for (page in dirtyPages) {
+            page.refreshStack()
+            context.effects.dirty(page, null)
+        }
+        val inverses = previous.map { (key, groupIds) -> AssignElementsLayer(key.first.id, groupIds, key.second) }
+        val inverse = if (inverses.size <= 1) inverses.singleOrNull() else CompositeChange(inverses)
+        hint?.let { context.contentChanged(it, inverse) }
+        return inverse
+    }
+}
+
+/**
+ * Creates, restores, renames, reorders, toggles visibility, or toggles lock of a [PageLayer]
+ * on [pageId]: LWW CRDT registers (`added`, `removed`, `updated`).
+ */
+@Serializable
+@SerialName("upsertPageLayer")
+public data class UpsertPageLayer(
+    val pageId: String,
+    val layer: PageLayerData
+) : DocumentChange {
+    override fun isValid(): Boolean = pageId.isNotBlank() && layer.isValid()
+
+    override fun applyTo(context: ChangeContext): DocumentChange? {
+        val page = context.document.anyPage(pageId) ?: return null
+        val stamp = context.stamp
+        val existing = page.findAnyLayer(layer.id)
+        if (existing == null) {
+            val created = layer.copy(name = layer.name.take(PageLayer.MAX_NAME_LENGTH)).toLayer().also {
+                it.added = stamp
+                it.removed = null
+                it.updated = stamp
+            }
+            page.putLayer(created)
+            context.effects.pageVersioned(page)
+            context.effects.dirty(page, null)
+            val inverse = RemovePageLayer(pageId, layer.id)
+            context.contentChanged(page, inverse)
+            return inverse
+        }
+
+        val before = existing.toData()
+        val wasRemoved = existing.removed != null
+        var restored = false
+        var updatedContent = false
+        if (existing.added < stamp) {
+            existing.added = stamp
+        }
+        if (wasRemoved && existing.removed!! < stamp) {
+            existing.removed = null
+            restored = true
+        }
+        if (existing.updated < stamp) {
+            val clippedName = layer.name.take(PageLayer.MAX_NAME_LENGTH)
+            if (existing.name != clippedName || existing.orderKey != layer.orderKey ||
+                existing.visible != layer.visible || existing.locked != layer.locked
+            ) {
+                existing.name = clippedName
+                existing.orderKey = layer.orderKey
+                existing.visible = layer.visible
+                existing.locked = layer.locked
+            }
+            existing.updated = stamp
+            updatedContent = true
+        }
+        if (!restored && !updatedContent) {
+            context.contentChanged(page, null)
+            return null
+        }
+        if (existing.removed == null) page.putLayer(existing)
+        context.effects.pageVersioned(page)
+        context.effects.dirty(page, null)
+        val inverse: DocumentChange = when {
+            restored && updatedContent -> CompositeChange(listOf(UpsertPageLayer(pageId, before), RemovePageLayer(pageId, layer.id)))
+            restored -> RemovePageLayer(pageId, layer.id)
+            updatedContent -> UpsertPageLayer(pageId, before)
+            else -> NoChange
+        }
+        context.contentChanged(page, inverse)
+        return inverse
+    }
+}
+
+/**
+ * Removes [layerId] from [pageId] (kept hidden for CRDT convergence and undo).
+ */
+@Serializable
+@SerialName("removePageLayer")
+public data class RemovePageLayer(
+    val pageId: String,
+    val layerId: String
+) : DocumentChange {
+    override fun isValid(): Boolean = pageId.isNotBlank() && layerId.isNotBlank()
+
+    override fun applyTo(context: ChangeContext): DocumentChange? {
+        val page = context.document.anyPage(pageId) ?: return null
+        val existing = page.findAnyLayer(layerId) ?: return null
+        val removed = existing.removed
+        if (removed != null) {
+            if (removed < context.stamp) {
+                existing.removed = context.stamp
+                context.effects.pageVersioned(page)
+                context.contentChanged(page, NoChange)
+                return NoChange
+            }
+            return null
+        }
+        if (existing.added >= context.stamp) return null
+        val before = existing.toData()
+        existing.removed = context.stamp
+        page.hideLayer(existing)
+        context.effects.pageVersioned(page)
+        context.effects.dirty(page, null)
+        val inverse = UpsertPageLayer(pageId, before)
+        context.contentChanged(page, inverse)
+        return inverse
+    }
+}
+
+/**
  * Several changes applied as one, in order (undone in the reverse order).
  */
 @Serializable
@@ -904,6 +1112,8 @@ public data class CompositeChange(val changes: List<DocumentChange>) : DocumentC
     override fun stamps(): Sequence<Stamp> = changes.asSequence().flatMap { it.stamps() }
 
     override fun orders(): Sequence<ElementOrder> = changes.asSequence().flatMap { it.orders() }
+
+    override fun isValid(): Boolean = changes.all { it.isValid() }
 
     override fun applyTo(context: ChangeContext): DocumentChange? {
         val inverses = changes.mapNotNull { it.applyTo(context) }
