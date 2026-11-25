@@ -3040,6 +3040,28 @@ final class io.github.valerioisufi.pageboard.model.text/ChainFlow { // io.github
     }
 }
 
+final class io.github.valerioisufi.pageboard.model.text/LatexCommand { // io.github.valerioisufi.pageboard.model.text/LatexCommand|null[0]
+    constructor <init>(kotlin/String, kotlin/String = ..., kotlin/Int = ..., kotlin/String = ...) // io.github.valerioisufi.pageboard.model.text/LatexCommand.<init>|<init>(kotlin.String;kotlin.String;kotlin.Int;kotlin.String){}[0]
+
+    final val cursorOffset // io.github.valerioisufi.pageboard.model.text/LatexCommand.cursorOffset|{}cursorOffset[0]
+        final fun <get-cursorOffset>(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/LatexCommand.cursorOffset.<get-cursorOffset>|<get-cursorOffset>(){}[0]
+    final val insert // io.github.valerioisufi.pageboard.model.text/LatexCommand.insert|{}insert[0]
+        final fun <get-insert>(): kotlin/String // io.github.valerioisufi.pageboard.model.text/LatexCommand.insert.<get-insert>|<get-insert>(){}[0]
+    final val name // io.github.valerioisufi.pageboard.model.text/LatexCommand.name|{}name[0]
+        final fun <get-name>(): kotlin/String // io.github.valerioisufi.pageboard.model.text/LatexCommand.name.<get-name>|<get-name>(){}[0]
+    final val preview // io.github.valerioisufi.pageboard.model.text/LatexCommand.preview|{}preview[0]
+        final fun <get-preview>(): kotlin/String // io.github.valerioisufi.pageboard.model.text/LatexCommand.preview.<get-preview>|<get-preview>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.model.text/LatexCommand.component1|component1(){}[0]
+    final fun component2(): kotlin/String // io.github.valerioisufi.pageboard.model.text/LatexCommand.component2|component2(){}[0]
+    final fun component3(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/LatexCommand.component3|component3(){}[0]
+    final fun component4(): kotlin/String // io.github.valerioisufi.pageboard.model.text/LatexCommand.component4|component4(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/Int = ..., kotlin/String = ...): io.github.valerioisufi.pageboard.model.text/LatexCommand // io.github.valerioisufi.pageboard.model.text/LatexCommand.copy|copy(kotlin.String;kotlin.String;kotlin.Int;kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/LatexCommand.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/LatexCommand.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model.text/LatexCommand.toString|toString(){}[0]
+}
+
 final class io.github.valerioisufi.pageboard.model.text/NumberingStyle { // io.github.valerioisufi.pageboard.model.text/NumberingStyle|null[0]
     constructor <init>(io.github.valerioisufi.pageboard.model.text/ListNumbering.Numbering, kotlin/Char = ...) // io.github.valerioisufi.pageboard.model.text/NumberingStyle.<init>|<init>(io.github.valerioisufi.pageboard.model.text.ListNumbering.Numbering;kotlin.Char){}[0]
 
@@ -4440,6 +4462,36 @@ final object io.github.valerioisufi.pageboard.model.text/BlockQuote { // io.gith
 
     final fun isQuotedAt(kotlin/CharSequence, kotlin/Int): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/BlockQuote.isQuotedAt|isQuotedAt(kotlin.CharSequence;kotlin.Int){}[0]
     final fun markerLength(kotlin/CharSequence, kotlin/Int): kotlin/Int // io.github.valerioisufi.pageboard.model.text/BlockQuote.markerLength|markerLength(kotlin.CharSequence;kotlin.Int){}[0]
+}
+
+final object io.github.valerioisufi.pageboard.model.text/LatexCommands { // io.github.valerioisufi.pageboard.model.text/LatexCommands|null[0]
+    final val ALL // io.github.valerioisufi.pageboard.model.text/LatexCommands.ALL|{}ALL[0]
+        final fun <get-ALL>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model.text/LatexCommand> // io.github.valerioisufi.pageboard.model.text/LatexCommands.ALL.<get-ALL>|<get-ALL>(){}[0]
+
+    final fun apply(kotlin/String, io.github.valerioisufi.pageboard.model.text/LatexCommands.Match, io.github.valerioisufi.pageboard.model.text/LatexCommand): kotlin/Pair<kotlin/String, kotlin/Int> // io.github.valerioisufi.pageboard.model.text/LatexCommands.apply|apply(kotlin.String;io.github.valerioisufi.pageboard.model.text.LatexCommands.Match;io.github.valerioisufi.pageboard.model.text.LatexCommand){}[0]
+    final fun match(kotlin/String, kotlin/Int, kotlin.ranges/IntRange): io.github.valerioisufi.pageboard.model.text/LatexCommands.Match? // io.github.valerioisufi.pageboard.model.text/LatexCommands.match|match(kotlin.String;kotlin.Int;kotlin.ranges.IntRange){}[0]
+
+    final class Match { // io.github.valerioisufi.pageboard.model.text/LatexCommands.Match|null[0]
+        constructor <init>(kotlin/Int, kotlin/Int, kotlin/String, kotlin.collections/List<io.github.valerioisufi.pageboard.model.text/LatexCommand>) // io.github.valerioisufi.pageboard.model.text/LatexCommands.Match.<init>|<init>(kotlin.Int;kotlin.Int;kotlin.String;kotlin.collections.List<io.github.valerioisufi.pageboard.model.text.LatexCommand>){}[0]
+
+        final val candidates // io.github.valerioisufi.pageboard.model.text/LatexCommands.Match.candidates|{}candidates[0]
+            final fun <get-candidates>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model.text/LatexCommand> // io.github.valerioisufi.pageboard.model.text/LatexCommands.Match.candidates.<get-candidates>|<get-candidates>(){}[0]
+        final val prefix // io.github.valerioisufi.pageboard.model.text/LatexCommands.Match.prefix|{}prefix[0]
+            final fun <get-prefix>(): kotlin/String // io.github.valerioisufi.pageboard.model.text/LatexCommands.Match.prefix.<get-prefix>|<get-prefix>(){}[0]
+        final val tokenEnd // io.github.valerioisufi.pageboard.model.text/LatexCommands.Match.tokenEnd|{}tokenEnd[0]
+            final fun <get-tokenEnd>(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/LatexCommands.Match.tokenEnd.<get-tokenEnd>|<get-tokenEnd>(){}[0]
+        final val tokenStart // io.github.valerioisufi.pageboard.model.text/LatexCommands.Match.tokenStart|{}tokenStart[0]
+            final fun <get-tokenStart>(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/LatexCommands.Match.tokenStart.<get-tokenStart>|<get-tokenStart>(){}[0]
+
+        final fun component1(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/LatexCommands.Match.component1|component1(){}[0]
+        final fun component2(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/LatexCommands.Match.component2|component2(){}[0]
+        final fun component3(): kotlin/String // io.github.valerioisufi.pageboard.model.text/LatexCommands.Match.component3|component3(){}[0]
+        final fun component4(): kotlin.collections/List<io.github.valerioisufi.pageboard.model.text/LatexCommand> // io.github.valerioisufi.pageboard.model.text/LatexCommands.Match.component4|component4(){}[0]
+        final fun copy(kotlin/Int = ..., kotlin/Int = ..., kotlin/String = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model.text/LatexCommand> = ...): io.github.valerioisufi.pageboard.model.text/LatexCommands.Match // io.github.valerioisufi.pageboard.model.text/LatexCommands.Match.copy|copy(kotlin.Int;kotlin.Int;kotlin.String;kotlin.collections.List<io.github.valerioisufi.pageboard.model.text.LatexCommand>){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text/LatexCommands.Match.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/LatexCommands.Match.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model.text/LatexCommands.Match.toString|toString(){}[0]
+    }
 }
 
 final object io.github.valerioisufi.pageboard.model.text/ListMarker { // io.github.valerioisufi.pageboard.model.text/ListMarker|null[0]

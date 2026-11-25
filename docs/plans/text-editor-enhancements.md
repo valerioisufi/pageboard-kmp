@@ -80,7 +80,7 @@ Variations).
 | 3 | Autolinks, `![image](url)`, tap-to-open links (canvas, editor, `SourceStrip`), and PDF `/Link` annotations | Done |
 | 4 | Lasso character-level formatting (`SelectedTexts`) and `PlacementManager` snapping | Done |
 | 5 | Custom font selection (`TextFonts`, `NotesFonts`, `ComposeTextTileAdapter`, `TextBoxEditor`, `TextStyleControls`, PDF export) | Done |
-| 6 | LaTeX command autocomplete while typing (`LatexCommands`, `LatexCompletionPopup`, `TextBoxEditor`) | Pending |
+| 6 | LaTeX command autocomplete while typing (`LatexCommands`, `LatexCompletionPopup`, `TextBoxEditor`) | Done |
 
 ## Decisions
 

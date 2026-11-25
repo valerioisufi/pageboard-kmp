@@ -16,6 +16,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -85,6 +86,7 @@ import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.pageboard.canvas.text.TableEditing
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.geometry.Point
+import io.github.valerioisufi.pageboard.model.text.LatexCommands
 import io.github.valerioisufi.pageboard.model.text.RichTextParser
 import io.github.valerioisufi.pageboard.model.text.TextBackground
 import io.github.valerioisufi.pageboard.model.text.TextSizes.PT_TO_MM
@@ -255,6 +257,20 @@ internal fun TextBoxEditor(controller: PageboardController, onCaret: (CaretPlace
     val codeTheme = remember(editor.color, paper) { CodeTheme.of(textColor, paper) }
     // The cell of the caret when it is in a table, and the color of the caret
     val tableCaret = editor.tableCaret
+    val cellAtCaret = tableCaret?.let { c ->
+        shown.tables.firstOrNull { it.span.start == c.span.start }?.layout?.cells?.firstOrNull { it.row == c.row && it.column == c.column }
+    }
+    val hidden = shown.hiddenAtCaret ?: cellAtCaret?.presented?.hiddenAtCaret
+    val linkAtCaret = shown.linkAtCaret ?: cellAtCaret?.presented?.linkAtCaret
+    val latexDismissed = remember { mutableStateOf<Pair<Int, String>?>(null) }
+    val latexMatch = if (hidden?.kind == RichTextParser.Kind.FORMULA && hidden.caretIn && value.selection.collapsed) {
+        val from = hidden.source.first + if (shown.hiddenAtCaret == null && cellAtCaret != null) cellAtCaret.source.first else 0
+        val formulaEnd = (from + hidden.length).coerceAtMost(value.text.length)
+        LatexCommands.match(value.text, value.selection.start, from until formulaEnd)
+            ?.takeIf { latexDismissed.value != (it.tokenStart to it.prefix) }
+    } else null
+    val currentLatexMatch by rememberUpdatedState(latexMatch)
+    val latexSelectedIndex = remember(latexMatch?.tokenStart, latexMatch?.prefix) { mutableIntStateOf(0) }
     val accent = MaterialTheme.colorScheme.primary
     val selectionColor = LocalTextSelectionColors.current.backgroundColor
     val currentShown by rememberUpdatedState(shown)
@@ -455,6 +471,33 @@ internal fun TextBoxEditor(controller: PageboardController, onCaret: (CaretPlace
                     }
                 }
                 .onPreviewKeyEvent { event ->
+                    // Active LaTeX completion: arrows move selection, Tab/Enter accept, Escape dismisses
+                    val activeLatex = currentLatexMatch
+                    if (activeLatex != null && event.type == KeyEventType.KeyDown && !event.isShiftPressed) {
+                        val size = activeLatex.candidates.size
+                        when (event.key) {
+                            Key.DirectionDown -> {
+                                latexSelectedIndex.intValue = (latexSelectedIndex.intValue + 1) % size
+                                return@onPreviewKeyEvent true
+                            }
+                            Key.DirectionUp -> {
+                                latexSelectedIndex.intValue = (latexSelectedIndex.intValue - 1 + size) % size
+                                return@onPreviewKeyEvent true
+                            }
+                            Key.Tab, Key.Enter, Key.NumPadEnter -> {
+                                val chosen = activeLatex.candidates.getOrElse(latexSelectedIndex.intValue) { activeLatex.candidates.first() }
+                                val currentVal = editor.value
+                                val (nextText, nextCaret) = LatexCommands.apply(currentVal.text, activeLatex, chosen)
+                                change(TextFieldValue(nextText, TextRange(nextCaret)), smartNewline = false)
+                                return@onPreviewKeyEvent true
+                            }
+                            Key.Escape -> {
+                                latexDismissed.value = activeLatex.tokenStart to activeLatex.prefix
+                                return@onPreviewKeyEvent true
+                            }
+                            else -> {}
+                        }
+                    }
                     // A suggestion shown: Tab and the right arrow take it, Escape drops it
                     if (suggestion != null && event.type == KeyEventType.KeyDown && !event.isShiftPressed) {
                         when (event.key) {
@@ -684,28 +727,37 @@ internal fun TextBoxEditor(controller: PageboardController, onCaret: (CaretPlace
             ?.let { caretRect(it, currentShown, editor.tableCaret, offset) }
 
         // The source the page hides of what the caret is in, in a strip by it: the text does not move
-        val cellAtCaret = tableCaret?.let { c ->
-            shown.tables.firstOrNull { it.span.start == c.span.start }?.layout?.cells?.firstOrNull { it.row == c.row && it.column == c.column }
-        }
-        val hidden = shown.hiddenAtCaret ?: cellAtCaret?.presented?.hiddenAtCaret
-        val linkAtCaret = shown.linkAtCaret ?: cellAtCaret?.presented?.linkAtCaret
         if (hidden != null && layout?.layoutInput?.text?.text == shown.text.text) {
             // In a cell, its offsets are those of the cell
             val from = hidden.source.first + if (shown.hiddenAtCaret == null && cellAtCaret != null) cellAtCaret.source.first else 0
             val length = hidden.length
             fun inSource(range: TextRange) = TextRange((range.start - from).coerceIn(0, length), (range.end - from).coerceIn(0, length))
+            val stripAnchor: () -> Rect? = { hiddenAnchor(layout, currentShown, editor.tableCaret)?.let { rect -> onScreen(rect, ::toScreen) } }
             SourceStrip(
                 source = value.text.substring(from, (from + length).coerceAtMost(value.text.length)),
                 selection = if (hidden.caretIn) inSource(value.selection) else null,
                 composition = value.composition?.takeIf { hidden.caretIn }?.let(::inSource),
                 caretShown = caretShown,
-                anchor = { hiddenAnchor(layout, currentShown, editor.tableCaret)?.let { rect -> onScreen(rect, ::toScreen) } },
+                anchor = stripAnchor,
                 avoid = barBounds,
                 error = if (hidden.kind == RichTextParser.Kind.FORMULA && writing.invalid) stringResource(Res.string.text_editor_formula_invalid) else null,
                 onCaret = { change(editor.value.copy(selection = TextRange(from + it))) },
                 monospace = notesFonts.monospace,
                 onOpenLink = linkAtCaret?.let { url -> { openLink(url) } }
             )
+            if (latexMatch != null) {
+                LatexCompletionPopup(
+                    match = latexMatch,
+                    selectedIndex = latexSelectedIndex.intValue.coerceIn(0, latexMatch.candidates.lastIndex),
+                    anchor = stripAnchor,
+                    avoid = barBounds,
+                    monospace = notesFonts.monospace,
+                    onSelect = { cmd ->
+                        val (nextText, nextCaret) = LatexCommands.apply(value.text, latexMatch, cmd)
+                        change(TextFieldValue(nextText, TextRange(nextCaret)), smartNewline = false)
+                    }
+                )
+            }
         }
         // No handle on the text while the caret is in the strip: it would stand at the start of the formula
         if (hidden?.caretIn != true) {

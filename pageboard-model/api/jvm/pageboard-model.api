@@ -3849,6 +3849,48 @@ public final class io/github/valerioisufi/pageboard/model/text/CodePointsKt {
 	public static final fun codePoints (Ljava/lang/String;)Ljava/util/List;
 }
 
+public final class io/github/valerioisufi/pageboard/model/text/LatexCommand {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()I
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;)Lio/github/valerioisufi/pageboard/model/text/LatexCommand;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/model/text/LatexCommand;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/text/LatexCommand;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCursorOffset ()I
+	public final fun getInsert ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getPreview ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/pageboard/model/text/LatexCommands {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/text/LatexCommands;
+	public final fun apply (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/text/LatexCommands$Match;Lio/github/valerioisufi/pageboard/model/text/LatexCommand;)Lkotlin/Pair;
+	public final fun getALL ()Ljava/util/List;
+	public final fun match (Ljava/lang/String;ILkotlin/ranges/IntRange;)Lio/github/valerioisufi/pageboard/model/text/LatexCommands$Match;
+}
+
+public final class io/github/valerioisufi/pageboard/model/text/LatexCommands$Match {
+	public fun <init> (IILjava/lang/String;Ljava/util/List;)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/util/List;
+	public final fun copy (IILjava/lang/String;Ljava/util/List;)Lio/github/valerioisufi/pageboard/model/text/LatexCommands$Match;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/model/text/LatexCommands$Match;IILjava/lang/String;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/text/LatexCommands$Match;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCandidates ()Ljava/util/List;
+	public final fun getPrefix ()Ljava/lang/String;
+	public final fun getTokenEnd ()I
+	public final fun getTokenStart ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class io/github/valerioisufi/pageboard/model/text/ListMarker {
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/text/ListMarker;
 	public final fun at (Ljava/lang/CharSequence;I)Lio/github/valerioisufi/pageboard/model/text/ListMarker$Read;
