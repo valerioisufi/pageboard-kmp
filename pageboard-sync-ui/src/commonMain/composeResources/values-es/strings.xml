@@ -123,4 +123,7 @@
     <string name="sync_waiting_unknown">Algunos cambios esperan aquí: vienen de un dispositivo que aún no se conoce aquí, y se aplican en cuanto llega su acceso.</string>
     <string name="sync_waiting_disagree">Algunos cambios esperan aquí: este elemento y una carpeta que lo contiene nombran de forma distinta el dispositivo que los hizo, así que no se aplican desde ninguno.</string>
     <string name="sync_waiting_earlier">Algunos cambios de %1$s esperan aquí a otros anteriores que aún no han llegado.</string>
+    <string name="sync_refused_not_allowed">Algunos cambios de %1$s no se aplicaron: su rol aquí no los permite.</string>
+    <string name="sync_refused_not_admitted">Algunos cambios de %1$s en esta carpeta se rechazaron: su uso compartido no los permite.</string>
+    <string name="sync_not_passed_on">Algunos cambios en %1$s, hechos aquí o en una carpeta que contiene, no llegan a sus personas desde este dispositivo, que solo puede leerla.</string>
 </resources>

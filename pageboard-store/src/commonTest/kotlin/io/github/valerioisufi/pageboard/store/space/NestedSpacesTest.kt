@@ -208,10 +208,17 @@ class NestedSpacesTest {
         assertTrue(bob.store.catalogOperationsAfter(outer.id, emptyMap()).none { it.id.replica == bobReplica }, "nothing of Bob in the course he reads")
         assertTrue(bob.store.catalogOperationsAfter(inner.id, emptyMap()).any { it.id.replica == bobReplica }, "his folder in the lab")
         assertTrue(bob.folders().values.any { it.first == "Week 1" }, "kept in his library, the lab having it")
-        // Through Ada, the editor of both, the course has it
+        // Told on Bob: the course he reads does not have it from him; nothing for the lab, where he writes
+        val week = bob.folders().entries.single { it.value.first == "Week 1" }.key
+        assertEquals(setOf(week), bob.library.notPassedOn(outer.id))
+        assertTrue(bob.library.notPassedOn(inner.id).isEmpty())
+        assertTrue(ada.library.notPassedOn(outer.id).isEmpty(), "nothing for a space written in")
+        // Through Ada, the editor of both, the course has it, and Bob has nothing left to tell
         carry(bob, ada, inner.id)
         ada.library.reconcile()
         assertTrue(ada.library.view(outer.id).any { it.name == "Week 1" })
+        carry(ada, bob, outer.id)
+        assertTrue(bob.library.notPassedOn(outer.id).isEmpty())
     }
 
     @Test

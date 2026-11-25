@@ -377,10 +377,31 @@ public class SpaceLibrary(
             writeLibraryLocked(space, space.session.catalog.view())
             return
         }
-        val root = space.stored.rootFolderId
         val local = libraryItems()
+        val differences = differencesLocked(space, local) ?: return
+        submitLocked(space, differences.changes)
+        // Taken in from another space: each with the stamp it has there
+        for ((change, at) in differences.relayed.sortedBy { it.second }) submitLocked(space, listOf(change), at)
+        // Shown again by these changes, and not in the library: what other devices made in a folder
+        // while it was out of the space here (written as a change received, nothing taken out)
+        val shown = space.session.catalog.view()
+        if (shown.any { it.id !in differences.view && it.id !in local }) writeLibraryLocked(space, shown)
+    }
+
+    /**
+     * What the library ([local]) holds under the root of [space] otherwise than its catalog: the
+     * changes made here ([Differences.changes]), and the pieces taken in from another space holding
+     * the item, with the stamps they have there ([Differences.relayed]); `null` when the root is gone.
+     */
+    private class Differences(val view: Map<String, CatalogEntry>, val changes: List<CatalogChange>, val relayed: List<Pair<CatalogChange, Stamp>>) {
+        /** The items changed (the first one each change names: the folder it goes into is not changed). */
+        val ids: Set<String> get() = (changes + relayed.map { it.first }).mapNotNullTo(HashSet()) { it.ids.firstOrNull() }
+    }
+
+    private suspend fun differencesLocked(space: Space, local: Map<String, LocalItem>): Differences? {
+        val root = space.stored.rootFolderId
         val parents = local.filterValues { it.kind == CatalogItemKind.FOLDER }.mapValues { it.value.parent }
-        if (root != null && root !in local) return // The root is gone (deleted, or in a folder in the trash): nothing to compare
+        if (root != null && root !in local) return null // The root is gone (deleted for good): nothing to compare
         val catalog = space.session.catalog
         val view = catalog.view().associateBy { it.id }
         // Kept out when they would be brought in only: in the space, a sharing of its own changes nothing
@@ -426,13 +447,19 @@ public class SpaceLibrary(
             if (entry.id in inSpace || entry.id !in local) continue
             changes += RemoveFromSpace(entry.id)
         }
-        submitLocked(space, changes)
-        // Taken in from another space: each with the stamp it has there
-        for ((change, at) in relayed.sortedBy { it.second }) submitLocked(space, listOf(change), at)
-        // Shown again by these changes, and not in the library: what other devices made in a folder
-        // while it was out of the space here (written as a change received, nothing taken out)
-        val shown = catalog.view()
-        if (shown.any { it.id !in view && it.id !in local }) writeLibraryLocked(space, shown)
+        return Differences(view, changes, relayed)
+    }
+
+    /**
+     * For a space this device may only read: the items the library holds otherwise than its
+     * catalog, made or changed here, or received through another space this device writes in (a
+     * folder inside it, see `docs/plans/shared-access.md`). This device passes nothing into the
+     * space, so its other members do not have them, unless a device that writes in both does.
+     * Empty for a space this device writes in, or does not keep.
+     */
+    public suspend fun notPassedOn(spaceId: String): Set<String> = mutex.withLock {
+        val space = sessions[spaceId]?.takeIf { it.session.isReadOnly } ?: return@withLock emptySet()
+        differencesLocked(space, libraryItems())?.ids.orEmpty()
     }
 
     private suspend fun submitLocked(space: Space, changes: List<CatalogChange>, at: Stamp? = null) {

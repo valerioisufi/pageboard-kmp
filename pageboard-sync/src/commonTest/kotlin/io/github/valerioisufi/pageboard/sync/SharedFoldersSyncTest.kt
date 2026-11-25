@@ -389,6 +389,18 @@ class SharedFoldersSyncTest {
         assertEquals("Week 1", bob.store.folders.first().single { it.id == week }.name)
         assertEquals("Week 1", ada.store.folders.first().single { it.id == week }.name)
         assertEquals(bobRoot, bob.folderOf(week))
+        assertTrue(ada.engine.refusedOf(spaceId).isEmpty())
+
+        // By another application, his library let write: the change reaches Ada, who refuses it and tells it
+        bob.library.update(bob.library.spaces().single().copy(readOnly = false))
+        assertTrue(bob.store.renameFolder(week, "Mine"))
+        bob.library.reconcile()
+        advanceUntilIdle()
+        assertEquals("Week 1", ada.store.folders.first().single { it.id == week }.name)
+        val refused = ada.engine.refusedOf(spaceId).single()
+        assertEquals(RefusedChanges.Reason.NOT_ADMITTED, refused.reason)
+        assertEquals(bob.store.replicaId(), refused.replica)
+        assertEquals(bob.engine.device, refused.device)
     }
 
     /**

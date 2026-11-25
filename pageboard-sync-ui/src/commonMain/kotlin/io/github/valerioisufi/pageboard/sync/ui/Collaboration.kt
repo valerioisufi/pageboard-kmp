@@ -23,6 +23,7 @@ import io.github.valerioisufi.pageboard.sync.PreferenceAddressBook
 import io.github.valerioisufi.pageboard.sync.Presence
 import io.github.valerioisufi.pageboard.sync.SpaceRoot
 import io.github.valerioisufi.pageboard.sync.StoreSharedDocuments
+import io.github.valerioisufi.pageboard.sync.RefusedChanges
 import io.github.valerioisufi.pageboard.sync.SyncEngine
 import io.github.valerioisufi.pageboard.sync.WaitingChanges
 import io.github.valerioisufi.pageboard.sync.protocol.Grant
@@ -194,6 +195,26 @@ public class Collaboration(
 
     /** The changes of other devices to the document or shared folder [itemId] waiting here, and why (see [SyncEngine.waitingOf]). */
     internal suspend fun waitingOf(itemId: String): List<WaitingChanges> = engine.waitingOf(itemId)
+
+    /** The changes of other devices to the document or shared folder [itemId] refused here, and why (see [SyncEngine.refusedOf]). */
+    internal suspend fun refusedOf(itemId: String): List<RefusedChanges> = engine.refusedOf(itemId)
+
+    /**
+     * The shared folders this device may only read, of the item [itemId] (the item itself, a shared
+     * folder, and the ones around it), to which it does not pass on what the library holds
+     * otherwise (see [SpaceLibrary.notPassedOn]): their identifiers.
+     */
+    internal suspend fun notPassedOn(itemId: String): List<String> {
+        val library = library ?: return emptyList()
+        val own = library.spaces().firstOrNull { it.id == itemId }
+        val ownRoot = own?.rootFolderId
+        val around = when {
+            own == null -> library.spacesOf(itemId)
+            ownRoot != null -> library.spacesOf(ownRoot)
+            else -> emptyList()
+        }
+        return (listOfNotNull(own) + around).filter { it.readOnly && library.notPassedOn(it.id).isNotEmpty() }.map { it.id }
+    }
 
     /** Whether the editors of the shared folder [spaceId] may share what is inside it too (see [Capability.SHARE_INSIDE]). */
     public fun editorsShareInside(spaceId: String): Boolean =

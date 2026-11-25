@@ -40,6 +40,7 @@ import io.github.valerioisufi.pageboard.canvas.controller.Collaborator
 import io.github.valerioisufi.pageboard.canvas.controller.CollaboratorPresence
 import io.github.valerioisufi.pageboard.platform.DeviceProfile
 import io.github.valerioisufi.pageboard.sync.InvitationGrant
+import io.github.valerioisufi.pageboard.sync.RefusedChanges
 import io.github.valerioisufi.pageboard.sync.WaitingChanges
 import io.github.valerioisufi.pageboard.sync.lan.LanCheck
 import io.github.valerioisufi.pageboard.sync.protocol.Invitation
@@ -229,8 +230,11 @@ private fun ShareTargetDialog(collaboration: Collaboration, target: ShareTarget,
     var titles by remember { mutableStateOf<Map<String, String?>>(emptyMap()) }
     // Where each folder of the access is in this library (to open its dialog), `null` when it is not
     var roots by remember { mutableStateOf<Map<String, Result<String?>?>>(emptyMap()) }
-    // The changes of the others waiting here, and why
+    // The changes of the others waiting here, or refused, and why
     var waiting by remember { mutableStateOf<List<WaitingChanges>>(emptyList()) }
+    var refusals by remember { mutableStateOf<List<RefusedChanges>>(emptyList()) }
+    // The folders this device only reads that do not get from it what changed here, named
+    var notPassedOn by remember { mutableStateOf<List<String?>>(emptyList()) }
     // For a folder: what keeps a sharing of its own inside it, said before ending or leaving it
     var sharedInside by remember { mutableStateOf<List<String>>(emptyList()) }
     // A member to remove who keeps an access through another source: asked first
@@ -250,6 +254,7 @@ private fun ShareTargetDialog(collaboration: Collaboration, target: ShareTarget,
                 collaboration.routeOf(documentId, member.device)?.let { member.device to it }
             }.toMap()
             waiting = if (documentId.isEmpty()) emptyList() else collaboration.waitingOf(documentId)
+            refusals = if (documentId.isEmpty()) emptyList() else collaboration.refusedOf(documentId)
             delay(ROUTES_MS)
         }
     }
@@ -260,6 +265,7 @@ private fun ShareTargetDialog(collaboration: Collaboration, target: ShareTarget,
         val spaces = found?.sources.orEmpty().filterIsInstance<AccessSource.Space>()
         titles = spaces.associate { it.spaceId to collaboration.titleOfSpace(it.spaceId) }
         roots = spaces.associate { it.spaceId to collaboration.rootOfSpace(it.spaceId) }
+        notPassedOn = if (documentId.isEmpty()) emptyList() else collaboration.notPassedOn(documentId).map { collaboration.titleOfSpace(it) }
     }
     LaunchedEffect(confirmStop) {
         sharedInside = if (confirmStop && folder != null && documentId.isNotEmpty()) collaboration.sharedInside(documentId) else emptyList()
@@ -296,6 +302,10 @@ private fun ShareTargetDialog(collaboration: Collaboration, target: ShareTarget,
         waiting = waiting.map { changes ->
             SharingWaiting(changes.reason, changes.device?.let { device -> access?.members?.firstOrNull { it.device == device }?.name })
         },
+        refusals = refusals.map { changes ->
+            SharingRefusal(changes.reason, changes.device?.let { device -> access?.members?.firstOrNull { it.device == device }?.name })
+        },
+        notPassedOn = notPassedOn,
         editorsShareInside = if (folder != null && isOwner && shareId != null) collaboration.editorsShareInside(documentId) else null,
         refusedBy = refusedBy?.getOrNull(),
         refusedByOwner = refusedBy != null,

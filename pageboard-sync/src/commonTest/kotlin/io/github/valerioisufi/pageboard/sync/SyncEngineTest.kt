@@ -1696,6 +1696,7 @@ class SyncEngineTest {
         // Reader again: the changes it makes all the same (by another application) are refused by the others
         ada.engine.setRole(document.id, bob.engine.device, Role.READER)
         advanceUntilIdle()
+        assertTrue(ada.engine.refusedOf(document.id).isEmpty())
         val open = assertNotNull(bob.documents.open(document.id))
         open.edit { session ->
             session.isReadOnly = false
@@ -1704,6 +1705,12 @@ class SyncEngineTest {
         bob.documents.close(open)
         advanceUntilIdle()
         assertEquals(1, ada.snapshot(document.id).pages.size)
+        // And told on Ada: whose, how many, why
+        val refused = ada.engine.refusedOf(document.id).single()
+        assertEquals(RefusedChanges.Reason.NOT_ALLOWED, refused.reason)
+        assertEquals(bob.store.replicaId(), refused.replica)
+        assertEquals(bob.engine.device, refused.device)
+        assertEquals(1, refused.count)
     }
 
     @Test

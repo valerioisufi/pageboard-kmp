@@ -123,4 +123,7 @@
     <string name="sync_waiting_unknown">Des modifications attendent ici : elles viennent d’un appareil pas encore connu ici, et sont prises dès que son accès arrive.</string>
     <string name="sync_waiting_disagree">Des modifications attendent ici : cet élément et un dossier qui le contient nomment différemment l’appareil qui les a faites, elles ne sont donc prises d’aucun.</string>
     <string name="sync_waiting_earlier">Des modifications de %1$s attendent ici des modifications précédentes pas encore arrivées.</string>
+    <string name="sync_refused_not_allowed">Des modifications de %1$s n’ont pas été prises : son rôle ici ne les permet pas.</string>
+    <string name="sync_refused_not_admitted">Des modifications de %1$s à ce dossier ont été refusées : son partage ne les permet pas.</string>
+    <string name="sync_not_passed_on">Des modifications dans %1$s, faites ici ou dans un dossier qu’il contient, n’atteignent pas ses personnes depuis cet appareil, qui peut seulement le lire.</string>
 </resources>

@@ -123,4 +123,7 @@
     <string name="sync_waiting_unknown">Some changes wait here: they come from a device not known here yet, and are taken once its access arrives.</string>
     <string name="sync_waiting_disagree">Some changes wait here: this item and a folder around it name the device that made them differently, so they are taken from neither.</string>
     <string name="sync_waiting_earlier">Some changes of %1$s wait here for earlier ones that have not arrived yet.</string>
+    <string name="sync_refused_not_allowed">Some changes of %1$s were not taken: its role here does not allow them.</string>
+    <string name="sync_refused_not_admitted">Some changes of %1$s to this folder were refused: its sharing does not allow them.</string>
+    <string name="sync_not_passed_on">Some changes in %1$s, made here or in a folder inside it, do not reach its people from this device, which can only read it.</string>
 </resources>

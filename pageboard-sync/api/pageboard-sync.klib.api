@@ -365,6 +365,30 @@ final class io.github.valerioisufi.pageboard.sync/Presence { // io.github.valeri
     }
 }
 
+final class io.github.valerioisufi.pageboard.sync/RefusedChanges { // io.github.valerioisufi.pageboard.sync/RefusedChanges|null[0]
+    final val count // io.github.valerioisufi.pageboard.sync/RefusedChanges.count|{}count[0]
+        final fun <get-count>(): kotlin/Int // io.github.valerioisufi.pageboard.sync/RefusedChanges.count.<get-count>|<get-count>(){}[0]
+    final val device // io.github.valerioisufi.pageboard.sync/RefusedChanges.device|{}device[0]
+        final fun <get-device>(): kotlin/String? // io.github.valerioisufi.pageboard.sync/RefusedChanges.device.<get-device>|<get-device>(){}[0]
+    final val itemId // io.github.valerioisufi.pageboard.sync/RefusedChanges.itemId|{}itemId[0]
+        final fun <get-itemId>(): kotlin/String // io.github.valerioisufi.pageboard.sync/RefusedChanges.itemId.<get-itemId>|<get-itemId>(){}[0]
+    final val reason // io.github.valerioisufi.pageboard.sync/RefusedChanges.reason|{}reason[0]
+        final fun <get-reason>(): io.github.valerioisufi.pageboard.sync/RefusedChanges.Reason // io.github.valerioisufi.pageboard.sync/RefusedChanges.reason.<get-reason>|<get-reason>(){}[0]
+    final val replica // io.github.valerioisufi.pageboard.sync/RefusedChanges.replica|{}replica[0]
+        final fun <get-replica>(): kotlin/String // io.github.valerioisufi.pageboard.sync/RefusedChanges.replica.<get-replica>|<get-replica>(){}[0]
+
+    final enum class Reason : kotlin/Enum<io.github.valerioisufi.pageboard.sync/RefusedChanges.Reason> { // io.github.valerioisufi.pageboard.sync/RefusedChanges.Reason|null[0]
+        enum entry NOT_ADMITTED // io.github.valerioisufi.pageboard.sync/RefusedChanges.Reason.NOT_ADMITTED|null[0]
+        enum entry NOT_ALLOWED // io.github.valerioisufi.pageboard.sync/RefusedChanges.Reason.NOT_ALLOWED|null[0]
+
+        final val entries // io.github.valerioisufi.pageboard.sync/RefusedChanges.Reason.entries|#static{}entries[0]
+            final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.pageboard.sync/RefusedChanges.Reason> // io.github.valerioisufi.pageboard.sync/RefusedChanges.Reason.entries.<get-entries>|<get-entries>#static(){}[0]
+
+        final fun valueOf(kotlin/String): io.github.valerioisufi.pageboard.sync/RefusedChanges.Reason // io.github.valerioisufi.pageboard.sync/RefusedChanges.Reason.valueOf|valueOf#static(kotlin.String){}[0]
+        final fun values(): kotlin/Array<io.github.valerioisufi.pageboard.sync/RefusedChanges.Reason> // io.github.valerioisufi.pageboard.sync/RefusedChanges.Reason.values|values#static(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.pageboard.sync/SharingState { // io.github.valerioisufi.pageboard.sync/SharingState|null[0]
     constructor <init>(kotlin.collections/List<io.github.valerioisufi.pageboard.sync/EpochKey> = ..., kotlin/String = ..., io.github.valerioisufi.pageboard.sync.protocol/SignedMembership? = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.sync/InvitationGrant> = ..., kotlin/String? = ..., kotlin.collections/Map<kotlin/String, kotlin.collections/Map<kotlin/String, kotlin/Long>> = ..., kotlin/Boolean = ..., kotlin/String? = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.sync/SharingState> = ..., kotlin/Boolean = ..., io.github.valerioisufi.pageboard.sync.protocol/Placement? = ...) // io.github.valerioisufi.pageboard.sync/SharingState.<init>|<init>(kotlin.collections.List<io.github.valerioisufi.pageboard.sync.EpochKey>;kotlin.String;io.github.valerioisufi.pageboard.sync.protocol.SignedMembership?;kotlin.collections.List<io.github.valerioisufi.pageboard.sync.InvitationGrant>;kotlin.String?;kotlin.collections.Map<kotlin.String,kotlin.collections.Map<kotlin.String,kotlin.Long>>;kotlin.Boolean;kotlin.String?;kotlin.collections.List<io.github.valerioisufi.pageboard.sync.SharingState>;kotlin.Boolean;io.github.valerioisufi.pageboard.sync.protocol.Placement?){}[0]
 
@@ -484,6 +508,7 @@ final class io.github.valerioisufi.pageboard.sync/SyncEngine { // io.github.vale
     final suspend fun keepsApart(kotlin/String, kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.sync/SyncEngine.keepsApart|keepsApart(kotlin.String;kotlin.String){}[0]
     final suspend fun place(kotlin/String, kotlin/String, kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.sync/SyncEngine.place|place(kotlin.String;kotlin.String;kotlin.String){}[0]
     final suspend fun publishAddress(kotlin/String, kotlin/String?) // io.github.valerioisufi.pageboard.sync/SyncEngine.publishAddress|publishAddress(kotlin.String;kotlin.String?){}[0]
+    final suspend fun refusedOf(kotlin/String): kotlin.collections/List<io.github.valerioisufi.pageboard.sync/RefusedChanges> // io.github.valerioisufi.pageboard.sync/SyncEngine.refusedOf|refusedOf(kotlin.String){}[0]
     final suspend fun removeMember(kotlin/String, kotlin/String) // io.github.valerioisufi.pageboard.sync/SyncEngine.removeMember|removeMember(kotlin.String;kotlin.String){}[0]
     final suspend fun revokeInvitation(kotlin/String, kotlin/String) // io.github.valerioisufi.pageboard.sync/SyncEngine.revokeInvitation|revokeInvitation(kotlin.String;kotlin.String){}[0]
     final suspend fun routeOf(kotlin/String, kotlin/String): io.github.valerioisufi.pageboard.sync.protocol/Route? // io.github.valerioisufi.pageboard.sync/SyncEngine.routeOf|routeOf(kotlin.String;kotlin.String){}[0]

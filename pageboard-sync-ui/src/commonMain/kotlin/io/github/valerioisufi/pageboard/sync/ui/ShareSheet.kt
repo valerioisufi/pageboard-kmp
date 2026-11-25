@@ -46,6 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
+import io.github.valerioisufi.pageboard.sync.RefusedChanges
 import io.github.valerioisufi.pageboard.sync.WaitingChanges
 import io.github.valerioisufi.pageboard.sync.protocol.InvitationKind
 import io.github.valerioisufi.pageboard.sync.protocol.Role
@@ -96,6 +97,12 @@ internal data class SharingSource(
  */
 internal data class SharingWaiting(val reason: WaitingChanges.Reason, val name: String? = null)
 
+/**
+ * Changes of another device refused here, and why (see `SyncEngine.refusedOf`): [name] is the
+ * device that made them, when known.
+ */
+internal data class SharingRefusal(val reason: RefusedChanges.Reason, val name: String? = null)
+
 /** The invitation of a document: its [link] (and its QR code), the [role] of who joins with it, whether the owner approves them first. */
 internal data class SharingInvitation(val link: String, val role: Role, val approval: Boolean)
 
@@ -141,7 +148,14 @@ internal class SharingState(
     /** For a folder or the library: the notes and folders inside it with a sharing of their own, which stay shared. */
     val sharedInside: List<String> = emptyList(),
     /** The changes of other devices waiting here, and why. */
-    val waiting: List<SharingWaiting> = emptyList()
+    val waiting: List<SharingWaiting> = emptyList(),
+    /** The changes of other devices refused here, and why. */
+    val refusals: List<SharingRefusal> = emptyList(),
+    /**
+     * The shared folders this device only reads, which do not get from it what changed here or in
+     * a folder inside them (see `SpaceLibrary.notPassedOn`), named (`null` for the library).
+     */
+    val notPassedOn: List<String?> = emptyList()
 ) {
     /** Whether the invitation is shown: to the owner, or before sharing. */
     val invites: Boolean get() = !shared || isOwner
@@ -311,6 +325,17 @@ private fun Notices(state: SharingState, actions: SharingActions) {
             WaitingChanges.Reason.UNKNOWN_DEVICE -> stringResource(Res.string.sync_waiting_unknown)
         }
         Notice(PageboardIcons.Info, text)
+    }
+    for (refusal in state.refusals.distinct()) {
+        val name = refusal.name ?: stringResource(Res.string.sync_device_unnamed)
+        val text = when (refusal.reason) {
+            RefusedChanges.Reason.NOT_ALLOWED -> stringResource(Res.string.sync_refused_not_allowed, name)
+            RefusedChanges.Reason.NOT_ADMITTED -> stringResource(Res.string.sync_refused_not_admitted, name)
+        }
+        Notice(PageboardIcons.TriangleAlert, text)
+    }
+    for (folder in state.notPassedOn.distinct()) {
+        Notice(PageboardIcons.Info, stringResource(Res.string.sync_not_passed_on, folder ?: stringResource(Res.string.sync_the_library)))
     }
     if (state.shared && !state.offline) {
         TextButton(onClick = actions::check) { Text(stringResource(Res.string.sync_check)) }

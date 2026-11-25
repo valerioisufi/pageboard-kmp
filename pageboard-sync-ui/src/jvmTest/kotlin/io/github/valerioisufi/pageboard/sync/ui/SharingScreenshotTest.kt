@@ -18,6 +18,7 @@ import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.takahirom.roborazzi.captureRoboImage
+import io.github.valerioisufi.pageboard.sync.RefusedChanges
 import io.github.valerioisufi.pageboard.sync.WaitingChanges
 import io.github.valerioisufi.pageboard.sync.JoinStatus
 import io.github.valerioisufi.pageboard.sync.lan.LanDevice
@@ -251,6 +252,36 @@ class SharingScreenshotTest {
     fun joinLibrary() = capture("join-library", width = 520, height = 420) {
         Dialog(ShareDialogNarrowWidth) {
             Box(modifier = Modifier.padding(24.dp)) { LibraryRootChoice("Valerio’s notes", intoLibrary = true) {} }
+        }
+    }
+
+    /**
+     * What happened to the changes of the others, told (docs/plans/shared-access.md, phase 11): the
+     * ones of a reader refused, and a folder this device only reads not getting what changed here.
+     */
+    @Test
+    fun changesTold() = capture("share-changes-told", width = 608, height = 760) {
+        Dialog(ShareDialogNarrowWidth) {
+            ShareContent(
+                state = SharingState(
+                    shared = true,
+                    isOwner = true,
+                    owner = "Valerio’s Mac",
+                    invitation = null,
+                    requests = emptyList(),
+                    members = listOf(members[0].copy(me = true), members[2]),
+                    offline = false,
+                    otherVersion = false,
+                    kind = InvitationKind.FOLDER,
+                    refusals = listOf(SharingRefusal(RefusedChanges.Reason.NOT_ADMITTED, "Luca’s phone")),
+                    notPassedOn = listOf("Physics")
+                ),
+                actions = noActions,
+                name = "Valerio’s Mac",
+                deviceName = "Valerio’s Mac",
+                onRename = {},
+                compact = false
+            )
         }
     }
 

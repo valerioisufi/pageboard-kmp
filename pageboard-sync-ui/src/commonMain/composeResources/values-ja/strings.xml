@@ -123,4 +123,7 @@
     <string name="sync_waiting_unknown">一部の変更がここで待機しています：まだこのデバイスが知らないデバイスからの変更で、そのアクセスが届くと反映されます。</string>
     <string name="sync_waiting_disagree">一部の変更がここで待機しています：この項目とそれを含むフォルダが、変更したデバイスを異なるものとして示しているため、どちらからも反映されません。</string>
     <string name="sync_waiting_earlier">%1$s の一部の変更が、まだ届いていない以前の変更をここで待っています。</string>
+    <string name="sync_refused_not_allowed">%1$s の一部の変更は反映されませんでした：ここでの役割では許可されていません。</string>
+    <string name="sync_refused_not_admitted">%1$s によるこのフォルダへの一部の変更は拒否されました：その共有では許可されていません。</string>
+    <string name="sync_not_passed_on">%1$s の一部の変更（ここまたは中のフォルダで行われたもの）は、このデバイスからはそのメンバーに届きません。このデバイスは閲覧しかできないためです。</string>
 </resources>

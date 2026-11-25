@@ -24,7 +24,9 @@ their union:
   members, the grants of their owners, and what removing someone from one leaves them;
 * `waitingOf` tells which changes of other devices wait here, and why (`WaitingChanges`): a
   device not known yet, accesses naming a replica for different devices, earlier changes of a
-  folder missing. A change waits until it can be taken, and is never applied before.
+  folder missing. A change waits until it can be taken, and is never applied before;
+* `refusedOf` tells which changes of other devices were refused here, and why (`RefusedChanges`):
+  not allowed by any access, or not admitted by the sharing of a folder.
 
 The owner of a sharing decides who besides itself may do more than its role (`Grant` of
 `pageboard-sync-protocol`, `setGrants`): share an item of its folder on its own

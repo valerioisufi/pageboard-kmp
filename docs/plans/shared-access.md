@@ -703,6 +703,7 @@ From then on the grants let the protocol grow:
 | 8. Real devices | The MacBook and the iPhone: the three documents of Machine Learning on the iPhone, a direct member removed from the library and still synced, the own sharing of one ended; a folder of the library shared with a third device (or a scratch desktop), changes made on each side and met again | to do |
 | 9. What a folder in the trash holds | Found left for later by the random test of phase 5: the spaces compare the whole library, what a folder in the trash holds included (`SpaceStore.library`); the other spaces take a change received at once; the changes of the library made here taken in before a change received is written; an item shown again by a change of this device written into the library. Tests: the random test with the trash, the lab and the documents in it too; a document moved into a folder in the trash through both spaces; a folder made in a folder while it was out of the lab, back with it; `library` on both stores | done |
 | 10. Telling the user | Left for later by phases 3 and 7: why changes of another device wait here (`SyncEngine.waitingOf`, `WaitingChanges`), told in the sharing dialog; each folder of the access opened from the dialog of the item, where it is managed and left ("Leave" per access); ending or leaving says what stays (the other sources, the items inside with a sharing of their own); the join dialog says a folder already in the library stays where it is (`SpaceRoot.InPlace`). Strings in the 7 languages, screenshots recorded in the Docker image | done |
+| 11. Refused, and not passed on | Left for later by phase 10: the changes of another device refused here (`SyncEngine.refusedOf`, `RefusedChanges`), and what a device that only reads a folder does not pass on to it (`SpaceLibrary.notPassedOn`), told in the sharing dialog. Strings in the 7 languages, a screenshot recorded in the Docker image | done |
 
 ### Phase 1 results
 
@@ -1148,6 +1149,52 @@ From then on the grants let the protocol grow:
   printed no error. Its dialogs were not driven from here: the screenshots show them.
 * The ABI of `pageboard-sync` is recorded again: additions only (`waitingOf`, `WaitingChanges`).
 
+### Phase 11 results
+
+* `SyncEngine.refusedOf(itemId)` (public): the changes of other devices to a document or a shared
+  folder refused here since the engine started, by replica, each with how many and why
+  (`RefusedChanges.Reason`):
+  * `NOT_ALLOWED`: operations of a document that no access lets their replica make (made after
+    it could only read, by another application, or after its role or grant was taken back). They
+    are left out, and the others of the same connection taken, as before;
+  * `NOT_ADMITTED`: a change of a shared folder its sharing does not admit. The connection is
+    closed, as before.
+
+  Unlike what waits, these are never taken. They are kept in memory only: the sequences of each
+  item, replica and reason, at most `MAX_REFUSED` (1000) each. Items and replicas are the ones of
+  this device's memberships, so what another device sends cannot make it grow without bound.
+  Forgeries (an operation not signed by the device of its replica, stamps far ahead) still close
+  the connection without being told: they are attacks, not changes of a member.
+  `RefusedChanges` is shaped as `WaitingChanges` (phase 10).
+* `SpaceLibrary.notPassedOn(spaceId)` (public): for a space this device may only read, the items the
+  library holds otherwise than its catalog, made or changed here, or received through a folder
+  inside it where this device writes. This device passes nothing into the space, so its other
+  members do not have them, unless a device that writes in both does: then the space gets them, and
+  the list empties. It is the comparison of the library with the catalog, `differencesLocked`, taken
+  out of `reconcileLocked`, which now uses it too.
+* The sharing dialog tells both, one notice each:
+  * "Some changes of Luca's phone to this folder were refused: its sharing does not allow them";
+  * "Some changes in Physics, made here or in a folder inside it, do not reach its people from
+    this device, which can only read it", for the item's own folder and the folders around it that
+    this device only reads (`Collaboration.notPassedOn`). This one is looked at when the dialog
+    opens and when the membership changes, not every second: it reads the library.
+* Strings in the 7 languages.
+* Tests:
+  * `SyncEngineTest.theChangesOfAReaderAreRefusedByEveryDevice`: the change a reader makes all the
+    same is told on the owner, `NOT_ALLOWED`, with its replica, device and a count of 1, and nothing
+    before it;
+  * `SharedFoldersSyncTest.aReaderChangesNothingOfTheFolder`: a reader whose library is let write
+    by hand (another application) renames a folder; the owner refuses it, keeps its name, and tells
+    `NOT_ADMITTED` with the reader's replica and device;
+  * `NestedSpacesTest.aReaderOfTheOuterFolderPassesNothingIntoIt`: the folder Bob makes in the lab
+    is not passed on to the course he reads, and is told so; nothing for the lab, where he writes,
+    nor for Ada, who writes in both; once Ada has passed it on, nothing is left to tell;
+  * the screenshot `share-changes-told`, recorded in the Docker image of `tools/screenshots`.
+* PencilNotes desktop ran on a scratch data directory: it started, made its database there, and
+  printed no error.
+* The ABI of `pageboard-store` (`notPassedOn`) and `pageboard-sync` (`refusedOf`,
+  `RefusedChanges`) is recorded again: additions only.
+
 Every phase ends with the checks of `CLAUDE.md` (with `./consumer-checks/check.sh` for phases 1,
 2, 3, 5 and 6, which change published APIs) and the tests of the sync modules on the iOS
 simulator. One commit per phase on `feat/shared-access`, the status updated with it.
@@ -1265,6 +1312,11 @@ The maintainer approved the plan with every proposed choice ("Implementa, scelte
 * Phase 9: the spaces compare the whole library read from the store (`SpaceStore.library`), rather
   than what the flows of the library show: a read of the documents and folders at each
   comparison, which the store's own operations on the trash already make.
+* Phase 11: what was refused kept in memory only, since the engine started, rather than stored:
+  a refusal is told while it matters, and a device restarted asks again, so it is told again.
+* Phase 11: what a reader does not pass on told on the reader's device, from its library, rather
+  than to the other members of the outer folder: they cannot know of a change that never reached
+  them, and the reader is the one who can ask the owner to be made an editor.
 * Phase 10: what waits counted on each connection and read when asked, rather than a flow of the
   engine: the dialog asks every second, as it does for the routes, and nothing is kept for an item
   whose dialog is closed.
@@ -1285,9 +1337,6 @@ The maintainer approved the plan with every proposed choice ("Implementa, scelte
 * The store-and-forward relay holding several tags for one document (its own plan).
 * A replica bound to its device by construction (derived from the device's key), which would make
   `deviceOf` conflicts impossible: a change of every replica and of what travels.
-* Telling a member that a change was refused rather than kept waiting (a grant missing: the
-  connection carrying it closes), and which access a membership not anchored comes from: phase 10
-  tells what waits only.
-* A member of an inner space told that parts of the outer space disagree with it, when no device
-  in both relays their changes (a reader of the outer space only).
+* Which access a membership not anchored comes from (phase 10 tells that changes wait, phase 11
+  that they were refused).
 * The test on real devices (phase 8), by the maintainer.

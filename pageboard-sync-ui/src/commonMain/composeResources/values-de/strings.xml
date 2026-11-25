@@ -123,4 +123,7 @@
     <string name="sync_waiting_unknown">Einige Änderungen warten hier: Sie kommen von einem Gerät, das hier noch nicht bekannt ist, und werden übernommen, sobald sein Zugriff ankommt.</string>
     <string name="sync_waiting_disagree">Einige Änderungen warten hier: Dieses Element und ein Ordner darum nennen das Gerät, das sie gemacht hat, verschieden, daher werden sie von keinem übernommen.</string>
     <string name="sync_waiting_earlier">Einige Änderungen von %1$s warten hier auf frühere, die noch nicht angekommen sind.</string>
+    <string name="sync_refused_not_allowed">Einige Änderungen von %1$s wurden nicht übernommen: Seine Rolle hier erlaubt sie nicht.</string>
+    <string name="sync_refused_not_admitted">Einige Änderungen von %1$s an diesem Ordner wurden abgelehnt: Seine Freigabe erlaubt sie nicht.</string>
+    <string name="sync_not_passed_on">Einige Änderungen in %1$s, hier oder in einem Ordner darin gemacht, erreichen seine Personen nicht von diesem Gerät aus, das ihn nur lesen kann.</string>
 </resources>

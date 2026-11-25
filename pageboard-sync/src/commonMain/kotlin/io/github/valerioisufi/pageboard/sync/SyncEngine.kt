@@ -173,6 +173,14 @@ public class SyncEngine(
     /** One shared folder kept in the library at a time: admitted over two connections, it is kept once. */
     private val spaceJoins = Mutex()
 
+    /**
+     * The changes of other devices refused here (see [refusedOf]), by item, then by replica and
+     * reason: their sequences, at most [MAX_REFUSED]. Items and replicas are the ones of this
+     * device's memberships, so what another device sends cannot make it grow without bound.
+     */
+    private val refusals = mutableMapOf<String, MutableMap<Pair<String, RefusedChanges.Reason>, MutableSet<Long>>>()
+    private val refusalsLock = Mutex()
+
     /** The heads of the documents of each space, as each member connected said them (under [mutex]): space, device, heads. */
     private val remoteHeads = mutableMapOf<String, MutableMap<String, Map<String, String>>>()
 
@@ -472,6 +480,32 @@ public class SyncEngine(
                 else -> WaitingChanges(itemId, replica, union?.deviceOf(replica), count, WaitingChanges.Reason.UNKNOWN_DEVICE)
             }
         }.sortedWith(compareBy<WaitingChanges> { it.reason }.thenBy { it.replica })
+    }
+
+    /**
+     * The changes of other devices to the document or the shared folder [itemId] refused here since
+     * the engine started, by replica, and why (see [RefusedChanges]): empty when none was. Kept in
+     * memory only, at most [MAX_REFUSED] changes counted for each replica and reason.
+     */
+    public suspend fun refusedOf(itemId: String): List<RefusedChanges> {
+        val held = refusalsLock.withLock { refusals[itemId]?.mapValues { it.value.size }.orEmpty() }
+        if (held.isEmpty()) return emptyList()
+        val union = sharing.unionOf(itemId)
+        val folder = spaceSharing?.spaces?.membershipOf(itemId)
+        return held.map { (key, count) ->
+            val (replica, reason) = key
+            val device = if (reason == RefusedChanges.Reason.NOT_ADMITTED) folder?.deviceOf(replica) else union?.deviceOf(replica)
+            RefusedChanges(itemId, replica, device, count, reason)
+        }.sortedWith(compareBy<RefusedChanges> { it.reason }.thenBy { it.replica })
+    }
+
+    /** Keeps that the changes [ids] of [itemId] were refused, for [reason] (see [refusedOf]). */
+    private suspend fun refuse(itemId: String, reason: RefusedChanges.Reason, ids: List<OperationId>) = refusalsLock.withLock {
+        val byReplica = refusals.getOrPut(itemId) { mutableMapOf() }
+        for (id in ids) {
+            val sequences = byReplica.getOrPut(id.replica to reason) { mutableSetOf() }
+            if (sequences.size < MAX_REFUSED) sequences += id.sequence
+        }
     }
 
     /**
@@ -2016,6 +2050,7 @@ public class SyncEngine(
                     id.sequence <= last -> iterator.remove()
                     id.sequence == last + 1 -> {
                         if (!spaceSharing.admitsChange(spaceId, item.first, item.second) || !library.admits(spaceId, item.first)) {
+                            refuse(spaceId, RefusedChanges.Reason.NOT_ADMITTED, listOf(id))
                             throw SyncException("A change of a folder not admitted")
                         }
                         batch += item
@@ -2142,7 +2177,9 @@ public class SyncEngine(
                 throw SyncException("An operation not signed by the device of ${id.replica}")
             }
         }
-        val allowed = known.filter { membership.mayWrite(it.operation.id.replica, it.operation.id.sequence) }
+        // Of a replica no access lets write them (any more): left out, and kept to be told
+        val (allowed, notAllowed) = known.partition { membership.mayWrite(it.operation.id.replica, it.operation.id.sequence) }
+        if (notAllowed.isNotEmpty()) refuse(link.documentId, RefusedChanges.Reason.NOT_ALLOWED, notAllowed.map { it.operation.id })
         if (allowed.isEmpty()) return
         // Stamped by its replica, at most an hour ahead of the clock here, carrying no stamp after
         // its own: the connection carrying one that is not is closed, before anything of it is kept
@@ -2443,6 +2480,9 @@ public class SyncEngine(
 
         /** The operations of a connection waiting for their membership, at most (what another device sends is bounded). */
         const val MAX_DEFERRED: Int = 20_000
+
+        /** The changes refused counted for each item, replica and reason, at most (see [refusedOf]). */
+        const val MAX_REFUSED: Int = 1_000
 
         /** The heads of a space taken from another device, at most. */
         const val MAX_HEADS = 100_000
