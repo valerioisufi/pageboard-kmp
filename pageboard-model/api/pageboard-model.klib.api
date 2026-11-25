@@ -2565,6 +2565,51 @@ final class io.github.valerioisufi.pageboard.model.shape/ShapeBox { // io.github
     final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model.shape/ShapeBox.toString|toString(){}[0]
 }
 
+final class io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity { // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity|null[0]
+    constructor <init>(kotlin/String, io.github.valerioisufi.pageboard.model.shape/ShapeElement, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float, kotlin/Float = ...) // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.<init>|<init>(kotlin.String;io.github.valerioisufi.pageboard.model.shape.ShapeElement;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+
+    final val height // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.height|{}height[0]
+        final fun <get-height>(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.height.<get-height>|<get-height>(){}[0]
+    final val pageId // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.pageId|{}pageId[0]
+        final fun <get-pageId>(): kotlin/String // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.pageId.<get-pageId>|<get-pageId>(){}[0]
+    final val rotation // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.rotation|{}rotation[0]
+        final fun <get-rotation>(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.rotation.<get-rotation>|<get-rotation>(){}[0]
+    final val shape // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.shape|{}shape[0]
+        final fun <get-shape>(): io.github.valerioisufi.pageboard.model.shape/ShapeElement // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.shape.<get-shape>|<get-shape>(){}[0]
+    final val width // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.width|{}width[0]
+        final fun <get-width>(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.width.<get-width>|<get-width>(){}[0]
+    final val x // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.x|{}x[0]
+        final fun <get-x>(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.x.<get-x>|<get-x>(){}[0]
+    final val y // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.y|{}y[0]
+        final fun <get-y>(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.y.<get-y>|<get-y>(){}[0]
+
+    final fun component1(): kotlin/String // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.component1|component1(){}[0]
+    final fun component2(): io.github.valerioisufi.pageboard.model.shape/ShapeElement // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.component2|component2(){}[0]
+    final fun component3(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.component3|component3(){}[0]
+    final fun component4(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.component4|component4(){}[0]
+    final fun component5(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.component5|component5(){}[0]
+    final fun component6(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.component6|component6(){}[0]
+    final fun component7(): kotlin/Float // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.component7|component7(){}[0]
+    final fun copy(kotlin/String = ..., io.github.valerioisufi.pageboard.model.shape/ShapeElement = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ..., kotlin/Float = ...): io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.copy|copy(kotlin.String;io.github.valerioisufi.pageboard.model.shape.ShapeElement;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float;kotlin.Float){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.hashCode|hashCode(){}[0]
+    final fun isValid(): kotlin/Boolean // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.isValid|isValid(){}[0]
+    final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity> { // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.$serializer|null[0]
+        final val descriptor // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity) // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;io.github.valerioisufi.pageboard.model.shape.ShapeDraftActivity){}[0]
+    }
+
+    final object Companion { // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity> // io.github.valerioisufi.pageboard.model.shape/ShapeDraftActivity.Companion.serializer|serializer(){}[0]
+    }
+}
+
 final class io.github.valerioisufi.pageboard.model.shape/ShapeElement { // io.github.valerioisufi.pageboard.model.shape/ShapeElement|null[0]
     constructor <init>(io.github.valerioisufi.pageboard.model.shape/ShapeKind, kotlin/Int, kotlin/Float, io.github.valerioisufi.pageboard.model.shape/ShapeDash = ..., kotlin/Int? = ..., io.github.valerioisufi.pageboard.model.shape/ShapeHead = ..., io.github.valerioisufi.pageboard.model.shape/ShapeHead = ..., kotlin/String? = ..., kotlin/Int? = ..., kotlin/Float = ..., kotlin.collections/List<io.github.valerioisufi.pageboard.model.geometry/Point>? = ..., io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef? = ..., io.github.valerioisufi.pageboard.model.shape/ShapeAnchorRef? = ..., io.github.valerioisufi.pageboard.model.shape/ShapeGeometryParams? = ...) // io.github.valerioisufi.pageboard.model.shape/ShapeElement.<init>|<init>(io.github.valerioisufi.pageboard.model.shape.ShapeKind;kotlin.Int;kotlin.Float;io.github.valerioisufi.pageboard.model.shape.ShapeDash;kotlin.Int?;io.github.valerioisufi.pageboard.model.shape.ShapeHead;io.github.valerioisufi.pageboard.model.shape.ShapeHead;kotlin.String?;kotlin.Int?;kotlin.Float;kotlin.collections.List<io.github.valerioisufi.pageboard.model.geometry.Point>?;io.github.valerioisufi.pageboard.model.shape.ShapeAnchorRef?;io.github.valerioisufi.pageboard.model.shape.ShapeAnchorRef?;io.github.valerioisufi.pageboard.model.shape.ShapeGeometryParams?){}[0]
 

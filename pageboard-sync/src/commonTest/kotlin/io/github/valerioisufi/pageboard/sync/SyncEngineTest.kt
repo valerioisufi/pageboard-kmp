@@ -715,14 +715,28 @@ class SyncEngineTest {
         // A text being written and elements selected (sent again only when they change)
         val draft = TextData(id = "text", text = "Ciao", x = 10f, y = 20f, width = 40f, color = 0, fontSize = 16f)
         val selection = SelectionActivity("page", listOf("a", "b"))
-        bob.engine.updatePresence(Presence(document.id, text = draft, textPageId = "page", selection = selection))
+        val shapeDraft = io.github.valerioisufi.pageboard.model.shape.ShapeDraftActivity(
+            pageId = "page",
+            shape = io.github.valerioisufi.pageboard.model.shape.ShapeElement(
+                io.github.valerioisufi.pageboard.model.shape.ShapeKind.RECTANGLE,
+                0xFF000000.toInt(),
+                0.5f,
+                label = "Draft"
+            ),
+            x = 10f,
+            y = 20f,
+            width = 30f,
+            height = 15f
+        )
+        bob.engine.updatePresence(Presence(document.id, text = draft, textPageId = "page", selection = selection, shapeDraft = shapeDraft))
         advanceUntilIdle()
-        bob.engine.updatePresence(Presence(document.id, pageId = "page", text = draft, textPageId = "page", selection = selection.copy(transform = AffineTransform(tx = 5f))))
+        bob.engine.updatePresence(Presence(document.id, pageId = "page", text = draft, textPageId = "page", selection = selection.copy(transform = AffineTransform(tx = 5f)), shapeDraft = shapeDraft))
         advanceUntilIdle()
         val working = cy.engine.presences.value.single()
         assertEquals(draft, working.text)
         assertEquals(listOf("a", "b"), working.selection?.ids)
         assertEquals(AffineTransform(tx = 5f), working.selection?.transform)
+        assertEquals(shapeDraft, working.shapeDraft)
 
         // Gone with its connection
         bob.disconnect()

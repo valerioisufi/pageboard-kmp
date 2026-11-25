@@ -11,6 +11,7 @@ import io.github.valerioisufi.pageboard.model.StrokeMesh
 import io.github.valerioisufi.pageboard.model.StrokePoint
 import io.github.valerioisufi.pageboard.model.change.TextData
 import io.github.valerioisufi.pageboard.model.geometry.AffineTransform
+import io.github.valerioisufi.pageboard.model.shape.ShapeDraftActivity
 
 /**
  * What the user is doing on the document, for the others working on it:
@@ -32,10 +33,11 @@ public data class EditorActivity(
     val strokeCancelled: Boolean = false,
     val text: TextData? = null,
     val textPageId: String? = null,
-    val selection: SelectionActivity? = null
+    val selection: SelectionActivity? = null,
+    val shapeDraft: ShapeDraftActivity? = null
 ) {
     /** Whether there is nothing to show. */
-    val isIdle: Boolean get() = pageId == null && !strokeCancelled && text == null && selection == null
+    val isIdle: Boolean get() = pageId == null && !strokeCancelled && text == null && selection == null && shapeDraft == null
 }
 
 /**
@@ -61,5 +63,6 @@ public data class Collaborator(
     val textPageId: String? = null,
     val selection: List<PageElement> = emptyList(),
     val selectionPageId: String? = null,
-    val selectionTransform: AffineTransform? = null
+    val selectionTransform: AffineTransform? = null,
+    val shapeDraft: ShapeDraftActivity? = null
 )

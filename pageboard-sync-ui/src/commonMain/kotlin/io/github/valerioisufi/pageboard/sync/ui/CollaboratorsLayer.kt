@@ -22,6 +22,7 @@ import io.github.valerioisufi.pageboard.model.change.ChangeOrigin
 import io.github.valerioisufi.pageboard.model.change.TextData
 import io.github.valerioisufi.pageboard.model.geometry.AffineTransform
 import io.github.valerioisufi.pageboard.model.remodelingBrush
+import io.github.valerioisufi.pageboard.model.shape.ShapeDraftActivity
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
 import io.github.valerioisufi.pageboard.sync.Presence
 import kotlin.math.abs
@@ -102,7 +103,7 @@ internal fun CollaboratorsLayer(collaboration: Collaboration, documentId: String
 private fun EditorActivity?.toPresence(documentId: String, ink: InkValues): Presence {
     if (this == null) return Presence(documentId)
     val brush = brush
-    val work = Presence(documentId, pageId, x, y, inkCancelled = strokeCancelled, text = text, textPageId = textPageId, selection = selection)
+    val work = Presence(documentId, pageId, x, y, inkCancelled = strokeCancelled, text = text, textPageId = textPageId, selection = selection, shapeDraft = shapeDraft)
     if (stroke == 0L || brush == null || this.ink.isEmpty()) return work
     return work.copy(
         stroke = stroke,
@@ -181,6 +182,9 @@ private class CollaboratorsDrawing(private val document: EditorDocument, private
         var selectionPageId: String? = null
         var moveTarget: AffineTransform? = null
         var moveShown: AffineTransform? = null
+
+        // The live shape being drawn or resized
+        var shapeDraft: ShapeDraftActivity? = null
     }
 
     private val peers = mutableMapOf<String, Peer>()
@@ -226,6 +230,7 @@ private class CollaboratorsDrawing(private val document: EditorDocument, private
             updateInk(peer, presence)
             updateText(peer, presence)
             updateSelection(peer, presence)
+            peer.shapeDraft = presence.shapeDraft?.takeIf { it.isValid() }
         }
         moving.value = true
     }
@@ -349,7 +354,8 @@ private class CollaboratorsDrawing(private val document: EditorDocument, private
                 textPageId = it.textPageId,
                 selection = it.selection,
                 selectionPageId = it.selectionPageId,
-                selectionTransform = it.moveShown
+                selectionTransform = it.moveShown,
+                shapeDraft = it.shapeDraft
             )
         }
         moving.value = animating

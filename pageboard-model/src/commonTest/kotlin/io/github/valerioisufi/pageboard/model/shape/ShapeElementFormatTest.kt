@@ -109,6 +109,17 @@ class ShapeElementFormatTest {
         }
     }
 
+    @Test
+    fun shapeDraftActivityValidatesBoundsAndPageId() {
+        val shape = ShapeElement(ShapeKind.RECTANGLE, 0xFF000000.toInt(), 0.5f, label = "Draft")
+        val valid = ShapeDraftActivity("page-1", shape, 10f, 20f, 30f, 40f, 0f)
+        kotlin.test.assertTrue(valid.isValid())
+        kotlin.test.assertFalse(valid.copy(pageId = " ").isValid())
+        kotlin.test.assertFalse(valid.copy(width = 0f).isValid())
+        kotlin.test.assertFalse(valid.copy(height = Float.NaN).isValid())
+        kotlin.test.assertFalse(valid.copy(x = 200_000f).isValid())
+    }
+
     private companion object {
         const val RECORDED_0 = "bf646b696e64644c494e45667374726f6b653a00e1771a6777696474684d6dfa3f00000067656e6448656164644f50454eff"
         const val RECORDED_1 = "bf646b696e64644c494e45667374726f6b653a00ffffff6777696474684d6dfa3f800000646461736866444153484544697374617274486561646646494c4c454467656e64486561646646494c4c4544ff"

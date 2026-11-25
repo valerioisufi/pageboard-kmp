@@ -2467,7 +2467,8 @@ public class SyncEngine(
             // The same text and selection as before (missing: until all of them come again)
             val text = if (message.textKept) last?.text else presence.text
             val selection = presence.selection?.let { if (message.selectionKept) it.copy(ids = last?.selection?.ids.orEmpty()) else it }
-            lastPresences[key] = presence.copy(ink = ink, text = text, selection = selection, receivedAt = currentTimeMillis()) to link
+            val shapeDraft = presence.shapeDraft?.takeIf { it.isValid() }
+            lastPresences[key] = presence.copy(ink = ink, text = text, selection = selection, shapeDraft = shapeDraft, receivedAt = currentTimeMillis()) to link
             presenceState.value = lastPresences.values.map { it.first }
             links.filter { it.documentId == presence.documentId && it !== link && it.authorized }
         }

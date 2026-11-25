@@ -3210,6 +3210,47 @@ public final class io/github/valerioisufi/pageboard/model/shape/ShapeDash$Compan
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public final class io/github/valerioisufi/pageboard/model/shape/ShapeDraftActivity {
+	public static final field Companion Lio/github/valerioisufi/pageboard/model/shape/ShapeDraftActivity$Companion;
+	public fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;FFFFF)V
+	public synthetic fun <init> (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;FFFFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;
+	public final fun component3 ()F
+	public final fun component4 ()F
+	public final fun component5 ()F
+	public final fun component6 ()F
+	public final fun component7 ()F
+	public final fun copy (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;FFFFF)Lio/github/valerioisufi/pageboard/model/shape/ShapeDraftActivity;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/model/shape/ShapeDraftActivity;Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;FFFFFILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/shape/ShapeDraftActivity;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHeight ()F
+	public final fun getPageId ()Ljava/lang/String;
+	public final fun getRotation ()F
+	public final fun getShape ()Lio/github/valerioisufi/pageboard/model/shape/ShapeElement;
+	public final fun getWidth ()F
+	public final fun getX ()F
+	public final fun getY ()F
+	public fun hashCode ()I
+	public final fun isValid ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class io/github/valerioisufi/pageboard/model/shape/ShapeDraftActivity$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/shape/ShapeDraftActivity$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Lio/github/valerioisufi/pageboard/model/shape/ShapeDraftActivity;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Lio/github/valerioisufi/pageboard/model/shape/ShapeDraftActivity;)V
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class io/github/valerioisufi/pageboard/model/shape/ShapeDraftActivity$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public final class io/github/valerioisufi/pageboard/model/shape/ShapeElement {
 	public static final field Companion Lio/github/valerioisufi/pageboard/model/shape/ShapeElement$Companion;
 	public static final field DEFAULT_LABEL_FONT_SIZE_PT F

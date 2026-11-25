@@ -14,6 +14,7 @@ import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.SelectionActivity
 import io.github.valerioisufi.pageboard.model.change.TextData
 import io.github.valerioisufi.pageboard.model.geometry.Rect
+import io.github.valerioisufi.pageboard.model.shape.ShapeDraftActivity
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,6 +39,7 @@ public class CollaboratorPresence internal constructor(
     private var textDraft: TextData? = null
     private var textDraftPageId: String? = null
     private var selectionActivity: SelectionActivity? = null
+    private var shapeDraft: ShapeDraftActivity? = null
 
     /**
      * What the user is doing on the document now (the pointer, the stroke being drawn, the text
@@ -70,8 +72,19 @@ public class CollaboratorPresence internal constructor(
         publishActivity()
     }
 
+    /** The shape being drawn or resized in progress (`null`: none). */
+    internal fun reportShapeDraft(draft: ShapeDraftActivity?) {
+        shapeDraft = draft
+        publishActivity()
+    }
+
     private fun publishActivity() {
-        val activity = (pointerActivity ?: EditorActivity()).copy(text = textDraft, textPageId = textDraftPageId, selection = selectionActivity)
+        val activity = (pointerActivity ?: EditorActivity()).copy(
+            text = textDraft,
+            textPageId = textDraftPageId,
+            selection = selectionActivity,
+            shapeDraft = shapeDraft
+        )
         currentActivity.value = activity.takeUnless { it.isIdle }
     }
 

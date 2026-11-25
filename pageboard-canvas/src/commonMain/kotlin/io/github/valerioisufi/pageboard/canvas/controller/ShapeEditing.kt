@@ -21,6 +21,7 @@ import io.github.valerioisufi.pageboard.model.shape.ShapeAnchorRef
 import io.github.valerioisufi.pageboard.model.shape.ShapeBox
 import io.github.valerioisufi.pageboard.model.shape.ShapeConstraints
 import io.github.valerioisufi.pageboard.model.shape.ShapeConverter
+import io.github.valerioisufi.pageboard.model.shape.ShapeDraftActivity
 import io.github.valerioisufi.pageboard.model.shape.ShapeElement
 import io.github.valerioisufi.pageboard.model.shape.ShapeElementType
 import io.github.valerioisufi.pageboard.model.shape.ShapeGeometry
@@ -356,6 +357,7 @@ public class ShapeEditing internal constructor(private val controller: Pageboard
                 )
             }
         }
+        reportDraftPresence(handleDraft)
     }
 
     /** The box of [box] with [handle] dragged to [pointer], and whether it was made square. */
@@ -490,6 +492,28 @@ public class ShapeEditing internal constructor(private val controller: Pageboard
         workingVertices = null
         activeVertexIndex = -1
         controller.snapManager.clearGuides()
+        controller.presence.reportShapeDraft(null)
+    }
+
+    private fun reportDraftPresence(shapeDraft: ShapeDraft?) {
+        if (!controller.presence.isFollowed) return
+        if (shapeDraft == null) {
+            controller.presence.reportShapeDraft(null)
+            return
+        }
+        val page = controller.document.pages.getOrNull(shapeDraft.pageIndex) ?: return
+        val b = shapeDraft.box
+        controller.presence.reportShapeDraft(
+            ShapeDraftActivity(
+                pageId = page.id,
+                shape = shapeDraft.value,
+                x = b.x,
+                y = b.y,
+                width = b.width.coerceAtLeast(ShapeInserter.MIN_SIZE_MM),
+                height = b.height.coerceAtLeast(ShapeInserter.MIN_SIZE_MM),
+                rotation = b.rotation
+            )
+        )
     }
 
     private fun readAngle(from: Point, to: Point): Float {

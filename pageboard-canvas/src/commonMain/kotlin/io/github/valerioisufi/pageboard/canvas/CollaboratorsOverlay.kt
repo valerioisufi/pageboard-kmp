@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.sp
 import io.github.valerioisufi.pageboard.canvas.controller.Collaborator
 import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
+import io.github.valerioisufi.pageboard.canvas.geometry.toComposeMatrix
+import io.github.valerioisufi.pageboard.canvas.render.ShapeElementRenderer
 import io.github.valerioisufi.pageboard.canvas.render.tile.TileRenderer
 import io.github.valerioisufi.pageboard.model.CustomElement
 import io.github.valerioisufi.pageboard.model.ImageElement
@@ -28,6 +30,7 @@ import io.github.valerioisufi.pageboard.model.Page
 import io.github.valerioisufi.pageboard.model.StrokeElement
 import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
+import io.github.valerioisufi.pageboard.model.shape.ShapeDraftActivity
 
 /**
  * Draws what the other devices are doing on the document (see
@@ -59,12 +62,37 @@ internal class CollaboratorsOverlay {
         }
     }
 
-    /** The texts being written and the elements selected or moved, in frames with the names. */
+    /** The texts being written, live shape drafts, and elements selected or moved, in frames with the names. */
     fun drawWork(scope: DrawScope, controller: PageboardController, labels: TextMeasurer) {
         for (collaborator in controller.presence.collaborators) {
             collaborator.text?.let { scope.drawText(controller, collaborator, it, labels) }
+            collaborator.shapeDraft?.let { scope.drawShapeDraft(controller, collaborator, it, labels) }
             if (collaborator.selection.isNotEmpty()) scope.drawSelection(controller, collaborator, labels)
         }
+    }
+
+    private fun DrawScope.drawShapeDraft(
+        controller: PageboardController,
+        collaborator: Collaborator,
+        draft: ShapeDraftActivity,
+        labels: TextMeasurer
+    ) {
+        val pageIndex = pageIndexOf(controller, draft.pageId)
+        val mmToScreen = controller.viewport.pageMmToScreen(pageIndex) ?: return
+        val boxToScreen = Matrix2D()
+            .postRotate(draft.rotation, draft.width / 2f, draft.height / 2f)
+            .postTranslate(draft.x, draft.y)
+            .postConcat(mmToScreen)
+        drawIntoCanvas { canvas ->
+            canvas.save()
+            canvas.concat(boxToScreen.toComposeMatrix())
+            ShapeElementRenderer.draw(canvas, draft.shape, draft.width, draft.height)
+            canvas.restore()
+        }
+        val box = Rect(draft.x, draft.y, draft.x + draft.width, draft.y + draft.height)
+        val pivot = Offset(draft.x + draft.width / 2f, draft.y + draft.height / 2f)
+        val corners = drawFrame(box, draft.rotation, pivot, mmToScreen, collaborator.color, dashed = true)
+        drawName(collaborator, corners[0] - Offset(0f, 22.dp.toPx()), labels)
     }
 
     /** The pointers with the names (of the devices not writing a text). */

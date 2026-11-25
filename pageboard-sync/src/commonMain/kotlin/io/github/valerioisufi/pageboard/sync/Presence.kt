@@ -2,6 +2,7 @@ package io.github.valerioisufi.pageboard.sync
 
 import io.github.valerioisufi.pageboard.model.SelectionActivity
 import io.github.valerioisufi.pageboard.model.change.TextData
+import io.github.valerioisufi.pageboard.model.shape.ShapeDraftActivity
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
@@ -35,6 +36,7 @@ public data class Presence(
     val text: TextData? = null,
     val textPageId: String? = null,
     val selection: SelectionActivity? = null,
+    val shapeDraft: ShapeDraftActivity? = null,
     val replica: String = "",
     val name: String = "",
     val sequence: Long = 0,
