@@ -140,10 +140,13 @@ class CommandTest {
         assertEquals(18f, editor.fontSize, "the next size")
         editor.finishEditing()
 
-        // The texts selected: their style only
+        // The texts selected: both their style and character formats apply
         val text = controller.document.pages[0].texts.single()
         controller.selectionManager.selectText(0, text)
-        assertFalse(commands.bold.isEnabled())
+        assertTrue(commands.bold.isEnabled())
+        commands.bold.perform()
+        assertEquals("**Hello world**", text.text)
+        assertTrue(commands.bold.isChecked!!.invoke())
         assertTrue(commands.alignEnd.isEnabled())
         commands.alignEnd.perform()
         assertEquals(TextAlignment.END, text.alignment)

@@ -151,4 +151,36 @@ class SnapTest {
         editor.resizeTo(129.6f, leftEdge = false, free = true)
         assertEquals(129.6f, editor.boxX + editor.boxWidth, 0.001f)
     }
+
+    @Test
+    fun placementDragsAndTapsSnapWhenEnabled() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val page = controller.document.pages[0]
+        val anchor = TextElement().apply { text = "Anchor"; x = 30f; y = 20f; width = 40f; height = 8f }
+        controller.session.submit(AddElements.of(page, listOf(anchor)))
+
+        val placement = controller.placementManager
+        val preview = TextElement().apply { text = "Note"; width = 40f; height = 8f }
+        var placed: io.github.valerioisufi.pageboard.canvas.controller.PlacementSpot? = null
+        val initialSpot = io.github.valerioisufi.pageboard.canvas.controller.PlacementSpot(0, Rect(80f, 80f, 120f, 88f))
+        placement.start(
+            io.github.valerioisufi.pageboard.canvas.controller.PlacementRequest(
+                preview = preview,
+                spots = listOf(initialSpot),
+                onPlace = { placed = it }
+            )
+        )
+        val nearAnchor = controller.viewport.pageMmToScreen(0)!!.mapPoint(30.3f, 60f)
+        placement.moveItem(0, Offset(nearAnchor.x, nearAnchor.y), Offset.Zero)
+        assertEquals(30f, placement.spots.single()!!.box.left, 0.001f)
+        assertTrue(controller.snapManager.guides.any { it.vertical && it.position == 30f })
+
+        placement.moveItem(0, Offset(nearAnchor.x, nearAnchor.y), Offset.Zero, free = true)
+        assertEquals(30.3f, placement.spots.single()!!.box.left, 0.001f)
+        assertTrue(controller.snapManager.guides.isEmpty())
+
+        assertTrue(placement.placeAt(Offset(nearAnchor.x, nearAnchor.y)))
+        assertEquals(30f, placed!!.box.left, 0.001f)
+        assertTrue(controller.snapManager.guides.isEmpty())
+    }
 }

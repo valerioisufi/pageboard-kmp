@@ -5,9 +5,13 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.pageboard.canvas.FrameStyle
 import io.github.valerioisufi.pageboard.canvas.geometry.toCompose
 import io.github.valerioisufi.pageboard.canvas.render.HiddenElements
+import io.github.valerioisufi.pageboard.canvas.text.InlineFormatting
+import io.github.valerioisufi.pageboard.canvas.text.RichTextEditing
 import io.github.valerioisufi.pageboard.canvas.tool.LassoMode
 import io.github.valerioisufi.pageboard.model.CustomElement
 import io.github.valerioisufi.pageboard.model.PageElement
@@ -41,6 +45,8 @@ import io.github.valerioisufi.pageboard.model.geometry.AffineTransform
 import io.github.valerioisufi.pageboard.model.geometry.HitTesting
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.geometry.Rect
+import io.github.valerioisufi.pageboard.model.text.NumberingStyle
+import io.github.valerioisufi.pageboard.model.text.RichTextParser
 import io.github.valerioisufi.pageboard.model.text.TextSizes
 import kotlin.math.max
 import kotlin.math.min
@@ -874,7 +880,10 @@ public class SelectionManager internal constructor(private val controller: Pageb
     /** The texts of [selection], formatted together (the first one tells their style). */
     private inner class SelectedTexts(private val selection: SelectionGroup) : TextFormatTarget {
         // Read by the composition: follows the changes of the selected texts
-        private val first get() = selection.texts.first().also { selectionVersion }
+        private val texts: List<TextElement> get() = selection.texts.also { selectionVersion }
+        private val first get() = texts.first()
+        private fun fullValue(text: TextElement) = TextFieldValue(text.text, TextRange(0, text.text.length))
+
         override val fontSize: Float get() = first.fontSize
         override val color: Int get() = first.color
         override val alignment: TextAlignment get() = first.alignment
@@ -884,6 +893,133 @@ public class SelectionManager internal constructor(private val controller: Pageb
         override val takesBackground: Boolean get() = true
         override val background: Int? get() = first.background
         override fun changeBackground(argb: Int?) = updateSelectedTextsBackground(argb)
+
+        override val formatsCharacters: Boolean get() = true
+        override val inCodeBlock: Boolean get() = texts.isNotEmpty() && texts.all { RichTextEditing.inCodeBlock(fullValue(it)) }
+        override val codeLineNumbers: Boolean get() = texts.isNotEmpty() && texts.all { RichTextEditing.codeBlockAt(fullValue(it))?.numbered == true }
+        override val inHeading: Boolean get() = texts.isNotEmpty() && texts.all { RichTextEditing.inHeading(fullValue(it)) }
+        override val headingLevel: Int
+            get() = texts.map { RichTextEditing.headingLevelOf(fullValue(it)) }.distinct().singleOrNull() ?: 0
+        override val inBulletList: Boolean get() = texts.isNotEmpty() && texts.all { RichTextEditing.inBulletList(fullValue(it)) }
+        override val inChecklist: Boolean get() = texts.isNotEmpty() && texts.all { RichTextEditing.inChecklist(fullValue(it)) }
+        override val inNumberedList: Boolean get() = texts.isNotEmpty() && texts.all { RichTextEditing.inNumberedList(fullValue(it)) }
+        override val inQuote: Boolean get() = texts.isNotEmpty() && texts.all { RichTextEditing.inQuote(fullValue(it)) }
+        override val numberingStyle: NumberingStyle?
+            get() = texts.map { RichTextEditing.numberingStyleOf(fullValue(it)) }.distinct().singleOrNull()
+        override val numberingStart: Int
+            get() = if (inNumberedList) RichTextEditing.numberingStartOf(fullValue(first)) else 1
+
+        override fun isActive(format: RichTextEditing.Format): Boolean {
+            if (inCodeBlock) return false
+            val nonBlank = texts.filter { it.text.isNotBlank() }
+            return nonBlank.isNotEmpty() && nonBlank.all { format in InlineFormatting.formatsAt(fullValue(it)) }
+        }
+
+        override fun toggle(format: RichTextEditing.Format) {
+            val turnOff = isActive(format)
+            updateSelectedTextsContent { value ->
+                if (value.text.isBlank()) value
+                else if (turnOff || format !in InlineFormatting.formatsAt(value)) RichTextEditing.toggle(value, format)
+                else value
+            }
+        }
+
+        override fun toggleHeading() {
+            val turnOff = inHeading
+            updateSelectedTextsContent { value ->
+                if (turnOff) RichTextEditing.setHeading(value, 0)
+                else if (!RichTextEditing.inHeading(value)) RichTextEditing.setHeading(value, 1)
+                else value
+            }
+        }
+
+        override fun setHeading(level: Int) {
+            updateSelectedTextsContent { RichTextEditing.setHeading(it, level) }
+        }
+
+        override fun toggleCodeBlock() {
+            val turnOff = inCodeBlock
+            updateSelectedTextsContent { value ->
+                if (turnOff || !RichTextEditing.inCodeBlock(value)) RichTextEditing.toggleCodeBlock(value) else value
+            }
+        }
+
+        override fun toggleLineNumbers() {
+            val turnOff = codeLineNumbers
+            updateSelectedTextsContent { value ->
+                val block = RichTextEditing.codeBlockAt(value) ?: return@updateSelectedTextsContent value
+                if (turnOff == block.numbered) RichTextEditing.toggleLineNumbers(value) else value
+            }
+        }
+
+        override fun toggleBulletList() {
+            val turnOff = inBulletList
+            updateSelectedTextsContent { value ->
+                if (turnOff || !RichTextEditing.inBulletList(value)) RichTextEditing.toggleBulletList(value) else value
+            }
+        }
+
+        override fun toggleNumberedList() {
+            val turnOff = inNumberedList
+            updateSelectedTextsContent { value ->
+                if (turnOff || !RichTextEditing.inNumberedList(value)) RichTextEditing.toggleNumberedList(value) else value
+            }
+        }
+
+        override fun toggleChecklist() {
+            val turnOff = inChecklist
+            updateSelectedTextsContent { value ->
+                if (turnOff || !RichTextEditing.inChecklist(value)) RichTextEditing.toggleChecklist(value) else value
+            }
+        }
+
+        override fun toggleChecked() {
+            val allChecked = texts.isNotEmpty() && texts.all { text ->
+                val tasks = RichTextParser.parse(text.text).filter { it.kind == RichTextParser.Kind.LIST_ITEM && it.checked != null }
+                tasks.isNotEmpty() && tasks.all { it.checked == true }
+            }
+            updateSelectedTextsContent { value ->
+                val tasks = RichTextParser.parse(value.text).filter { it.kind == RichTextParser.Kind.LIST_ITEM && it.checked != null }
+                if (tasks.isEmpty()) return@updateSelectedTextsContent value
+                val hasUnchecked = tasks.any { it.checked == false }
+                if (allChecked || hasUnchecked) RichTextEditing.toggleChecked(value) else value
+            }
+        }
+
+        override fun toggleQuote() {
+            val turnOff = inQuote
+            updateSelectedTextsContent { value ->
+                if (turnOff || !RichTextEditing.inQuote(value)) RichTextEditing.toggleQuote(value) else value
+            }
+        }
+
+        override fun setNumbering(style: NumberingStyle?, start: Int) {
+            updateSelectedTextsContent { RichTextEditing.setNumbering(it, style, start) }
+        }
+
+        override fun indent() {
+            updateSelectedTextsContent { RichTextEditing.indent(it) }
+        }
+
+        override fun outdent() {
+            updateSelectedTextsContent { RichTextEditing.outdent(it) }
+        }
+    }
+
+    internal fun updateSelectedTextsContent(transform: (TextFieldValue) -> TextFieldValue) {
+        val selection = currentSelection ?: return
+        if (selection.texts.isEmpty()) return
+        val page = controller.document.pages.getOrNull(selection.pageIndex) ?: return
+        val updated = selection.texts.mapNotNull { text ->
+            val next = transform(TextFieldValue(text.text, TextRange(0, text.text.length))).text
+            if (next == text.text) null else text.toData().copy(text = next)
+        }
+        if (updated.isEmpty()) return
+        controller.session.submit(UpdateTexts(page.id, updated))
+        if (selection.isSingleText) {
+            selection.boundingBox = selection.texts[0].frame()
+        }
+        notifyChanged()
     }
 
     internal fun updateSelectedTextsBackground(background: Int?) {

@@ -164,6 +164,7 @@ public class PlacementManager internal constructor(private val controller: Pageb
         spots = emptyList()
         spotIndex = 0
         freeSpace = emptyMap()
+        controller.snapManager.clearGuides()
         controller.requestRedraw()
     }
 
@@ -257,17 +258,23 @@ public class PlacementManager internal constructor(private val controller: Pageb
 
     /**
      * Moves the text of item [index] so that its point [grab] (millimeters from its top-left
-     * corner) is under [screenPoint], on the page there, kept inside it.
+     * corner) is under [screenPoint], on the page there, kept inside it, snapped unless [free].
      */
-    internal fun moveItem(index: Int, screenPoint: Offset, grab: Offset) {
+    internal fun moveItem(index: Int, screenPoint: Offset, grab: Offset, free: Boolean = false) {
         val spot = spots.getOrNull(index) ?: return
         val pageIndex = controller.viewport.findPageIndexAtScreen(screenPoint) ?: return
         val page = controller.document.pages.getOrNull(pageIndex) ?: return
         val mm = controller.viewport.screenToPageMm(pageIndex, screenPoint) ?: return
         val width = spot.box.width
         val height = spot.box.height
-        val x = (mm.x - grab.x).coerceIn(0f, (page.widthMm - width).coerceAtLeast(0f))
-        val y = (mm.y - grab.y).coerceIn(0f, (page.heightMm - height).coerceAtLeast(0f))
+        val xRaw = (mm.x - grab.x).coerceIn(0f, (page.widthMm - width).coerceAtLeast(0f))
+        val yRaw = (mm.y - grab.y).coerceIn(0f, (page.heightMm - height).coerceAtLeast(0f))
+        val baseline = request?.items?.getOrNull(index)?.preview?.let { preview ->
+            controller.textLineMetrics(preview.fontSize)?.let { yRaw + it.baseline }
+        }
+        val snap = controller.snapManager.snapBox(pageIndex, MmRect(xRaw, yRaw, xRaw + width, yRaw + height), moved = emptyList(), baseline = baseline, free = free)
+        val x = (xRaw + snap.x).coerceIn(0f, (page.widthMm - width).coerceAtLeast(0f))
+        val y = (yRaw + snap.y).coerceIn(0f, (page.heightMm - height).coerceAtLeast(0f))
         spots = spots.toMutableList().also { it[index] = PlacementSpot(pageIndex, MmRect(x, y, x + width, y + height)) }
         if (request?.items?.size == 1) spotIndex = -1
         controller.requestRedraw()
@@ -297,16 +304,23 @@ public class PlacementManager internal constructor(private val controller: Pageb
 
     /**
      * A tap at [screenPoint]: on a text, confirms the placement; elsewhere on a page, puts a single
-     * text there.
+     * text there, snapped unless [free].
      *
      * @return `false` when nothing was placed (the placement stays pending).
      */
-    internal fun placeAt(screenPoint: Offset): Boolean {
+    internal fun placeAt(screenPoint: Offset, free: Boolean = false): Boolean {
         val current = request ?: return false
         if (itemAt(screenPoint) != null) return confirm()
         val preview = current.preview ?: return false
-        val (pageIndex, topLeft) = targetAt(screenPoint) ?: return false
-        spots = listOf(PlacementSpot(pageIndex, MmRect(topLeft.x, topLeft.y, topLeft.x + preview.width, topLeft.y + preview.height)))
+        val pageIndex = controller.viewport.findPageIndexAtScreen(screenPoint) ?: return false
+        val page = controller.document.pages.getOrNull(pageIndex) ?: return false
+        val (_, topLeft) = targetAt(screenPoint) ?: return false
+        val baseline = controller.textLineMetrics(preview.fontSize)?.let { topLeft.y + it.baseline }
+        val rawBox = MmRect(topLeft.x, topLeft.y, topLeft.x + preview.width, topLeft.y + preview.height)
+        val snap = controller.snapManager.snapBox(pageIndex, rawBox, moved = emptyList(), baseline = baseline, free = free)
+        val x = (topLeft.x + snap.x).coerceIn(0f, (page.widthMm - preview.width).coerceAtLeast(0f))
+        val y = (topLeft.y + snap.y).coerceIn(0f, (page.heightMm - preview.height).coerceAtLeast(0f))
+        spots = listOf(PlacementSpot(pageIndex, MmRect(x, y, x + preview.width, y + preview.height)))
         return confirm()
     }
 }

@@ -845,7 +845,7 @@ internal class CanvasGestureHandler(
             }
 
             Mode.PLACE_ITEM -> {
-                if (movedBeyondSlop) controller.placementManager.moveItem(placementItem, position, placementGrab)
+                if (movedBeyondSlop) controller.placementManager.moveItem(placementItem, position, placementGrab, freeGesture)
             }
 
             Mode.TEXT_TAP, Mode.PLACE_TAP, Mode.EDITOR_TAP -> {
@@ -1157,11 +1157,11 @@ internal class CanvasGestureHandler(
             Mode.GUIDE_DRAG -> activeGuideHit = null
 
             Mode.PLACE_TAP -> {
-                if (wasTap) controller.placementManager.placeAt(position)
+                if (wasTap) controller.placementManager.placeAt(position, freeGesture)
             }
 
             Mode.PLACE_ITEM -> {
-                if (wasTap) controller.placementManager.confirm()
+                if (wasTap) controller.placementManager.confirm() else controller.snapManager.clearGuides()
             }
 
             Mode.EDITOR_TAP -> {

@@ -404,7 +404,7 @@ class TextEditingTest {
 
         controller.selectionManager.selectText(0, text)
         val selected = assertNotNull(controller.textFormatTarget)
-        assertFalse(selected.formatsCharacters)
+        assertTrue(selected.formatsCharacters)
         selected.changeAlignment(TextAlignment.END)
         selected.changeColor(0xFF188038.toInt())
         assertEquals(TextAlignment.END, text.alignment)
@@ -415,6 +415,30 @@ class TextEditingTest {
         assertEquals(TextAlignment.END, text.alignment, "the color undone first")
         controller.undo()
         assertEquals(TextAlignment.START, text.alignment)
+
+        // Character & block formatting across multiple selected texts applies and undoes in one step
+        editor.startNewText(0, 10f, 90f)
+        editor.type("**Second**")
+        editor.finishEditing()
+        val page = controller.document.pages[0]
+        val texts = page.texts
+        controller.selectionManager.selectWithLasso(0, floatArrayOf(0f, 0f, page.widthMm, 0f, page.widthMm, page.heightMm, 0f, page.heightMm))
+        val group = assertNotNull(controller.textFormatTarget)
+        assertFalse(group.isActive(RichTextEditing.Format.BOLD))
+        group.toggle(RichTextEditing.Format.BOLD)
+        assertEquals(listOf("**One**", "**Second**"), texts.map { it.text })
+        assertTrue(group.isActive(RichTextEditing.Format.BOLD))
+        controller.undo()
+        assertEquals(listOf("One", "**Second**"), texts.map { it.text })
+
+        group.toggleHeading()
+        assertEquals(listOf("# One", "# **Second**"), texts.map { it.text })
+        assertTrue(group.inHeading)
+        group.toggleBulletList()
+        assertEquals(listOf("- One", "- **Second**"), texts.map { it.text })
+        assertTrue(group.inBulletList)
+        controller.undo()
+        assertEquals(listOf("# One", "# **Second**"), texts.map { it.text })
     }
 
     @Test
