@@ -31,6 +31,7 @@ import io.github.valerioisufi.pageboard.model.change.TextMarkupData
 import io.github.valerioisufi.pageboard.model.change.toData
 import io.github.valerioisufi.pageboard.model.newElementId
 import io.github.valerioisufi.pageboard.model.text.TextSizes
+import io.github.valerioisufi.pageboard.platform.ResourcePaths
 import io.github.valerioisufi.pageboard.platform.Sha256
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
 import io.github.valerioisufi.pageboard.store.DocumentInk
@@ -280,7 +281,8 @@ internal class DocumentRepository(
     private fun mapResource(entity: ResourceEntity): DocumentResource {
         val type = DocumentResource.ResourceType.entries.firstOrNull { it.name.equals(entity.type, ignoreCase = true) }
             ?: DocumentResource.ResourceType.COLOR
-        return DocumentResource(entity.id, type, entity.uri, entity.contentHash)
+        val path = if (type == DocumentResource.ResourceType.COLOR) entity.uri else ResourcePaths.resolve(entity.uri)
+        return DocumentResource(entity.id, type, path, entity.contentHash)
     }
 
     private fun mapPageLayer(entity: PageLayerEntity): PageLayer = PageLayer(
@@ -774,11 +776,14 @@ internal class DocumentRepository(
     }
 
     override suspend fun saveResource(document: Document, resource: DocumentResource) = withContext(Dispatchers.IO) {
-        resourceDao.upsert(ResourceEntity(id = resource.id, documentId = document.id, type = resource.type.name, uri = resource.path, contentHash = resource.hash))
+        val uri = if (resource.type == DocumentResource.ResourceType.COLOR) resource.path else ResourcePaths.toStored(resource.path)
+        resourceDao.upsert(ResourceEntity(id = resource.id, documentId = document.id, type = resource.type.name, uri = uri, contentHash = resource.hash))
     }
 
     override suspend fun fileWithContent(hash: String): String? =
-        if (hash.isEmpty()) null else withContext(Dispatchers.IO) { resourceDao.findUriByHash(hash) }
+        if (hash.isEmpty()) null else withContext(Dispatchers.IO) {
+            resourceDao.findUriByHash(hash)?.let(ResourcePaths::resolve)
+        }
 
     override suspend fun savePage(document: Document, page: Page) = withContext(Dispatchers.IO) {
         pageDao.upsert(

@@ -9,6 +9,8 @@ import io.github.valerioisufi.pageboard.model.StrokeTool
 import io.github.valerioisufi.pageboard.model.TextAlignment
 import io.github.valerioisufi.pageboard.model.TextMarkupKind
 import io.github.valerioisufi.pageboard.model.text.TextRoom
+import io.github.valerioisufi.pageboard.platform.PlatformFiles
+import io.github.valerioisufi.pageboard.platform.ResourcePaths
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -36,7 +38,7 @@ import kotlinx.serialization.json.putJsonObject
 
 /** The migrations from version 16 to [PageboardDatabase]'s version. */
 internal val PAGEBOARD_DATABASE_MIGRATIONS: Array<Migration> =
-    arrayOf(Migration16To17, Migration17To18, Migration18To19, Migration19To20, Migration20To21, Migration21To22, Migration22To23, Migration23To24, Migration24To25, Migration25To26, Migration26To27)
+    arrayOf(Migration16To17, Migration17To18, Migration18To19, Migration19To20, Migration20To21, Migration21To22, Migration22To23, Migration23To24, Migration24To25, Migration25To26, Migration26To27, Migration27To28)
 
 /** 17: the elements of the types added by the applications. */
 internal object Migration16To17 : Migration(16, 17) {
@@ -389,5 +391,45 @@ internal object Migration26To27 : Migration(26, 27) {
         connection.execSQL("ALTER TABLE `texts` ADD COLUMN `fontFamily` TEXT")
         connection.execSQL("ALTER TABLE `texts` ADD COLUMN `continueNumberingFrom` TEXT")
         connection.execSQL("ALTER TABLE `texts` ADD COLUMN `maxHeight` REAL")
+    }
+}
+
+/**
+ * 28: resource URIs inside `resourcesDirectory()` (and relocated `pageboard_resources/`
+ * containers on mobile) stored as relative paths (`docs/plans/relative-resource-paths.md`).
+ */
+internal object Migration27To28 : Migration(27, 28) {
+    override fun migrate(connection: SQLiteConnection) {
+        val resourcesDirectory = PlatformFiles.resourcesDirectory()
+        val updates = mutableListOf<Pair<String, String>>()
+        connection.prepare("SELECT `id`, `uri` FROM `resources` WHERE LOWER(`type`) != 'color' AND `uri` != ''").use { row ->
+            while (row.step()) {
+                val id = row.getText(0)
+                val uri = row.getText(1)
+                val normalized = normalizeUri(uri, resourcesDirectory)
+                if (normalized != uri) updates += id to normalized
+            }
+        }
+        if (updates.isEmpty()) return
+        connection.prepare("UPDATE `resources` SET `uri` = ? WHERE `id` = ?").use { update ->
+            for ((id, uri) in updates) {
+                update.bindText(1, uri)
+                update.bindText(2, id)
+                update.step()
+                update.reset()
+            }
+        }
+    }
+
+    internal fun normalizeUri(uri: String, resourcesDirectory: String): String {
+        val stored = ResourcePaths.toStored(uri, resourcesDirectory)
+        if (stored != uri) return stored
+        val slash = uri.replace('\\', '/')
+        val marker = "/pageboard_resources/"
+        val index = slash.lastIndexOf(marker)
+        if (index < 0) return uri
+        val tail = slash.substring(index + marker.length).trimStart('/')
+        if (tail.isEmpty() || tail.split('/').any { it == ".." }) return uri
+        return tail
     }
 }

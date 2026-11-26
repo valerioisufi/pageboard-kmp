@@ -36,6 +36,8 @@ import io.github.valerioisufi.pageboard.model.change.toData
 import io.github.valerioisufi.pageboard.model.geometry.AffineTransform
 import io.github.valerioisufi.pageboard.model.geometry.Rect
 import io.github.valerioisufi.pageboard.model.newElementId
+import io.github.valerioisufi.pageboard.platform.PlatformFiles
+import io.github.valerioisufi.pageboard.platform.newResourcePath
 import io.github.valerioisufi.pageboard.store.room.db.*
 import io.github.valerioisufi.pageboard.store.room.repository.DocumentRepository
 import io.github.valerioisufi.pageboard.store.room.repository.FileRepository
@@ -523,5 +525,47 @@ class PageboardDatabaseTest {
         assertEquals(Rect(10f, 20f, 40f, 60f), Rect(loaded.x, loaded.y, loaded.x + loaded.width, loaded.y + loaded.height))
         assertEquals(15f, loaded.rotation)
         assertEquals(element.order, loaded.order)
+    }
+
+    @Test
+    fun resourcesInsideResourcesDirectoryAreStoredRelativeAndRefCounted() = runTest {
+        val pdfPath = newResourcePath("test_rel", "pdf")
+        assertTrue(PlatformFiles.writeBytes(pdfPath, byteArrayOf(1, 2, 3, 4)))
+        val relativeName = PlatformFiles.name(pdfPath)
+        val hash = "shared-pdf-hash"
+        try {
+            val store = RoomDocumentStore(database, InkStrokeModeller)
+            val first = store.createDocument("First")
+            val second = store.createDocument("Second")
+            val resource1 = DocumentResource(newElementId(), DocumentResource.ResourceType.PDF, pdfPath, hash)
+            val resource2 = DocumentResource(newElementId(), DocumentResource.ResourceType.PDF, pdfPath, hash)
+            val color = DocumentResource(newElementId(), DocumentResource.ResourceType.COLOR, "#FF00FF")
+            val external = DocumentResource(newElementId(), DocumentResource.ResourceType.PDF, "/tmp/external.pdf", "ext-hash")
+
+            repository.saveResource(first, resource1)
+            repository.saveResource(first, color)
+            repository.saveResource(first, external)
+            repository.saveResource(second, resource2)
+
+            val storedFirst = database.resourceDao().getResourcesForDocument(first.id).associateBy { it.id }
+            assertEquals(relativeName, storedFirst.getValue(resource1.id).uri)
+            assertEquals("#FF00FF", storedFirst.getValue(color.id).uri)
+            assertEquals("/tmp/external.pdf", storedFirst.getValue(external.id).uri)
+
+            val loaded = assertNotNull(store.loadDocument(first.id))
+            assertEquals(pdfPath, loaded.findResource(resource1.id)?.path)
+            assertEquals("#FF00FF", loaded.findResource(color.id)?.path)
+            assertEquals("/tmp/external.pdf", loaded.findResource(external.id)?.path)
+            assertEquals(pdfPath, assertNotNull(store.loadOutline(first.id)).findResource(resource1.id)?.path)
+            assertEquals(pdfPath, assertNotNull(store.loadPage(first.id, 0)).resources.first { it.id == resource1.id }.path)
+            assertEquals(pdfPath, repository.fileWithContent(hash))
+
+            assertTrue(store.deleteDocument(first.id))
+            assertTrue(PlatformFiles.exists(pdfPath), "second document still references the stored relative URI")
+            assertTrue(store.deleteDocument(second.id))
+            assertFalse(PlatformFiles.exists(pdfPath), "last referencing document deleted")
+        } finally {
+            PlatformFiles.delete(pdfPath)
+        }
     }
 }

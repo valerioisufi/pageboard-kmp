@@ -17,6 +17,8 @@ import io.github.valerioisufi.pageboard.model.change.TextData
 import io.github.valerioisufi.pageboard.model.change.TextPlacement
 import io.github.valerioisufi.pageboard.model.change.UpdateTexts
 import io.github.valerioisufi.pageboard.model.change.UpsertPageLayer
+import io.github.valerioisufi.pageboard.platform.PlatformFiles
+import io.github.valerioisufi.pageboard.platform.ResourcePaths
 import io.github.valerioisufi.pageboard.store.OpenDocuments
 import io.github.valerioisufi.pageboard.store.room.db.PAGEBOARD_DATABASE_MIGRATIONS
 import io.github.valerioisufi.pageboard.store.room.db.PageboardDatabase
@@ -29,6 +31,7 @@ import io.github.valerioisufi.pageboard.store.room.db.Migration23To24
 import io.github.valerioisufi.pageboard.store.room.db.Migration24To25
 import io.github.valerioisufi.pageboard.store.room.db.Migration25To26
 import io.github.valerioisufi.pageboard.store.room.db.Migration26To27
+import io.github.valerioisufi.pageboard.store.room.db.Migration27To28
 import io.github.valerioisufi.pageboard.store.space.SpaceLibrary
 import io.github.valerioisufi.pageboard.store.room.db.createPageboardDatabase
 import io.github.valerioisufi.pageboard.store.room.repository.DocumentRepository
@@ -556,6 +559,72 @@ class PageboardDatabaseMigrationTest {
             DocumentRepository(database, InkStrokeModeller).saveText(document.pages.single(), text)
             val again = assertNotNull(store.loadDocument(DOCUMENT)).pages.single().texts.single()
             assertEquals(Triple("jakarta", "prev-box", 120f), Triple(again.fontFamily, again.continueNumberingFrom, again.maxHeight))
+        } finally {
+            database.close()
+        }
+    }
+
+    @Test
+    fun theResourcesOfVersion27StoreRelativePaths() = runTest {
+        val localPdf = "${PlatformFiles.resourcesDirectory().trimEnd('/', '\\')}/pdf_local.pdf"
+        val iosPdf = "/var/mobile/Containers/Data/Application/OLD-UUID/Documents/pageboard_resources/pdf_ios.pdf"
+        val windowsImage = """C:\data\pageboard_resources\img_win.png"""
+        val externalPdf = "/tmp/outside/slides.pdf"
+
+        helper.createDatabase(27).use { connection ->
+            connection.execSQL(
+                "INSERT INTO documents (id, name, folderId, createdAt, modifiedAt, lastOpenedAt, defaultBackground, " +
+                    "defaultWidth, defaultHeight, defaultsVersion, titleVersion, trashedAt) VALUES ('$DOCUMENT', 'Lectures', NULL, " +
+                    "1, 2, NULL, '{\"type\":\"Solid\"}', 210.0, 297.0, '$STAMP', '$STAMP', NULL)"
+            )
+            connection.execSQL(
+                "INSERT INTO pages (id, documentId, orderKey, width, height, background, added, removed, orderVersion, " +
+                    "formatVersion, contentVersions, removalSaw) VALUES ('$PAGE', '$DOCUMENT', 'k', 210.0, 297.0, NULL, " +
+                    "'$STAMP', NULL, '$STAMP', '$STAMP', '', NULL)"
+            )
+            fun insertResource(id: String, type: String, uri: String, hash: String) {
+                connection.prepare("INSERT INTO `resources` (`id`, `documentId`, `type`, `uri`, `contentHash`) VALUES (?, ?, ?, ?, ?)").use {
+                    it.bindText(1, id)
+                    it.bindText(2, DOCUMENT)
+                    it.bindText(3, type)
+                    it.bindText(4, uri)
+                    it.bindText(5, hash)
+                    it.step()
+                }
+            }
+            insertResource("r-local", "PDF", localPdf, "h1")
+            insertResource("r-ios", "PDF", iosPdf, "h2")
+            insertResource("r-win", "IMAGE", windowsImage, "h3")
+            insertResource("r-ext", "PDF", externalPdf, "h4")
+            insertResource("r-color", "COLOR", "#FFFFFF", "")
+            insertResource("r-empty", "PDF", "", "h5")
+        }
+
+        helper.runMigrationsAndValidate(28, listOf(Migration27To28)).close()
+
+        BundledSQLiteDriver().open(databaseFile.toString()).use { connection ->
+            val raw = mutableMapOf<String, String>()
+            connection.prepare("SELECT `id`, `uri` FROM `resources`").use { row ->
+                while (row.step()) raw[row.getText(0)] = row.getText(1)
+            }
+            assertEquals("pdf_local.pdf", raw["r-local"])
+            assertEquals("pdf_ios.pdf", raw["r-ios"])
+            assertEquals("img_win.png", raw["r-win"])
+            assertEquals(externalPdf, raw["r-ext"])
+            assertEquals("#FFFFFF", raw["r-color"])
+            assertEquals("", raw["r-empty"])
+        }
+
+        val database = createPageboardDatabase(Room.databaseBuilder<PageboardDatabase>(databaseFile.toString()))
+        try {
+            val store = RoomDocumentStore(database, InkStrokeModeller)
+            val document = assertNotNull(store.loadDocument(DOCUMENT))
+            assertEquals(ResourcePaths.resolve("pdf_local.pdf"), document.findResource("r-local")?.path)
+            assertEquals(ResourcePaths.resolve("pdf_ios.pdf"), document.findResource("r-ios")?.path)
+            assertEquals(ResourcePaths.resolve("img_win.png"), document.findResource("r-win")?.path)
+            assertEquals(externalPdf, document.findResource("r-ext")?.path)
+            assertEquals("#FFFFFF", document.findResource("r-color")?.path)
+            assertEquals("", document.findResource("r-empty")?.path)
         } finally {
             database.close()
         }

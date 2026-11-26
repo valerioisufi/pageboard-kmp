@@ -1,7 +1,9 @@
 package io.github.valerioisufi.pageboard.store.room.repository
 
+import io.github.valerioisufi.pageboard.model.DocumentResource
 import io.github.valerioisufi.pageboard.model.newElementId
 import io.github.valerioisufi.pageboard.platform.PlatformFiles
+import io.github.valerioisufi.pageboard.platform.ResourcePaths
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
 import io.github.valerioisufi.pageboard.store.LibraryTrash
 import io.github.valerioisufi.pageboard.store.TrashedItem
@@ -114,12 +116,14 @@ internal class FileRepository(
      */
     suspend fun deleteDocument(documentId: String): Boolean = withContext(Dispatchers.IO) {
         documentDao.getDocumentById(documentId) ?: return@withContext false
-        val files = resourceDao.getResourcesForDocument(documentId).map { it.uri }
+        val files = resourceDao.getResourcesForDocument(documentId)
+            .filter { !it.type.equals(DocumentResource.ResourceType.COLOR.name, ignoreCase = true) && it.uri.isNotEmpty() }
+            .map { it.uri }
         documentDao.deleteById(documentId)
         // Not the files kept for other documents too (the same content is kept once)
-        for (path in files.distinct().filter { resourceDao.countByUri(it) == 0 }) {
+        for (uri in files.distinct().filter { resourceDao.countByUri(it) == 0 }) {
             try {
-                PlatformFiles.delete(path)
+                PlatformFiles.delete(ResourcePaths.resolve(uri))
             } catch (_: Throwable) {
             }
         }
