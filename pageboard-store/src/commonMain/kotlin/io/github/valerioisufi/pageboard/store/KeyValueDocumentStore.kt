@@ -18,6 +18,7 @@ import io.github.valerioisufi.pageboard.model.change.Operation
 import io.github.valerioisufi.pageboard.model.change.OperationId
 import io.github.valerioisufi.pageboard.model.newElementId
 import io.github.valerioisufi.pageboard.platform.PlatformFiles
+import io.github.valerioisufi.pageboard.platform.ResourcePaths
 import io.github.valerioisufi.pageboard.platform.SyncLock
 import io.github.valerioisufi.pageboard.platform.currentTimeMillis
 import io.github.valerioisufi.pageboard.platform.syncLock
@@ -235,8 +236,11 @@ public class KeyValueDocumentStore(
         stored?.resources?.forEach { resource ->
             val type = DocumentResource.ResourceType.entries.firstOrNull { it.name == resource.type }
                 ?: DocumentResource.ResourceType.IMAGE
-            restoreResourceFile(resource.uri)
-            document.addResource(DocumentResource(resource.id, type, resource.uri, resource.hash))
+            val path = if (type == DocumentResource.ResourceType.COLOR) resource.uri else ResourcePaths.resolve(resource.uri)
+            if (type != DocumentResource.ResourceType.COLOR && path.isNotEmpty()) {
+                restoreResourceFile(resource.uri, path)
+            }
+            document.addResource(DocumentResource(resource.id, type, path, resource.hash))
         }
         document.defaultsVersion = stored?.defaultsVersion ?: Stamp.ZERO
         document.titleVersion = stored?.titleVersion ?: Stamp.ZERO
@@ -461,9 +465,12 @@ public class KeyValueDocumentStore(
     @OptIn(ExperimentalEncodingApi::class)
     override suspend fun saveResource(document: Document, resource: DocumentResource) {
         syncLock(lock) {
-            PlatformFiles.readBytes(resource.path)?.let { bytes ->
-                if (!storage.set(resourceKey(resource.path), Base64.encode(bytes))) {
-                    println("Pageboard: the storage quota does not allow saving the resource ${resource.path}")
+            if (resource.type != DocumentResource.ResourceType.COLOR && resource.path.isNotEmpty()) {
+                val uri = ResourcePaths.toStored(resource.path)
+                PlatformFiles.readBytes(resource.path)?.let { bytes ->
+                    if (!storage.set(resourceKey(uri), Base64.encode(bytes))) {
+                        println("Pageboard: the storage quota does not allow saving the resource ${resource.path}")
+                    }
                 }
             }
         }
@@ -511,7 +518,10 @@ public class KeyValueDocumentStore(
     override suspend fun fileWithContent(hash: String): String? = if (hash.isEmpty()) null else syncLock(lock) {
         index.documents.firstNotNullOfOrNull { summary ->
             val resources = openDocuments[summary.id]?.resources?.map { it.hash to it.path }
-                ?: storage.get(documentKey(summary.id))?.let { decodeOrNull<StoredDocument>(it) }?.resources?.map { it.hash to it.uri }
+                ?: storage.get(documentKey(summary.id))?.let { decodeOrNull<StoredDocument>(it) }?.resources?.map {
+                    val path = if (it.type.equals(DocumentResource.ResourceType.COLOR.name, ignoreCase = true)) it.uri else ResourcePaths.resolve(it.uri)
+                    it.hash to path
+                }
             resources?.firstOrNull { (resourceHash, path) -> resourceHash == hash && path.isNotEmpty() }?.second
         }
     }
@@ -742,12 +752,16 @@ public class KeyValueDocumentStore(
             if (summary.id == documentId) continue
             val open = openDocuments[summary.id]
             if (open != null) {
-                open.resources.mapTo(paths) { it.path }
+                open.resources
+                    .filter { it.type != DocumentResource.ResourceType.COLOR && it.path.isNotEmpty() }
+                    .mapTo(paths) { ResourcePaths.toStored(it.path) }
                 continue
             }
             val value = storage.get(documentKey(summary.id)) ?: continue
             val stored = decodeOrNull<StoredDocument>(value) ?: return null
-            stored.resources.mapTo(paths) { it.uri }
+            stored.resources
+                .filter { !it.type.equals(DocumentResource.ResourceType.COLOR.name, ignoreCase = true) && it.uri.isNotEmpty() }
+                .mapTo(paths) { ResourcePaths.toStored(it.uri) }
         }
         return paths
     }
@@ -760,13 +774,19 @@ public class KeyValueDocumentStore(
     private fun deleteDocumentLocked(documentId: String) {
         val stored = storage.get(documentKey(documentId))?.let { decodeOrNull<StoredDocument>(it) }
         val shared = if (stored?.resources.isNullOrEmpty()) emptySet() else pathsOfOtherDocumentsLocked(documentId)
-        stored?.resources?.filter { it.uri.isNotEmpty() && shared != null && it.uri !in shared }?.forEach { resource ->
-            storage.remove(resourceKey(resource.uri))
-            try {
-                PlatformFiles.delete(resource.uri)
-            } catch (_: Throwable) {
+        stored?.resources
+            ?.filter { !it.type.equals(DocumentResource.ResourceType.COLOR.name, ignoreCase = true) && it.uri.isNotEmpty() }
+            ?.forEach { resource ->
+                val uri = ResourcePaths.toStored(resource.uri)
+                if (shared != null && uri !in shared) {
+                    storage.remove(resourceKey(uri))
+                    if (resource.uri != uri) storage.remove(resourceKey(resource.uri))
+                    try {
+                        PlatformFiles.delete(ResourcePaths.resolve(uri))
+                    } catch (_: Throwable) {
+                    }
+                }
             }
-        }
         storage.remove(documentKey(documentId))
         log.forget(documentId)
         openDocuments.remove(documentId)
@@ -802,13 +822,15 @@ public class KeyValueDocumentStore(
     }
 
     @OptIn(ExperimentalEncodingApi::class)
-    private fun restoreResourceFile(path: String) {
-        if (PlatformFiles.exists(path)) return
-        val encoded = storage.get(resourceKey(path)) ?: return
+    private fun restoreResourceFile(storedUri: String, resolvedPath: String) {
+        if (PlatformFiles.exists(resolvedPath)) return
+        val encoded = storage.get(resourceKey(storedUri))
+            ?: (if (storedUri != resolvedPath) storage.get(resourceKey(resolvedPath)) else null)
+            ?: return
         try {
-            PlatformFiles.writeBytes(path, Base64.decode(encoded))
+            PlatformFiles.writeBytes(resolvedPath, Base64.decode(encoded))
         } catch (e: Throwable) {
-            println("Pageboard: cannot restore the resource $path: ${e.message}")
+            println("Pageboard: cannot restore the resource $resolvedPath: ${e.message}")
         }
     }
 

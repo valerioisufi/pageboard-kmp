@@ -85,7 +85,7 @@ One branch (`fix/relative-resource-paths`), one commit per phase.
 |---|---|---|
 | 1 | `pageboard-platform`: add `ResourcePaths` (`toStored`, `resolve`), harden `newResourcePath` separator trimming, add `ResourcePathsTest` in `commonTest` (Unix/Windows/nested/external/empty/already-relative/traversal edge cases), update `pageboard-platform` ABI dumps (`./gradlew :pageboard-platform:updateKotlinAbi`) | Done |
 | 2 | `pageboard-store-room`: wire `ResourcePaths` in `DocumentRepository` and `FileRepository`, bump `PageboardDatabase` to v28 with `Migration27To28` and exported `28.json`, add tests in `PageboardDatabaseTest` and `PageboardDatabaseMigrationTest` | Done |
-| 3 | `pageboard-store`: align `KeyValueDocumentStore` and `KeyValueFormat` with `ResourcePaths` and add unit tests in `KeyValueDocumentStoreTest` / `SharedResourceFilesTest` | Pending |
+| 3 | `pageboard-store`: align `KeyValueDocumentStore` and `KeyValueFormat` with `ResourcePaths` and add unit tests in `KeyValueDocumentStoreTest` / `SharedResourceFilesTest` | Done |
 | 4 | Verification: run `./gradlew jvmTest checkKotlinAbi`, `./gradlew compileAndroidMain compileKotlinIosSimulatorArm64 :pencilnotes-android:assembleDebug :sample-android:assembleDebug`, `./consumer-checks/check.sh`, and update plan statuses | Pending |
 
 ## Decisions

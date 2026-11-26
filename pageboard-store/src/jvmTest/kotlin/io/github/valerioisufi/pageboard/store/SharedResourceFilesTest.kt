@@ -2,11 +2,15 @@ package io.github.valerioisufi.pageboard.store
 
 import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.DocumentResource
+import io.github.valerioisufi.pageboard.platform.PlatformFiles
+import io.github.valerioisufi.pageboard.platform.newResourcePath
 import java.io.File
 import java.nio.file.Files
 import kotlin.test.AfterTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -98,5 +102,49 @@ class SharedResourceFilesTest {
         assertFalse(inFolder.exists(), "every document pointing at it is deleted with the folder")
         assertTrue(shared.exists(), "a document outside the folder points at it")
         assertTrue(hasStoredCopy(shared))
+    }
+
+    @Test
+    fun resourcesInsideResourcesDirectoryAreStoredRelativeAndRestored() = runTest {
+        val pdfPath = newResourcePath("kv_rel", "pdf")
+        val relativeName = PlatformFiles.name(pdfPath)
+        assertTrue(PlatformFiles.writeBytes(pdfPath, byteArrayOf(7, 8, 9)))
+        try {
+            val store = KeyValueDocumentStore(storage, scope = backgroundScope)
+            val a = store.createDocument("A")
+            val b = store.createDocument("B")
+            val resourceA = DocumentResource(id = "pdf-a", type = DocumentResource.ResourceType.PDF, path = pdfPath, hash = "kv-pdf-hash")
+            val resourceB = DocumentResource(id = "pdf-b", type = DocumentResource.ResourceType.PDF, path = pdfPath, hash = "kv-pdf-hash")
+            a.addResource(resourceA)
+            store.saveResource(a, resourceA)
+            b.addResource(resourceB)
+            store.saveResource(b, resourceB)
+            store.flush()
+
+            val storedJson = assertNotNull(storage.get("pageboard.document.${a.id}"))
+            assertTrue("\"uri\":\"$relativeName\"" in storedJson, "stored JSON keeps relative URI: $storedJson")
+            assertFalse(PlatformFiles.resourcesDirectory() in storedJson, "stored JSON omits resourcesDirectory prefix")
+            assertTrue("pageboard.file.$relativeName" in storage.keys)
+
+            // Deleting the physical file and reloading restores it at the resolved path
+            assertTrue(PlatformFiles.delete(pdfPath))
+            assertFalse(PlatformFiles.exists(pdfPath))
+
+            val reloaded = KeyValueDocumentStore(storage, scope = backgroundScope)
+            val loaded = assertNotNull(reloaded.loadDocument(a.id))
+            assertEquals(pdfPath, loaded.findResource("pdf-a")?.path)
+            assertEquals(pdfPath, reloaded.fileWithContent("kv-pdf-hash"))
+            assertTrue(PlatformFiles.exists(pdfPath))
+
+            // Reference counting across A and B
+            assertTrue(reloaded.deleteDocument(a.id))
+            assertTrue(PlatformFiles.exists(pdfPath), "B still references the shared relative URI")
+            assertTrue("pageboard.file.$relativeName" in storage.keys)
+            assertTrue(reloaded.deleteDocument(b.id))
+            assertFalse(PlatformFiles.exists(pdfPath), "last referencing document deleted")
+            assertFalse("pageboard.file.$relativeName" in storage.keys)
+        } finally {
+            PlatformFiles.delete(pdfPath)
+        }
     }
 }

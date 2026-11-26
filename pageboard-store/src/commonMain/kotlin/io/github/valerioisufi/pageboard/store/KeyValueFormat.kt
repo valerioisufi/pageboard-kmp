@@ -1,10 +1,12 @@
 package io.github.valerioisufi.pageboard.store
 
 import io.github.valerioisufi.pageboard.model.Document
+import io.github.valerioisufi.pageboard.model.DocumentResource
 import io.github.valerioisufi.pageboard.model.PageBackground
 import io.github.valerioisufi.pageboard.model.Stamp
 import io.github.valerioisufi.pageboard.model.change.PageSnapshot
 import io.github.valerioisufi.pageboard.model.change.snapshot
+import io.github.valerioisufi.pageboard.platform.ResourcePaths
 import kotlin.io.encoding.Base64
 import kotlinx.serialization.Serializable
 // What a KeyValueDocumentStore keeps in its storage: the index, the folders, the documents, the proofs
@@ -98,7 +100,10 @@ internal data class StoredProof(val replica: String, val sequence: Long, val pro
 
 internal fun Document.toStored(): StoredDocument = StoredDocument(
     pages = pages.map { it.snapshot() },
-    resources = resources.map { StoredResource(it.id, it.type.name, it.path, it.hash) },
+    resources = resources.map {
+        val uri = if (it.type == DocumentResource.ResourceType.COLOR) it.path else ResourcePaths.toStored(it.path)
+        StoredResource(it.id, it.type.name, uri, it.hash)
+    },
     defaultsVersion = defaultsVersion,
     removedPages = removedPages.values.map { it.snapshot() },
     titleVersion = titleVersion

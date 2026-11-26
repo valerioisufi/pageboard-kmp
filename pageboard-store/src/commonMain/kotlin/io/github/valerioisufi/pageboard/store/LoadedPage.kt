@@ -8,6 +8,7 @@ import io.github.valerioisufi.pageboard.model.DocumentResource
 import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.TextMarkupElement
 import io.github.valerioisufi.pageboard.model.PageContentSnapshot
+import io.github.valerioisufi.pageboard.platform.ResourcePaths
 import io.github.valerioisufi.pageboard.platform.Sha256
 
 /**
@@ -51,7 +52,8 @@ internal fun Document.pageFingerprint(index: Int): String? {
     }
     for (id in resourceIds.sorted()) {
         val resource = resources.firstOrNull { it.id == id }
-        text.append(id).append('|').append(resource?.path).append('|').append(resource?.hash).append('\n')
+        val uri = resource?.let { if (it.type == DocumentResource.ResourceType.COLOR) it.path else ResourcePaths.toStored(it.path) }
+        text.append(id).append('|').append(uri).append('|').append(resource?.hash).append('\n')
     }
     return Sha256.of(text.toString().encodeToByteArray())
 }
