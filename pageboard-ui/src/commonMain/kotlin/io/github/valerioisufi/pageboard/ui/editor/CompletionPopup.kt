@@ -23,7 +23,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlin.math.roundToInt
 
 /**
  * What the popup of the completions offers at the caret: the commands of LaTeX in a formula, the
@@ -42,7 +41,8 @@ internal class CompletionItem(val label: String, val preview: String = "")
 
 /**
  * Compact completion popup shown while typing a word the editor can complete (see [Completion]),
- * anchored near [anchor] without stealing focus from the text field.
+ * by the strip of the source at [anchor] (see [StripPlacement]), without stealing focus from the
+ * text field.
  */
 @Composable
 internal fun CompletionPopup(
@@ -58,24 +58,11 @@ internal fun CompletionPopup(
         modifier = Modifier
             .layout { measurable, constraints ->
                 val gap = POPUP_GAP.roundToPx()
-                val stripGap = STRIP_OFFSET.roundToPx()
                 val maxW = (constraints.maxWidth - 2 * gap).coerceAtLeast(0)
                 val placeable = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0, maxWidth = maxW))
                 layout(placeable.width, placeable.height) {
                     val at = anchor() ?: return@layout
-                    val x = at.left.roundToInt().coerceIn(gap, (constraints.maxWidth - placeable.width - gap).coerceAtLeast(gap))
-                    val bar = avoid()
-                    val below = (at.bottom + stripGap).roundToInt()
-                    val above = (at.top - stripGap - placeable.height).roundToInt()
-                    fun fits(y: Int) = y >= gap && y + placeable.height <= constraints.maxHeight - gap &&
-                        (bar == null || !Rect(x.toFloat(), y.toFloat(), (x + placeable.width).toFloat(), (y + placeable.height).toFloat()).overlaps(bar))
-                    val y = when {
-                        fits(below) -> below
-                        fits(above) -> above
-                        below + placeable.height <= constraints.maxHeight - gap -> below
-                        else -> above.coerceAtLeast(gap)
-                    }
-                    placeable.place(x, y)
+                    placeable.place(StripPlacement.byStrip(placeable.width, placeable.height, constraints.maxWidth, constraints.maxHeight, at, avoid(), gap))
                 }
             }
             .widthIn(min = 160.dp, max = 260.dp)
@@ -119,4 +106,3 @@ internal fun CompletionPopup(
 }
 
 private val POPUP_GAP = 6.dp
-private val STRIP_OFFSET = 44.dp

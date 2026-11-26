@@ -68,7 +68,7 @@ The responsibilities are assigned following the GRASP principles.
 | 1 | A text removed elsewhere while written kept as a new text; tests | Done |
 | 2 | The formats waiting at the caret; tests | Done |
 | 3 | The whole source on demand; tests | Done |
-| 4 | The strip and the completions on small screens; tests, screenshots | Pending |
+| 4 | The strip and the completions on small screens; tests, screenshots | Done |
 | 5 | Selections into and across blocks of code; tests | Pending |
 
 ## Decisions
@@ -84,6 +84,9 @@ Taken alone, revertible:
 4. **What is compared is the text written**: a text removed elsewhere whose words were not changed
    here (its size or color only) closes the editor, as before. The editor stays open on the new
    text, which is undone with the writing.
+5. **On a phone the strip stands on the bar** only when the bar is docked in the lower half of the
+   window (over the keyboard); the completions stand by the strip where it was placed, as it reports
+   it, rather than by a guess of its height.
 
 ## Left for later
 

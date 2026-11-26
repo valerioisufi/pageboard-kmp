@@ -208,6 +208,8 @@ internal fun TextBoxEditor(
     // A list going on from another text counts from it (see ListContinuation)
     val listStart = editor.continuedListStart
     val showsSource = editor.showsSource
+    // On a phone the formatting bar is docked over the keyboard: the strip stands on it
+    val docked = currentAdaptiveInfo().window.isCompact
     val bareShown = remember(value.text, value.selection, fontSizePx, editor.color, widthPx, struts, latexReady, codeLayouts, paper, bodyFont, listStart, showsSource) {
         formulaSizes.clear()
         // The whole source on demand: the text as it is written
@@ -796,6 +798,8 @@ internal fun TextBoxEditor(
             val length = hidden.length
             fun inSource(range: TextRange) = TextRange((range.start - from).coerceIn(0, length), (range.end - from).coerceIn(0, length))
             val stripAnchor: () -> Rect? = { hiddenAnchor(layout, currentShown, editor.tableCaret)?.let { rect -> onScreen(rect, ::toScreen) } }
+            // Where the strip stands, for the completions by it
+            val stripPlaced = remember { mutableStateOf<Rect?>(null) }
             SourceStrip(
                 source = value.text.substring(from, (from + length).coerceAtMost(value.text.length)),
                 selection = if (hidden.caretIn) inSource(value.selection) else null,
@@ -806,13 +810,15 @@ internal fun TextBoxEditor(
                 error = if (hidden.kind == RichTextParser.Kind.FORMULA && writing.invalid) stringResource(Res.string.text_editor_formula_invalid) else null,
                 onCaret = { change(editor.value.copy(selection = TextRange(from + it))) },
                 monospace = notesFonts.monospace,
-                onOpenLink = linkAtCaret?.let { url -> { openLink(url) } }
+                onOpenLink = linkAtCaret?.let { url -> { openLink(url) } },
+                docked = docked,
+                onPlaced = { if (stripPlaced.value != it) stripPlaced.value = it }
             )
             if (completion != null) {
                 CompletionPopup(
                     completion = completion,
                     selectedIndex = completionIndex.intValue.coerceIn(0, completion.items.lastIndex),
-                    anchor = stripAnchor,
+                    anchor = { stripPlaced.value },
                     avoid = barBounds,
                     monospace = notesFonts.monospace,
                     onSelect = { index ->

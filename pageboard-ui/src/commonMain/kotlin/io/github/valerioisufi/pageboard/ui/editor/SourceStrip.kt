@@ -38,7 +38,6 @@ import io.github.valerioisufi.pageboard.ui.theme.PageboardIcons
 import org.jetbrains.compose.resources.stringResource
 import io.github.valerioisufi.pageboard.ui.generated.resources.Res
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_open_link
-import kotlin.math.roundToInt
 
 /**
  * The source the page hides of what the caret of the text being written is in (see [HiddenSource]):
@@ -49,7 +48,8 @@ import kotlin.math.roundToInt
  * ([onCaret], an offset of the source shown).
  *
  * It stands above [anchor] (what it belongs to, on the screen), below it when there is no room above
- * or the formatting bar ([avoid]) is there.
+ * or the formatting bar ([avoid]) is there; on the bar when it is [docked] over the keyboard (see
+ * [StripPlacement]). [onPlaced] is told where it stands, for the completions by it.
  *
  * @param error why the source cannot be rendered, shown under it.
  */
@@ -64,7 +64,9 @@ internal fun SourceStrip(
     error: String?,
     onCaret: (Int) -> Unit,
     monospace: FontFamily,
-    onOpenLink: (() -> Unit)? = null
+    onOpenLink: (() -> Unit)? = null,
+    docked: Boolean = false,
+    onPlaced: ((Rect) -> Unit)? = null
 ) {
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
     val colors = MaterialTheme.colorScheme
@@ -77,13 +79,9 @@ internal fun SourceStrip(
                 val placeable = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0, maxWidth = width))
                 layout(placeable.width, placeable.height) {
                     val at = anchor() ?: return@layout
-                    val x = at.left.roundToInt().coerceIn(gap, (constraints.maxWidth - placeable.width - gap).coerceAtLeast(gap))
-                    val above = (at.top - gap - placeable.height).roundToInt()
-                    val below = (at.bottom + gap).roundToInt()
-                    val bar = avoid()
-                    fun clear(y: Int) = bar == null || !Rect(x.toFloat(), y.toFloat(), (x + placeable.width).toFloat(), (y + placeable.height).toFloat()).overlaps(bar)
-                    val y = if (above >= gap && clear(above)) above else if (clear(below)) below else above.coerceAtLeast(gap)
-                    placeable.place(x, y)
+                    val place = StripPlacement.strip(placeable.width, placeable.height, constraints.maxWidth, constraints.maxHeight, at, avoid(), docked, gap)
+                    placeable.place(place)
+                    onPlaced?.invoke(Rect(place.x.toFloat(), place.y.toFloat(), (place.x + placeable.width).toFloat(), (place.y + placeable.height).toFloat()))
                 }
             }
             .widthIn(max = MAX_WIDTH)
