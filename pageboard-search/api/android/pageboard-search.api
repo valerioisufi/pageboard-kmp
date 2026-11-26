@@ -482,3 +482,10 @@ public final class io/github/valerioisufi/pageboard/search/WordCounts$Companion 
 	public final fun wordsOf (Ljava/lang/String;)Ljava/util/List;
 }
 
+public final class io/github/valerioisufi/pageboard/search/WritingWords {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/search/WritingWords;
+	public final fun prefixAt (Ljava/lang/String;II)Ljava/lang/String;
+	public static synthetic fun prefixAt$default (Lio/github/valerioisufi/pageboard/search/WritingWords;Ljava/lang/String;IIILjava/lang/Object;)Ljava/lang/String;
+	public final fun restOf (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+}
+

@@ -3,6 +3,7 @@ package io.github.valerioisufi.pageboard.search.ui
 import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.search.NoteVocabulary
 import io.github.valerioisufi.pageboard.search.WordCounts
+import io.github.valerioisufi.pageboard.search.WritingWords
 import io.github.valerioisufi.pageboard.ui.extension.EditorContext
 import io.github.valerioisufi.pageboard.ui.extension.TextBeingWritten
 import io.github.valerioisufi.pageboard.ui.extension.TextSuggester
@@ -60,28 +61,8 @@ internal class NoteWordSuggester(
         const val INDEXED_WEIGHT = 2
         const val LIBRARY_WEIGHT = 1
 
-        /**
-         * The word being written before [caret] in [source], `null` when it is shorter than
-         * [MIN_PREFIX], goes on after the caret, or is in a formula, in code, in the address of a
-         * link or a command of LaTeX.
-         */
-        fun prefixAt(source: String, caret: Int): String? {
-            if (caret <= 0 || caret > source.length) return null
-            if (caret < source.length && source[caret].isLetterOrDigit()) return null
-            var start = caret
-            while (start > 0 && source[start - 1].isLetterOrDigit()) start--
-            val prefix = source.substring(start, caret)
-            if (prefix.length < MIN_PREFIX || !prefix.first().isLetter()) return null
-            if (start > 0 && source[start - 1] == '\\') return null
-            val line = source.substring(source.lastIndexOf('\n', start - 1) + 1, start)
-            if (unescapedCount(line, '$') % 2 == 1 || unescapedCount(line, '`') % 2 == 1) return null
-            val link = line.lastIndexOf("](")
-            if (link >= 0 && line.indexOf(')', link) < 0) return null
-            return prefix
-        }
-
-        private fun unescapedCount(line: String, char: Char): Int =
-            line.indices.count { line[it] == char && (it == 0 || line[it - 1] != '\\') }
+        /** The word being written before [caret] in [source] (see [WritingWords.prefixAt]). */
+        fun prefixAt(source: String, caret: Int): String? = WritingWords.prefixAt(source, caret, MIN_PREFIX)
 
         /**
          * The rest of the word that [prefix] begins, from the words of [layers] (a weight and
@@ -108,8 +89,7 @@ internal class NoteWordSuggester(
             if (best.count < MIN_COUNT || best.score < MIN_SHARE * total) return null
             // Another word as good is no clear winner
             if (candidates.values.any { it !== best && it.score == best.score }) return null
-            val rest = best.word.substring(prefix.length)
-            return if (prefix.length > 1 && prefix.all { !it.isLetter() || it.isUpperCase() }) rest.uppercase() else rest
+            return WritingWords.restOf(best.word, prefix)
         }
     }
 }

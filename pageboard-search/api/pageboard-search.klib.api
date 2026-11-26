@@ -564,6 +564,11 @@ final object io.github.valerioisufi.pageboard.search/EmbeddingPrompts { // io.gi
     final fun question(kotlin/String): kotlin/String // io.github.valerioisufi.pageboard.search/EmbeddingPrompts.question|question(kotlin.String){}[0]
 }
 
+final object io.github.valerioisufi.pageboard.search/WritingWords { // io.github.valerioisufi.pageboard.search/WritingWords|null[0]
+    final fun prefixAt(kotlin/String, kotlin/Int, kotlin/Int = ...): kotlin/String? // io.github.valerioisufi.pageboard.search/WritingWords.prefixAt|prefixAt(kotlin.String;kotlin.Int;kotlin.Int){}[0]
+    final fun restOf(kotlin/String, kotlin/String): kotlin/String // io.github.valerioisufi.pageboard.search/WritingWords.restOf|restOf(kotlin.String;kotlin.String){}[0]
+}
+
 final fun io.github.valerioisufi.pageboard.search/cleanMarkdownForSearch(kotlin/String): kotlin/String // io.github.valerioisufi.pageboard.search/cleanMarkdownForSearch|cleanMarkdownForSearch(kotlin.String){}[0]
 final fun io.github.valerioisufi.pageboard.search/searchWordsOf(kotlin/String): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.search/searchWordsOf|searchWordsOf(kotlin.String){}[0]
 final fun io.github.valerioisufi.pageboard.search/snippetOf(kotlin/String, kotlin/String, kotlin/Int = ...): kotlin/String // io.github.valerioisufi.pageboard.search/snippetOf|snippetOf(kotlin.String;kotlin.String;kotlin.Int){}[0]
