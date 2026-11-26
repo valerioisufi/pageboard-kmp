@@ -67,4 +67,28 @@ class TableShapeTest {
         assertEquals(1 to 0, shape.cellAt(text.indexOf('c')))
         assertEquals(1 to 1, shape.cellAt(shape.rows[1][1].first), "an empty cell")
     }
+
+    @Test
+    fun theDashesOfTheDelimiterRowSetTheWidthsWhenTheyDiffer() {
+        fun shape(text: String) = TableShape.of(text, RichTextParser.parse(text).single { it.kind == RichTextParser.Kind.TABLE })
+        assertEquals(listOf(3, 6), shape("| a | b |\n|---|------|\n| 1 | 2 |").widths)
+        assertEquals(listOf(4, 3), shape("| a | b |\n| :--: | --: |\n| 1 | 2 |").widths, "the colons count with the dashes")
+        // All alike, as every table written so far: as wide as their content
+        assertEquals(null, shape("| a | b |\n|---|---|\n| 1 | 2 |").widths)
+        assertEquals(null, shape("| a | b |\n| :-- | --: |\n| 1 | 2 |").widths)
+    }
+
+    @Test
+    fun aCellOfALessThanAloneIsMergedIntoTheCellBeforeIt() {
+        val text = "| a | b | c |\n|---|---|---|\n| wide | < | x |\n| < | y | <<  |"
+        val shape = TableShape.of(text, RichTextParser.parse(text).single { it.kind == RichTextParser.Kind.TABLE })
+        // The rows: the header, then the rows after the delimiter
+        assertEquals(listOf(false, true, false), shape.merged[1])
+        assertEquals(2, shape.spanOf(1, 0))
+        assertEquals(0, shape.spanOf(1, 1))
+        assertEquals(0, shape.ownerOf(1, 1))
+        // Not the first cell of a row, nor `<<`
+        assertEquals(listOf(false, false, false), shape.merged[2])
+        assertEquals(1, shape.spanOf(0, 0))
+    }
 }

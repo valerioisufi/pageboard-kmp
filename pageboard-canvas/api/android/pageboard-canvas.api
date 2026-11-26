@@ -1882,6 +1882,10 @@ public final class io/github/valerioisufi/pageboard/canvas/text/TableEditing$Act
 	public static final field DELETE_COLUMN Lio/github/valerioisufi/pageboard/canvas/text/TableEditing$Action;
 	public static final field DELETE_ROW Lio/github/valerioisufi/pageboard/canvas/text/TableEditing$Action;
 	public static final field DELETE_TABLE Lio/github/valerioisufi/pageboard/canvas/text/TableEditing$Action;
+	public static final field MERGE_RIGHT Lio/github/valerioisufi/pageboard/canvas/text/TableEditing$Action;
+	public static final field NARROWER Lio/github/valerioisufi/pageboard/canvas/text/TableEditing$Action;
+	public static final field SPLIT Lio/github/valerioisufi/pageboard/canvas/text/TableEditing$Action;
+	public static final field WIDER Lio/github/valerioisufi/pageboard/canvas/text/TableEditing$Action;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/canvas/text/TableEditing$Action;
 	public static fun values ()[Lio/github/valerioisufi/pageboard/canvas/text/TableEditing$Action;

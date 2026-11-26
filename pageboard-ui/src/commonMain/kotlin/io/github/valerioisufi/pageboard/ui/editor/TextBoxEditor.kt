@@ -270,7 +270,7 @@ internal fun TextBoxEditor(
     // The cell of the caret when it is in a table, and the color of the caret
     val tableCaret = editor.tableCaret
     val cellAtCaret = tableCaret?.let { c ->
-        shown.tables.firstOrNull { it.span.start == c.span.start }?.layout?.cells?.firstOrNull { it.row == c.row && it.column == c.column }
+        shown.tables.firstOrNull { it.span.start == c.span.start }?.layout?.cells?.firstOrNull { it.row == c.row && c.column in it.column until it.column + it.span }
     }
     val hidden = shown.hiddenAtCaret ?: cellAtCaret?.presented?.hiddenAtCaret
     val linkAtCaret = shown.linkAtCaret ?: cellAtCaret?.presented?.linkAtCaret
@@ -686,7 +686,7 @@ internal fun TextBoxEditor(
                     // The cell of the caret in a table: its outline, the caret or the selection in it
                     val cellCaret = tableCaret
                     val table = cellCaret?.let { c -> shown.tables.firstOrNull { it.span.start == c.span.start } }
-                    val cell = table?.layout?.cells?.firstOrNull { it.row == cellCaret.row && it.column == cellCaret.column }
+                    val cell = table?.layout?.cells?.firstOrNull { it.row == cellCaret.row && cellCaret.column in it.column until it.column + it.span }
                     if (table != null && cell != null) {
                         val origin = current.tableOrigin(table) + Offset(cell.left, cell.top)
                         val edges = table.layout
@@ -902,7 +902,7 @@ private fun onScreen(sizePx: Float): Float = SIZE_STEP.pow(ceil(ln(sizePx.coerce
  */
 private fun caretRect(layout: TextLayoutResult, shown: PresentedText<*>, tableCaret: TableEditing.Caret?, offset: Int): Rect {
     val table = tableCaret?.let { caret -> shown.tables.firstOrNull { it.span.start == caret.span.start } }
-    val cell = table?.layout?.cells?.firstOrNull { it.row == tableCaret.row && it.column == tableCaret.column }
+    val cell = table?.layout?.cells?.firstOrNull { it.row == tableCaret.row && tableCaret.column in it.column until it.column + it.span }
     if (table != null && cell != null) {
         val length = cell.source.last + 1 - cell.source.first
         val inCell = cell.presented.mapping.originalToTransformed((offset - cell.source.first).coerceIn(0, length))
@@ -967,7 +967,7 @@ private class FormulaBeingWritten {
 
 /** The hidden source of the cell of the caret in a table ([tableCaret]), if the caret is in one. */
 private fun cellHidden(shown: PresentedText<*>, tableCaret: TableEditing.Caret?): HiddenSource? = tableCaret?.let { c ->
-    shown.tables.firstOrNull { it.span.start == c.span.start }?.layout?.cells?.firstOrNull { it.row == c.row && it.column == c.column }?.presented?.hiddenAtCaret
+    shown.tables.firstOrNull { it.span.start == c.span.start }?.layout?.cells?.firstOrNull { it.row == c.row && c.column in it.column until it.column + it.span }?.presented?.hiddenAtCaret
 }
 
 /**

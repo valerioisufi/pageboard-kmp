@@ -3093,7 +3093,7 @@ final class io.github.valerioisufi.pageboard.model.text/NumberingStyle { // io.g
 }
 
 final class io.github.valerioisufi.pageboard.model.text/TableShape { // io.github.valerioisufi.pageboard.model.text/TableShape|null[0]
-    constructor <init>(kotlin.collections/List<kotlin.collections/List<kotlin.ranges/IntRange>>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/TextAlignment?>, kotlin.collections/List<kotlin.ranges/IntRange>) // io.github.valerioisufi.pageboard.model.text/TableShape.<init>|<init>(kotlin.collections.List<kotlin.collections.List<kotlin.ranges.IntRange>>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.TextAlignment?>;kotlin.collections.List<kotlin.ranges.IntRange>){}[0]
+    constructor <init>(kotlin.collections/List<kotlin.collections/List<kotlin.ranges/IntRange>>, kotlin.collections/List<io.github.valerioisufi.pageboard.model/TextAlignment?>, kotlin.collections/List<kotlin.ranges/IntRange>, kotlin.collections/List<kotlin/Int>? = ..., kotlin.collections/List<kotlin.collections/List<kotlin/Boolean>> = ...) // io.github.valerioisufi.pageboard.model.text/TableShape.<init>|<init>(kotlin.collections.List<kotlin.collections.List<kotlin.ranges.IntRange>>;kotlin.collections.List<io.github.valerioisufi.pageboard.model.TextAlignment?>;kotlin.collections.List<kotlin.ranges.IntRange>;kotlin.collections.List<kotlin.Int>?;kotlin.collections.List<kotlin.collections.List<kotlin.Boolean>>){}[0]
 
     final val alignments // io.github.valerioisufi.pageboard.model.text/TableShape.alignments|{}alignments[0]
         final fun <get-alignments>(): kotlin.collections/List<io.github.valerioisufi.pageboard.model/TextAlignment?> // io.github.valerioisufi.pageboard.model.text/TableShape.alignments.<get-alignments>|<get-alignments>(){}[0]
@@ -3101,12 +3101,21 @@ final class io.github.valerioisufi.pageboard.model.text/TableShape { // io.githu
         final fun <get-columns>(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/TableShape.columns.<get-columns>|<get-columns>(){}[0]
     final val lines // io.github.valerioisufi.pageboard.model.text/TableShape.lines|{}lines[0]
         final fun <get-lines>(): kotlin.collections/List<kotlin.ranges/IntRange> // io.github.valerioisufi.pageboard.model.text/TableShape.lines.<get-lines>|<get-lines>(){}[0]
+    final val merged // io.github.valerioisufi.pageboard.model.text/TableShape.merged|{}merged[0]
+        final fun <get-merged>(): kotlin.collections/List<kotlin.collections/List<kotlin/Boolean>> // io.github.valerioisufi.pageboard.model.text/TableShape.merged.<get-merged>|<get-merged>(){}[0]
     final val rows // io.github.valerioisufi.pageboard.model.text/TableShape.rows|{}rows[0]
         final fun <get-rows>(): kotlin.collections/List<kotlin.collections/List<kotlin.ranges/IntRange>> // io.github.valerioisufi.pageboard.model.text/TableShape.rows.<get-rows>|<get-rows>(){}[0]
+    final val widths // io.github.valerioisufi.pageboard.model.text/TableShape.widths|{}widths[0]
+        final fun <get-widths>(): kotlin.collections/List<kotlin/Int>? // io.github.valerioisufi.pageboard.model.text/TableShape.widths.<get-widths>|<get-widths>(){}[0]
 
     final fun cellAt(kotlin/Int): kotlin/Pair<kotlin/Int, kotlin/Int>? // io.github.valerioisufi.pageboard.model.text/TableShape.cellAt|cellAt(kotlin.Int){}[0]
+    final fun ownerOf(kotlin/Int, kotlin/Int): kotlin/Int // io.github.valerioisufi.pageboard.model.text/TableShape.ownerOf|ownerOf(kotlin.Int;kotlin.Int){}[0]
+    final fun spanOf(kotlin/Int, kotlin/Int): kotlin/Int // io.github.valerioisufi.pageboard.model.text/TableShape.spanOf|spanOf(kotlin.Int;kotlin.Int){}[0]
 
     final object Companion { // io.github.valerioisufi.pageboard.model.text/TableShape.Companion|null[0]
+        final const val MERGED // io.github.valerioisufi.pageboard.model.text/TableShape.Companion.MERGED|{}MERGED[0]
+            final fun <get-MERGED>(): kotlin/Char // io.github.valerioisufi.pageboard.model.text/TableShape.Companion.MERGED.<get-MERGED>|<get-MERGED>(){}[0]
+
         final fun cellsOf(kotlin/String, kotlin/Int, kotlin/Int, kotlin/Int = ...): kotlin.collections/List<kotlin.ranges/IntRange> // io.github.valerioisufi.pageboard.model.text/TableShape.Companion.cellsOf|cellsOf(kotlin.String;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
         final fun of(kotlin/String, io.github.valerioisufi.pageboard.model.text/RichTextParser.Span): io.github.valerioisufi.pageboard.model.text/TableShape // io.github.valerioisufi.pageboard.model.text/TableShape.Companion.of|of(kotlin.String;io.github.valerioisufi.pageboard.model.text.RichTextParser.Span){}[0]
     }

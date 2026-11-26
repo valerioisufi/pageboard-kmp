@@ -82,7 +82,7 @@ internal object LecturePrompts {
 
     /** The Markdown rendered by the text blocks of the notebook. */
     private const val MARKDOWN_RULE =
-        "Markdown of the notebook: \"-\" for bullet points, **bold**, *italic*, \"#\" headings, `code` in the line, blocks of code between fences with their language (a line \"```python\", the code with its indentation, a line \"```\"), LaTeX formulas between \$...\$ (inline) or \$\$...\$\$ (display); no tables, HTML, images or links."
+        "Markdown of the notebook: \"-\" for bullet points, **bold**, *italic*, \"#\" headings, `code` in the line, blocks of code between fences with their language (a line \"```python\", the code with its indentation, a line \"```\"), LaTeX formulas between \$...\$ (inline) or \$\$...\$\$ (display), tables when what is said is a table (a row of headers, a row of dashes, then the rows, as \"| a | b |\", \"|---|---|\", \"| 1 | 2 |\"); no HTML, images or links."
 
     /** Where a note goes on its page: next to the words it is about (see `docs/plans/auto-placement.md`). */
     private const val ANCHOR_RULE =

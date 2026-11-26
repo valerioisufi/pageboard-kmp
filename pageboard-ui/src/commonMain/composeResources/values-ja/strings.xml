@@ -340,4 +340,8 @@
     <string name="numbering_continue">前のリストから続ける</string>
     <string name="numbering_continue_hint">前のテキストの番号に続けます</string>
     <string name="text_editor_action_line_in_item">項目内で改行</string>
+    <string name="table_merge_right">次のセルと結合</string>
+    <string name="table_split">セルを分割</string>
+    <string name="table_column_wider">列を広く</string>
+    <string name="table_column_narrower">列を狭く</string>
 </resources>

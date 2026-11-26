@@ -30,7 +30,9 @@ import kotlin.math.min
 /**
  * A table of a text laid out as a grid (see [TableShape]): its columns as wide as their content
  * when the line has room, else sharing the line (the narrow ones keeping their width, the others
- * wrapping their lines); the header in bold on a faint background; thin rules around the cells.
+ * wrapping their lines), or sharing the line by the widths set by hand; a cell merged with the ones
+ * after it across their columns; the header in bold on a faint background; thin rules around the
+ * cells.
  * The cells are presented as the rest of the text (their formatting, their formulas).
  *
  * [columnEdges] and [rowEdges] are the lines of the rules from the top-left corner of the table,
@@ -55,7 +57,18 @@ internal class TableLayout<T>(
         out += Rect(0f, 0f, widthPx, rowEdges[1]) to headerColor
         val half = ruleWidthPx / 2f
         for (y in rowEdges) out += Rect(0f, (y - half).coerceAtLeast(0f), widthPx, (y + half).coerceAtMost(heightPx)) to ruleColor
-        for (x in columnEdges) out += Rect((x - half).coerceAtLeast(0f), 0f, (x + half).coerceAtMost(widthPx), heightPx) to ruleColor
+        for ((edge, x) in columnEdges.withIndex()) {
+            val inner = edge in 1 until columnEdges.size - 1
+            if (!inner || cells.none { it.span > 1 }) {
+                out += Rect((x - half).coerceAtLeast(0f), 0f, (x + half).coerceAtMost(widthPx), heightPx) to ruleColor
+                continue
+            }
+            // A rule between two columns, row by row: none across a merged cell
+            for (row in 0 until rowEdges.size - 1) {
+                if (cells.any { it.row == row && it.column < edge && it.column + it.span > edge }) continue
+                out += Rect((x - half).coerceAtLeast(0f), rowEdges[row], (x + half).coerceAtMost(widthPx), rowEdges[row + 1]) to ruleColor
+            }
+        }
         return out
     }
 
@@ -82,7 +95,7 @@ internal class TableLayout<T>(
         if (point.x < 0f || point.y < 0f || point.x > widthPx || point.y > heightPx) return null
         val column = (1 until columnEdges.size).firstOrNull { point.x <= columnEdges[it] }?.minus(1) ?: return null
         val row = (1 until rowEdges.size).firstOrNull { point.y <= rowEdges[it] }?.minus(1) ?: return null
-        return cells.firstOrNull { it.row == row && it.column == column }
+        return cells.firstOrNull { it.row == row && column >= it.column && column < it.column + it.span }
     }
 
     internal companion object {
@@ -126,31 +139,37 @@ internal class TableLayout<T>(
             val natural = FloatArray(columns)
             // The widest formula of each column: a formula does not wrap
             val least = FloatArray(columns) { MIN_COLUMN * p.fontSizePx }
-            for (cells in shown) for ((column, cell) in cells.withIndex()) {
+            for ((row, cells) in shown.withIndex()) for ((column, cell) in cells.withIndex()) {
+                // A cell over several columns (or merged into another) sets none of their widths
+                if (shape.spanOf(row, column) != 1) continue
                 for (formula in cell.second.formulas) least[column] = max(least[column], formula.widthPx + 1f)
                 // A pixel more: laid out on its own width, a line may not fit it after the rounding
                 natural[column] = max(natural[column], measure(cell.third, null, TextAlignment.START).size.width + 1f)
             }
             val chrome = columns * 2 * padSide + (columns + 1) * rule
-            val inner = fitColumns(natural, lineWidth - chrome, least)
+            val inner = shape.widths?.let { byHand(it, lineWidth - chrome, least) } ?: fitColumns(natural, lineWidth - chrome, least)
             val columnEdges = FloatArray(columns + 1)
             for (column in 0 until columns) columnEdges[column + 1] = columnEdges[column] + rule + 2 * padSide + inner[column]
             columnEdges[columns] += rule
             // The rows as high as their highest cell
             val laidOut = shown.mapIndexed { row, cells ->
                 cells.mapIndexed { column, (range, presented, styled) ->
+                    val span = shape.spanOf(row, column)
+                    if (span == 0) return@mapIndexed null
                     val alignment = shape.alignments[column] ?: TextAlignment.START
-                    Triple(range, presented, measure(styled, inner[column], alignment)) to row
-                }
+                    // Over the columns it spans, and the rules and margins between them
+                    val width = (column until column + span).sumOf { inner[it].toDouble() }.toFloat() + (span - 1) * (rule + 2 * padSide)
+                    Triple(range, presented, measure(styled, width, alignment)) to span
+                }.withIndex().filter { it.value != null }
             }
             val rowEdges = FloatArray(shape.rows.size + 1)
             val cells = mutableListOf<TableCellLayout<T>>()
             for ((row, rowCells) in laidOut.withIndex()) {
-                val height = rowCells.maxOf { it.first.third.size.height }.toFloat() + 2 * padTop
+                val height = rowCells.maxOf { it.value!!.first.third.size.height }.toFloat() + 2 * padTop
                 rowEdges[row + 1] = rowEdges[row] + rule + height
-                for ((column, cell) in rowCells.withIndex()) {
-                    val (range, presented, layout) = cell.first
-                    cells += TableCellLayout(row, column, range, columnEdges[column] + rule + padSide, rowEdges[row] + rule + padTop, layout, presented)
+                for ((column, cell) in rowCells) {
+                    val (range, presented, layout) = cell!!.first
+                    cells += TableCellLayout(row, column, range, columnEdges[column] + rule + padSide, rowEdges[row] + rule + padTop, layout, presented, cell.second)
                 }
             }
             rowEdges[shape.rows.size] += rule
@@ -167,6 +186,15 @@ internal class TableLayout<T>(
                 ruleColor = ruleColor,
                 headerColor = CodeTheme.of(textColor, p.paperColor).background
             )
+        }
+
+        /**
+         * The widths of columns set by hand ([widths], relative) in [available]: shared in their
+         * proportions, none below its [least].
+         */
+        fun byHand(widths: List<Int>, available: Float, least: FloatArray): FloatArray {
+            val total = widths.sum().coerceAtLeast(1).toFloat()
+            return FloatArray(least.size) { column -> max(available * widths.getOrElse(column) { 1 } / total, least[column]) }
         }
 
         /**
@@ -207,8 +235,9 @@ internal class TableLayout<T>(
 }
 
 /**
- * A cell of a table laid out: its [row] and [column], the [source] range of its content in the
- * text, its [layout] drawn from [left], [top] of the table, the text it [presented].
+ * A cell of a table laid out: its [row] and [column] (its first, of the [span] columns it takes), the
+ * [source] range of its content in the text, its [layout] drawn from [left], [top] of the table,
+ * the text it [presented].
  */
 internal class TableCellLayout<T>(
     val row: Int,
@@ -217,5 +246,6 @@ internal class TableCellLayout<T>(
     val left: Float,
     val top: Float,
     val layout: TextLayoutResult,
-    val presented: PresentedText<T>
+    val presented: PresentedText<T>,
+    val span: Int = 1
 )

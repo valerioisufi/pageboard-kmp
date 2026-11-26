@@ -104,8 +104,7 @@ Taken alone, revertible:
 - Real-device manual verification of Android/iOS IME, handles, and Apple Pencil Scribble.
 - The stages after this one, each in a plan of its own:
   - **B, checklists and lists** (`docs/plans/checklists-and-lists.md`): done.
-  - **C, boxes, chains, tables and quotes** (`docs/plans/boxes-tables-quotes.md`): done but its
-    phase 5, the tables (merged cells, widths of the columns, tables in the notes of the assistant).
+  - **C, boxes, chains, tables and quotes** (`docs/plans/boxes-tables-quotes.md`): done.
   - **D, blocks of code**: the language detected and completed, copying the code alone,
     indentation that knows the language, a number to start the lines from.
   - **E, fidelity, autosave and conflicts**: a format chosen at the caret before typing, the whole

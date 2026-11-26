@@ -345,4 +345,8 @@
     <string name="numbering_continue">Continuer la liste précédente</string>
     <string name="numbering_continue_hint">Les numéros suivent le texte d’avant</string>
     <string name="text_editor_action_line_in_item">Ligne dans l’élément</string>
+    <string name="table_merge_right">Fusionner avec la cellule suivante</string>
+    <string name="table_split">Scinder la cellule</string>
+    <string name="table_column_wider">Colonne plus large</string>
+    <string name="table_column_narrower">Colonne plus étroite</string>
 </resources>

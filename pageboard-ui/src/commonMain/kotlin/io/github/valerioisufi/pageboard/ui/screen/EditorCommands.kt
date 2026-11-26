@@ -92,6 +92,10 @@ import io.github.valerioisufi.pageboard.ui.generated.resources.table_align_start
 import io.github.valerioisufi.pageboard.ui.generated.resources.table_column_left
 import io.github.valerioisufi.pageboard.ui.generated.resources.table_column_right
 import io.github.valerioisufi.pageboard.ui.generated.resources.table_delete
+import io.github.valerioisufi.pageboard.ui.generated.resources.table_column_narrower
+import io.github.valerioisufi.pageboard.ui.generated.resources.table_column_wider
+import io.github.valerioisufi.pageboard.ui.generated.resources.table_split
+import io.github.valerioisufi.pageboard.ui.generated.resources.table_merge_right
 import io.github.valerioisufi.pageboard.ui.generated.resources.table_delete_column
 import io.github.valerioisufi.pageboard.ui.generated.resources.table_delete_row
 import io.github.valerioisufi.pageboard.ui.generated.resources.table_row_above
@@ -766,11 +770,16 @@ internal class EditorCommands internal constructor(
     val tableDeleteRow = tableAction(TableEditing.Action.DELETE_ROW, Res.string.table_delete_row)
     val tableDeleteColumn = tableAction(TableEditing.Action.DELETE_COLUMN, Res.string.table_delete_column)
     val tableDelete = tableAction(TableEditing.Action.DELETE_TABLE, Res.string.table_delete)
+    val tableMergeRight = tableAction(TableEditing.Action.MERGE_RIGHT, Res.string.table_merge_right)
+    val tableSplit = tableAction(TableEditing.Action.SPLIT, Res.string.table_split)
+    val tableWider = tableAction(TableEditing.Action.WIDER, Res.string.table_column_wider)
+    val tableNarrower = tableAction(TableEditing.Action.NARROWER, Res.string.table_column_narrower)
 
     /** The commands on the table of the caret, in their sections (the menu of the table, the menu Format). */
     val tableActions: List<List<Command>> = listOf(
         listOf(tableRowAbove, tableRowBelow, tableColumnLeft, tableColumnRight),
         listOf(tableAlignStart, tableAlignCenter, tableAlignEnd),
+        listOf(tableMergeRight, tableSplit, tableWider, tableNarrower),
         listOf(tableDeleteRow, tableDeleteColumn, tableDelete)
     )
 

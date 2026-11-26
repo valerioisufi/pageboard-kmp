@@ -13,14 +13,38 @@ import io.github.valerioisufi.pageboard.model.text.RichTextParser.Span
  *
  * Every row has as many cells as the header: the cells missing at the end of a row are empty
  * ranges at its end, the cells beyond the header are left out (as GitHub does).
+ *
+ * Two notations of the notes (`docs/plans/boxes-tables-quotes.md`), readable in any Markdown:
+ * * a cell whose content is `<` alone is merged into the cell before it in its row ([merged]),
+ *   which spans the columns of both ([spanOf]);
+ * * the dashes of the delimiter row (with the colons of its alignment) set the widths of the
+ *   columns when they are not all of the same length ([widths], relative); all of the same
+ *   length, the columns are as wide as their content, as in the notes written before.
  */
 public class TableShape(
     public val rows: List<List<IntRange>>,
     public val alignments: List<TextAlignment?>,
-    public val lines: List<IntRange>
+    public val lines: List<IntRange>,
+    public val widths: List<Int>? = null,
+    public val merged: List<List<Boolean>> = rows.map { cells -> cells.map { false } }
 ) {
     /** The number of columns: the cells of the header. */
     public val columns: Int get() = alignments.size
+
+    /** The columns the cell [row], [column] spans: 1, more with the cells merged into it, 0 for a cell merged into another. */
+    public fun spanOf(row: Int, column: Int): Int {
+        if (merged[row][column]) return 0
+        var span = 1
+        while (column + span < columns && merged[row][column + span]) span++
+        return span
+    }
+
+    /** The cell [row], [column] or the one it is merged into: the column of the cell that shows it. */
+    public fun ownerOf(row: Int, column: Int): Int {
+        var owner = column
+        while (owner > 0 && merged[row][owner]) owner--
+        return owner
+    }
 
     /** The row and the column of the cell whose content has [offset] (its ends included), or `null`. */
     public fun cellAt(offset: Int): Pair<Int, Int>? {
@@ -45,7 +69,8 @@ public class TableShape(
                 lineStart = lineEnd + 1
             }
             val header = cellsOf(masked, lines[0].first, lines[0].last + 1, table.start)
-            val alignments = cellsOf(masked, lines[1].first, lines[1].last + 1, table.start).map { cell ->
+            val delimiters = cellsOf(masked, lines[1].first, lines[1].last + 1, table.start)
+            val alignments = delimiters.map { cell ->
                 val written = text.substring(cell.first, cell.last + 1).trim()
                 val left = written.startsWith(':')
                 val right = written.endsWith(':')
@@ -61,7 +86,12 @@ public class TableShape(
                 val cells = cellsOf(masked, line.first, line.last + 1, table.start).map { trimmed(text, it) }
                 rows += List(header.size) { column -> cells.getOrElse(column) { (line.last + 1) until (line.last + 1) } }
             }
-            return TableShape(rows, alignments.take(header.size) + List((header.size - alignments.size).coerceAtLeast(0)) { null }, lines)
+            val columnAlignments = alignments.take(header.size) + List((header.size - alignments.size).coerceAtLeast(0)) { null }
+            val dashes = delimiters.take(header.size).map { cell -> text.substring(cell.first, cell.last + 1).count { it == '-' || it == ':' }.coerceAtMost(MOST_DASHES) }
+            val widths = dashes.takeIf { it.size == header.size && it.distinct().size > 1 }
+            // A cell of `<` alone, not the first of its row, goes with the cell before it
+            val merged = rows.map { cells -> cells.mapIndexed { column, cell -> column > 0 && cell.last - cell.first == 0 && text[cell.first] == MERGED } }
+            return TableShape(rows, columnAlignments, lines, widths, merged)
         }
 
         /**
@@ -89,6 +119,12 @@ public class TableShape(
             cells += (cellStart + base) until (last + base)
             return cells
         }
+
+        /** The content of a cell merged into the cell before it. */
+        public const val MERGED: Char = '<'
+
+        /** The dashes of a column read at most: a width relative to the others, far beyond any table. */
+        private const val MOST_DASHES = 200
 
         /** [cell] without the spaces around its content (empty: at its middle). */
         private fun trimmed(text: String, cell: IntRange): IntRange {

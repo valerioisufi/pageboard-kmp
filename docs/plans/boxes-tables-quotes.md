@@ -74,7 +74,7 @@ The responsibilities are assigned following the GRASP principles.
 | 2 | The boxes of a chain follow while one is written; the key of a line break in an item; tests | Done |
 | 3 | Nested quotes, headings in quotes; tests | Done (blocks of code and tables in quotes, quotes in list items: left for later, decision 7) |
 | 4 | Keeping a heading with two lines, a line ending with `:` with its block; tests | Done |
-| 5 | Tables: merged cells, widths of the columns, tables in the notes of the assistant; tests | Pending |
+| 5 | Tables: merged cells, widths of the columns, tables in the notes of the assistant; tests | Done |
 | 6 | `\text{}` in the font of the text, the symbols of the code, scrolling while selecting; tests | Done (`\text{}` already one font, decision 9) |
 
 ## Decisions
@@ -125,8 +125,20 @@ Taken alone, revertible:
     faster the farther (32 dp from the edge, 24 px a frame at most), and the selection follows the text
     moving under the mouse. A finger selects with the handles, which the canvas already follows.
 
+12. **The tables, in their notation**: a cell of `<` alone (not the first of its row) is merged into
+    the cell before it, which spans their columns; the rules between them are not drawn, Tab passes
+    over it. The widths are the dashes of the delimiter row with the colons of its alignment, read
+    only when they differ: every table written so far has them alike and keeps its columns as wide
+    as their content. Every change of a table by the editor writes them back.
+13. **The widths by the commands Wider column and Narrower column of the table menu** (two dashes a
+    step, from six), not by dragging the borders: the same on a touch screen and with a mouse, and
+    within the menu of the table that already has its other commands. Dragging is left for later.
+14. **The assistant writes tables in its notes** when what is said is a table: its prompt tells it
+    the notation instead of forbidding tables.
+
 ## Left for later
 
+- Dragging the borders of the columns of a table (decision 13).
 - `\text{}` in the font chosen for its text (decision 9).
 - Blocks of code and tables in a quote; a quote in a list item (decision 7).
 - Real-device checks (soft keyboards, the handle by touch), left to the maintainer.

@@ -22,7 +22,16 @@ public object TableEditing {
     public enum class Action {
         ADD_ROW_ABOVE, ADD_ROW_BELOW, ADD_COLUMN_LEFT, ADD_COLUMN_RIGHT,
         DELETE_ROW, DELETE_COLUMN, DELETE_TABLE,
-        ALIGN_START, ALIGN_CENTER, ALIGN_END
+        ALIGN_START, ALIGN_CENTER, ALIGN_END,
+
+        /** The cell of the caret merged with the cell after it in its row (its content after its own). */
+        MERGE_RIGHT,
+
+        /** The cells merged into the cell of the caret apart again, empty. */
+        SPLIT,
+
+        /** The column of the caret wider than the others, or narrower (the widths set by hand, see [TableShape.widths]). */
+        WIDER, NARROWER
     }
 
     /** A table of a text: its [span], its [shape], the [row] and [column] of the caret in it. */
@@ -86,7 +95,10 @@ public object TableEditing {
     public fun nextCell(value: TextFieldValue, backwards: Boolean): TextFieldValue? {
         val caret = caretIn(value) ?: return null
         val columns = caret.shape.columns
-        val index = caret.row * columns + caret.column + if (backwards) -1 else 1
+        val step = if (backwards) -1 else 1
+        var index = caret.row * columns + caret.shape.ownerOf(caret.row, caret.column) + step
+        // The cells merged into another are passed over
+        while (index in 0 until caret.shape.rows.size * columns && caret.shape.merged[index / columns][index % columns]) index += step
         if (index < 0) return value.copy(selection = TextRange(endOf(caret.shape, 0, 0)))
         if (index >= caret.shape.rows.size * columns) return addRow(value, caret, below = true, column = 0)
         return value.copy(selection = TextRange(endOf(caret.shape, index / columns, index % columns)))
@@ -143,8 +155,10 @@ public object TableEditing {
         val text = value.text
         val cells = cellsOf(text, caret.shape).map { it.toMutableList() }.toMutableList()
         val alignments = caret.shape.alignments.toMutableList()
+        var widths = caret.shape.widths?.toMutableList()
         var row = caret.row
-        var column = caret.column
+        // A cell merged into another: the cell that shows it
+        var column = caret.shape.ownerOf(caret.row, caret.column)
         when (action) {
             Action.ADD_ROW_ABOVE, Action.ADD_ROW_BELOW -> return addRow(value, caret, below = action == Action.ADD_ROW_BELOW)
             Action.ADD_COLUMN_LEFT, Action.ADD_COLUMN_RIGHT -> {
@@ -152,6 +166,7 @@ public object TableEditing {
                 val at = if (action == Action.ADD_COLUMN_RIGHT) column + 1 else column
                 for (cellsOfRow in cells) cellsOfRow.add(at, "")
                 alignments.add(at, null)
+                widths?.add(at, widths.average().toInt())
                 column = at
             }
             Action.DELETE_ROW -> {
@@ -162,16 +177,40 @@ public object TableEditing {
             }
             Action.DELETE_COLUMN -> {
                 if (alignments.size <= 1) return deleteTable(value, caret)
-                for (cellsOfRow in cells) cellsOfRow.removeAt(column)
+                for (cellsOfRow in cells) {
+                    // A cell merged into the one deleted takes its place, the content of that one
+                    if (column + 1 < cellsOfRow.size && caret.shape.merged[cells.indexOf(cellsOfRow)][column + 1]) cellsOfRow[column + 1] = cellsOfRow[column]
+                    cellsOfRow.removeAt(column)
+                }
                 alignments.removeAt(column)
+                widths?.removeAt(column)
                 column = min(column, alignments.size - 1)
             }
             Action.DELETE_TABLE -> return deleteTable(value, caret)
             Action.ALIGN_START -> alignments[column] = TextAlignment.START
             Action.ALIGN_CENTER -> alignments[column] = TextAlignment.CENTER
             Action.ALIGN_END -> alignments[column] = TextAlignment.END
+            Action.MERGE_RIGHT -> {
+                val next = column + caret.shape.spanOf(row, column)
+                if (next >= alignments.size) return value
+                val moved = cells[row][next].trim()
+                if (moved.isNotEmpty() && moved != TableShape.MERGED.toString()) cells[row][column] = (cells[row][column].trim() + " " + moved).trim()
+                cells[row][next] = TableShape.MERGED.toString()
+            }
+            Action.SPLIT -> {
+                val span = caret.shape.spanOf(row, column)
+                if (span <= 1) return value
+                for (k in column + 1 until column + span) cells[row][k] = ""
+            }
+            Action.WIDER, Action.NARROWER -> {
+                val current = widths ?: MutableList(alignments.size) { DEFAULT_WIDTH }
+                val step = if (action == Action.WIDER) WIDTH_STEP else -WIDTH_STEP
+                current[column] = (current[column] + step).coerceIn(MIN_WIDTH, MAX_WIDTH)
+                // All alike again: as wide as their content, as before
+                widths = current.takeIf { it.distinct().size > 1 }
+            }
         }
-        return rewrite(value, caret, cells, alignments, row, column)
+        return rewrite(value, caret, cells, alignments, row, column, widths)
     }
 
     /**
@@ -262,7 +301,7 @@ public object TableEditing {
             val cells = cellsOf(old, caret.shape).map { it.toMutableList() }.toMutableList()
             for (index in from..to) cells[index / columns][index % columns] = ""
             edit(cells)
-            return write(cells, caret.shape.alignments)
+            return write(cells, caret.shape.alignments, caret.shape.widths)
         }
         val sameTable = first != null && last != null && first.span.start == last.span.start
         val text: String
@@ -312,7 +351,7 @@ public object TableEditing {
         val cells = cellsOf(value.text, caret.shape).toMutableList()
         val at = if (below) caret.row + 1 else max(caret.row, 1)
         cells.add(at, List(caret.shape.columns) { "" })
-        return rewrite(value, caret, cells, caret.shape.alignments, at, column)
+        return rewrite(value, caret, cells, caret.shape.alignments, at, column, caret.shape.widths)
     }
 
     private fun deleteTable(value: TextFieldValue, caret: Caret): TextFieldValue {
@@ -323,9 +362,17 @@ public object TableEditing {
     }
 
     /** The table of [caret] written again from [cells] and [alignments], the caret at the end of the cell [row], [column]. */
-    private fun rewrite(value: TextFieldValue, caret: Caret, cells: List<List<String>>, alignments: List<TextAlignment?>, row: Int, column: Int): TextFieldValue {
+    private fun rewrite(
+        value: TextFieldValue,
+        caret: Caret,
+        cells: List<List<String>>,
+        alignments: List<TextAlignment?>,
+        row: Int,
+        column: Int,
+        widths: List<Int>? = caret.shape.widths
+    ): TextFieldValue {
         val text = value.text
-        val table = write(cells, alignments)
+        val table = write(cells, alignments, widths)
         val newText = text.substring(0, caret.span.start) + table + text.substring(caret.span.end)
         val shape = TableShape.of(newText, tableAt(newText, caret.span.start))
         return TextFieldValue(newText, TextRange(endOf(shape, row.coerceIn(0, shape.rows.size - 1), column.coerceIn(0, shape.columns - 1))))
@@ -335,21 +382,26 @@ public object TableEditing {
     private fun cellsOf(text: String, shape: TableShape): List<List<String>> =
         shape.rows.map { row -> row.map { text.substring(it.first, it.last + 1) } }
 
-    /** A table of [cells] (the header first) and [alignments], one row a line, without a line break at its end. */
-    internal fun write(cells: List<List<String>>, alignments: List<TextAlignment?>): String = buildString {
+    /**
+     * A table of [cells] (the header first), [alignments] and [widths] (the dashes of the delimiter
+     * row, `null` for three each: the columns as wide as their content), one row a line, without a
+     * line break at its end.
+     */
+    internal fun write(cells: List<List<String>>, alignments: List<TextAlignment?>, widths: List<Int>? = null): String = buildString {
         fun row(contents: List<String>) {
             append('|')
             for (content in contents) append(' ').append(content.ifEmpty { " " }).append(" |")
         }
         row(cells[0])
         append("\n|")
-        for (alignment in alignments) {
+        for ((column, alignment) in alignments.withIndex()) {
+            val dashes = widths?.getOrNull(column)?.coerceAtLeast(MIN_WIDTH) ?: 3
             append(
                 when (alignment) {
-                    null -> " --- |"
-                    TextAlignment.START -> " :-- |"
-                    TextAlignment.CENTER -> " :-: |"
-                    TextAlignment.END -> " --: |"
+                    null -> " " + "-".repeat(dashes) + " |"
+                    TextAlignment.START -> " :" + "-".repeat(dashes - 1) + " |"
+                    TextAlignment.CENTER -> " :" + "-".repeat(dashes - 2) + ": |"
+                    TextAlignment.END -> " " + "-".repeat(dashes - 1) + ": |"
                 }
             )
         }
@@ -364,4 +416,12 @@ public object TableEditing {
 
     /** The most rows and columns of a table made by the editor. */
     public const val MAX_SIZE: Int = 20
+
+    /** The dashes of a column when the widths are first set by hand, and how many a step adds or takes. */
+    private const val DEFAULT_WIDTH = 6
+    private const val WIDTH_STEP = 2
+
+    /** The fewest and the most dashes of a column set by hand. */
+    private const val MIN_WIDTH = 3
+    private const val MAX_WIDTH = 30
 }

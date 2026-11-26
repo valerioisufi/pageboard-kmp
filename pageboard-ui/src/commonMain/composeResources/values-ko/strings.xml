@@ -340,4 +340,8 @@
     <string name="numbering_continue">이전 목록에서 계속</string>
     <string name="numbering_continue_hint">앞 텍스트의 번호에 이어서 매깁니다</string>
     <string name="text_editor_action_line_in_item">항목 안에서 줄 바꿈</string>
+    <string name="table_merge_right">다음 셀과 병합</string>
+    <string name="table_split">셀 분할</string>
+    <string name="table_column_wider">열 넓게</string>
+    <string name="table_column_narrower">열 좁게</string>
 </resources>

@@ -345,4 +345,8 @@
     <string name="numbering_continue">Vorherige Liste fortsetzen</string>
     <string name="numbering_continue_hint">Die Nummern setzen den Text davor fort</string>
     <string name="text_editor_action_line_in_item">Zeile im Eintrag</string>
+    <string name="table_merge_right">Mit der nächsten Zelle verbinden</string>
+    <string name="table_split">Zelle teilen</string>
+    <string name="table_column_wider">Spalte breiter</string>
+    <string name="table_column_narrower">Spalte schmaler</string>
 </resources>

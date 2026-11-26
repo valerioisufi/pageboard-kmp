@@ -72,4 +72,24 @@ class TableLayoutTest {
         assertTrue(right.layout.getLineLeft(0) > 0f || right.layout.size.width.toFloat() <= right.layout.getLineRight(0) + 1f, "at the end of its column")
         assertEquals(right, layout.cellAt(Offset(right.left + 1f, right.top + 1f)))
     }
+
+    @Test
+    fun theWidthsSetByHandShareTheLineInTheirProportions() {
+        val layout = table("| a | b |\n|---|------|\n| c | d |", lineWidth = 400f)
+        val widths = (1 until layout.columnEdges.size).map { layout.columnEdges[it] - layout.columnEdges[it - 1] }
+        assertTrue(widths[1] > widths[0] * 1.5f, "the second twice as wide, the margins apart: $widths")
+        assertTrue(layout.widthPx > 390f, "the whole line: ${layout.widthPx}")
+    }
+
+    @Test
+    fun aMergedCellTakesTheColumnsItSpansAndNoRuleCrossesIt() {
+        val layout = table("| a | b |\n|---|---|\n| wide | < |\n| c | d |")
+        val wide = layout.cells.single { it.row == 1 }
+        assertEquals(2, wide.span)
+        assertEquals(layout.cells.size, 5, "the cell merged is not laid out")
+        val inner = layout.columnEdges[1]
+        val rules = layout.backgrounds().map { it.first }.filter { it.left < inner && it.right > inner && it.width < it.height }
+        assertTrue(rules.none { it.top >= layout.rowEdges[1] - 0.5f && it.bottom <= layout.rowEdges[2] + 0.5f }, "no rule across the merged cell")
+        assertEquals(wide, layout.cellAt(androidx.compose.ui.geometry.Offset(inner + 5f, layout.rowEdges[1] + 5f)))
+    }
 }

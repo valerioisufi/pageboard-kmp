@@ -131,4 +131,30 @@ class TableEditingTest {
         val ahead = TextFieldValue(table.removeRange(forward, table.indexOf('b')), TextRange(forward))
         assertEquals("| ^ | b |", shown(TableEditing.keepInCells(at(table, forward), ahead)!!).lines()[0])
     }
+
+    @Test
+    fun aCellIsMergedWithTheNextOneAndSplitAgain() {
+        val text = "| a | b | c |\n| --- | --- | --- |\n| one | two | three |\n"
+        val merged = TableEditing.apply(at(text, text.indexOf("one") + 1), Action.MERGE_RIGHT)!!
+        assertEquals("| a | b | c |\n| --- | --- | --- |\n| one two | < | three |", merged.text.trimEnd('\n'))
+        // Tab goes past the cell merged
+        val next = TableEditing.nextCell(merged, backwards = false)!!
+        assertEquals(merged.text.indexOf("three") + 5, next.selection.start)
+        val split = TableEditing.apply(at(merged.text, merged.text.indexOf("one") + 1), Action.SPLIT)!!
+        assertEquals("| a | b | c |\n| --- | --- | --- |\n| one two |   | three |", split.text.trimEnd('\n'))
+    }
+
+    @Test
+    fun theWidthsOfTheColumnsAreSetByHandAndKept() {
+        val wider = TableEditing.apply(at(table, table.indexOf("b") + 1), Action.WIDER)!!
+        assertEquals("| a | b |\n| ------ | -------- |\n| c | d |", wider.text.trimEnd('\n'))
+        // Another change of the table keeps them
+        val row = TableEditing.apply(at(wider.text, wider.text.indexOf("c") + 1), Action.ADD_ROW_BELOW)!!
+        assertEquals("| ------ | -------- |", row.text.lines()[1])
+        val aligned = TableEditing.apply(at(row.text, row.text.indexOf("d") + 1), Action.ALIGN_END)!!
+        assertEquals("| ------ | -------: |", aligned.text.lines()[1])
+        // Alike again: as wide as their content
+        val back = TableEditing.apply(at(wider.text, wider.text.indexOf("b") + 1), Action.NARROWER)!!
+        assertEquals("| --- | --- |", back.text.lines()[1])
+    }
 }

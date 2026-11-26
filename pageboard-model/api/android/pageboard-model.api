@@ -4108,12 +4108,18 @@ public final class io/github/valerioisufi/pageboard/model/text/RichTextParser$Sp
 
 public final class io/github/valerioisufi/pageboard/model/text/TableShape {
 	public static final field Companion Lio/github/valerioisufi/pageboard/model/text/TableShape$Companion;
-	public fun <init> (Ljava/util/List;Ljava/util/List;Ljava/util/List;)V
+	public static final field MERGED C
+	public fun <init> (Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun cellAt (I)Lkotlin/Pair;
 	public final fun getAlignments ()Ljava/util/List;
 	public final fun getColumns ()I
 	public final fun getLines ()Ljava/util/List;
+	public final fun getMerged ()Ljava/util/List;
 	public final fun getRows ()Ljava/util/List;
+	public final fun getWidths ()Ljava/util/List;
+	public final fun ownerOf (II)I
+	public final fun spanOf (II)I
 }
 
 public final class io/github/valerioisufi/pageboard/model/text/TableShape$Companion {

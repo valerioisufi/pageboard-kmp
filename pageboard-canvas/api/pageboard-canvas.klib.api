@@ -2178,6 +2178,10 @@ final object io.github.valerioisufi.pageboard.canvas.text/TableEditing { // io.g
         enum entry DELETE_COLUMN // io.github.valerioisufi.pageboard.canvas.text/TableEditing.Action.DELETE_COLUMN|null[0]
         enum entry DELETE_ROW // io.github.valerioisufi.pageboard.canvas.text/TableEditing.Action.DELETE_ROW|null[0]
         enum entry DELETE_TABLE // io.github.valerioisufi.pageboard.canvas.text/TableEditing.Action.DELETE_TABLE|null[0]
+        enum entry MERGE_RIGHT // io.github.valerioisufi.pageboard.canvas.text/TableEditing.Action.MERGE_RIGHT|null[0]
+        enum entry NARROWER // io.github.valerioisufi.pageboard.canvas.text/TableEditing.Action.NARROWER|null[0]
+        enum entry SPLIT // io.github.valerioisufi.pageboard.canvas.text/TableEditing.Action.SPLIT|null[0]
+        enum entry WIDER // io.github.valerioisufi.pageboard.canvas.text/TableEditing.Action.WIDER|null[0]
 
         final val entries // io.github.valerioisufi.pageboard.canvas.text/TableEditing.Action.entries|#static{}entries[0]
             final fun <get-entries>(): kotlin.enums/EnumEntries<io.github.valerioisufi.pageboard.canvas.text/TableEditing.Action> // io.github.valerioisufi.pageboard.canvas.text/TableEditing.Action.entries.<get-entries>|<get-entries>#static(){}[0]
