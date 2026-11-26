@@ -311,9 +311,19 @@ internal fun TextBoxEditor(
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
     // Whether a button of a mouse is down on the field: what the field selects then is where the pointer is
     val mouseDown = remember { booleanArrayOf(false) }
+    // Where a mouse drawing a selection was pressed (an offset of the source) and where it is (in the layout)
+    val mouseAnchor = remember { arrayOfNulls<Int>(1) }
+    val mousePoint = remember { arrayOfNulls<Offset>(1) }
     // A mouse selecting past the edge of the canvas: where it is in the window, and the field laid out
     var selectingAt by remember { mutableStateOf<Offset?>(null) }
     val fieldCoordinates = remember { arrayOfNulls<LayoutCoordinates>(1) }
+    /** The offset of the source under a point of the layout of the field, as it is shown now. */
+    fun offsetAt(point: Offset): Int? {
+        val current = layout ?: return null
+        val text = currentShown
+        if (current.layoutInput.text.text != text.text.text) return null
+        return codeOffsetAt(current, text, point) ?: text.mapping.transformedToOriginal(current.getOffsetForPosition(point))
+    }
     /**
      * Gives the editor what the user did: a move of the caret off what is not shown (see
      * [CaretStops]), as the text is shown now. [pointed] tells that a pointer gave the selection.
@@ -324,17 +334,18 @@ internal fun TextBoxEditor(
             editor.updateValue(newValue, smartNewline)
             return
         }
+        // A mouse drawing a selection into a block of code: its code by characters
+        if (mouseDown[0] && !newValue.selection.collapsed && newValue.text == current.text) {
+            val drawn = CodeBlockCaret.drawn(currentShown, mouseAnchor[0], mousePoint[0]?.let(::offsetAt))
+            if (drawn != null) {
+                editor.updateValue(newValue.copy(selection = drawn), smartNewline)
+                return
+            }
+        }
         // Off the fences of the blocks of code, then off what is not shown
         val offFences = CodeBlockCaret.moved(current, newValue, currentShown) ?: newValue
         val stopped = CaretStops.moved(current, offFences, currentShown.mapping, pointed || mouseDown[0]) ?: offFences
         editor.updateValue(stopped, smartNewline)
-    }
-    /** The offset of the source under a point of the layout of the field, as it is shown now. */
-    fun offsetAt(point: Offset): Int? {
-        val current = layout ?: return null
-        val text = currentShown
-        if (current.layoutInput.text.text != text.text.text) return null
-        return codeOffsetAt(current, text, point) ?: text.mapping.transformedToOriginal(current.getOffsetForPosition(point))
     }
     // The selection by a finger or a pen, its handles and its toolbar drawn by the editor
     val touch = remember { TouchSelection() }
@@ -428,6 +439,16 @@ internal fun TextBoxEditor(
                 .pageScale(widthPx, screenPerLayout)
                 // In the pixels of the layout, as the pointer events after it
                 .onGloballyPositioned { fieldCoordinates[0] = it }
+                // A mouse drawing a selection: where it was pressed and where it is, before the field reads it
+                .pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val change = awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull { it.type == PointerType.Mouse } ?: continue
+                            if (change.pressed && !change.previousPressed) mouseAnchor[0] = offsetAt(change.position)
+                            mousePoint[0] = if (change.pressed) change.position else null
+                        }
+                    }
+                }
                 // A mouse dragging a selection: where it is, for the canvas to scroll past its edges
                 .pointerInput(Unit) {
                     awaitPointerEventScope {
@@ -592,6 +613,21 @@ internal fun TextBoxEditor(
                         if (moved) return@onPreviewKeyEvent true
                     }
                     val current = editor.value
+                    if (event.type == KeyEventType.KeyDown && event.isShiftPressed && current.text == shownSource) {
+                        // A selection through the code of a block by characters and by lines, as in the text
+                        val focus = current.selection.end
+                        val extended = when (event.key) {
+                            Key.DirectionRight -> CodeBlockCaret.extended(currentShown, focus, forward = true, length = current.text.length)
+                            Key.DirectionLeft -> CodeBlockCaret.extended(currentShown, focus, forward = false, length = current.text.length)
+                            Key.DirectionUp, Key.DirectionDown -> layout?.takeIf { it.layoutInput.text.text == currentShown.text.text }
+                                ?.let { CodeBlockCaret.vertical(it, currentShown, focus, up = event.key == Key.DirectionUp, ::offsetAt) }
+                            else -> null
+                        }
+                        if (extended != null) {
+                            editor.updateValue(current.copy(selection = TextRange(current.selection.start, extended), composition = null), smartNewline = false)
+                            return@onPreviewKeyEvent true
+                        }
+                    }
                     if (event.type == KeyEventType.KeyDown && current.selection.collapsed && !event.isShiftPressed && current.text == shownSource) {
                         // Out of a block of code that ends or starts the text: onto a line added
                         val leaving = when (event.key) {

@@ -102,6 +102,34 @@ internal object CodeBlockCaret {
         return if (leaving) TextFieldValue("\n" + value.text, TextRange(0)) else null
     }
 
+    /**
+     * The end of a selection moved by a character from [focus] ([forward] or back) by Shift and an
+     * arrow, when a block of code is where it goes or where it is: through its code by characters,
+     * over its fences as the caret goes (see `docs/plans/text-fidelity-more.md`); `null` when the
+     * field moves it itself. [length] is the length of the source.
+     */
+    fun extended(shown: PresentedText<*>, focus: Int, forward: Boolean, length: Int): Int? {
+        val next = if (forward) focus + 1 else focus - 1
+        if (next !in 0..length) return null
+        if (shown.codeBlocks.none { focus in it.start..it.end || next in it.start..it.end }) return null
+        for (block in shown.codeBlocks) {
+            if (next in block.start until block.codeStart) return if (forward) block.codeStart else (block.start - 1).coerceAtLeast(0)
+            if (block.end > block.codeEnd && next in (block.codeEnd + 1)..block.end) return if (forward) minOf(block.end + 1, length) else block.codeEnd
+        }
+        return next
+    }
+
+    /**
+     * A selection drawn by a mouse from [anchor] (where it was pressed) to [focus] (where it is),
+     * when one of them is in the code of a block: the field would give the block whole; `null` when
+     * neither is.
+     */
+    fun drawn(shown: PresentedText<*>, anchor: Int?, focus: Int?): TextRange? {
+        if (anchor == null || focus == null) return null
+        val inCode = shown.codeBlocks.any { anchor in it.codeStart..it.codeEnd || focus in it.codeStart..it.codeEnd }
+        return if (inCode) TextRange(anchor, focus) else null
+    }
+
     /** The caret at the start ([start]) or at the end of its line of the code of a block, `null` out of the blocks. */
     fun lineEnd(shown: PresentedText<*>, caret: Int, start: Boolean): Int? {
         val block = shown.codeBlocks.firstOrNull { it.holds(caret) } ?: return null

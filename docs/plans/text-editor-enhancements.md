@@ -106,9 +106,8 @@ Taken alone, revertible:
   - **B, checklists and lists** (`docs/plans/checklists-and-lists.md`): done.
   - **C, boxes, chains, tables and quotes** (`docs/plans/boxes-tables-quotes.md`): done.
   - **D, blocks of code** (`docs/plans/code-blocks-more.md`): done.
-  - **E, fidelity, autosave and conflicts**: a format chosen at the caret before typing, the whole
-    source on demand, the strip of the source on small screens, selecting into and across blocks
-    of code, conflicts of copies converging, a text deleted elsewhere while written kept as new.
+  - **E, fidelity, autosave and conflicts** (`docs/plans/text-fidelity-more.md`): done (the
+    conflicts of copies already converged, with their tests).
   - **F, import, clipboard and assistant**: `.html`, `.docx` and the text of a PDF imported as
     text, RTF and `<sup>`/`<sub>` pasted, images pasted as images, copying as HTML, a task of the
     assistant for notes from a text.

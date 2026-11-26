@@ -69,7 +69,7 @@ The responsibilities are assigned following the GRASP principles.
 | 2 | The formats waiting at the caret; tests | Done |
 | 3 | The whole source on demand; tests | Done |
 | 4 | The strip and the completions on small screens; tests, screenshots | Done |
-| 5 | Selections into and across blocks of code; tests | Pending |
+| 5 | Selections into and across blocks of code; tests | Done |
 
 ## Decisions
 
@@ -87,6 +87,9 @@ Taken alone, revertible:
 5. **On a phone the strip stands on the bar** only when the bar is docked in the lower half of the
    window (over the keyboard); the completions stand by the strip where it was placed, as it reports
    it, rather than by a guess of its height.
+6. **A mouse selection is read before the field** (the pass `Initial` of its events): where it was
+   pressed and where it is, as offsets of the source through the blocks; the field's own selection
+   is kept when neither end is in the code of a block.
 
 ## Left for later
 

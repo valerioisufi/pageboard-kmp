@@ -189,4 +189,28 @@ class EditorCodeTest {
         assertEquals(null, guessed.label, "no name written: none shown")
         assertTrue(layout("hello world", language = "").code.layoutInput.text.spanStyles.none { it.item.color != Color.Unspecified }, "like no language: one color")
     }
+
+    @Test
+    fun aSelectionGoesThroughTheCodeOfABlockByCharacters() {
+        // "ab\n" then the block: its fence on 3..9, its code "xy" on 10..12, its closing fence on 13..16
+        val text = "ab\n```kt\nxy\n```\ncd"
+        val shown = shown(text, 0)
+        val block = shown.codeBlocks.single()
+        assertEquals(block.codeStart, CodeBlockCaret.extended(shown, 2, forward = true, length = text.length), "over the opening fence into the code")
+        assertEquals(block.codeStart + 1, CodeBlockCaret.extended(shown, block.codeStart, forward = true, length = text.length), "a character of the code")
+        assertEquals(block.end + 1, CodeBlockCaret.extended(shown, block.codeEnd, forward = true, length = text.length), "over the closing fence out of it")
+        assertEquals(block.codeEnd, CodeBlockCaret.extended(shown, block.end + 1, forward = false, length = text.length), "back into the code")
+        assertEquals(2, CodeBlockCaret.extended(shown, block.codeStart, forward = false, length = text.length), "back out of it")
+        assertEquals(null, CodeBlockCaret.extended(shown, 0, forward = true, length = text.length), "far from a block: the field's own")
+    }
+
+    @Test
+    fun aSelectionDrawnByAMouseIntoABlockTakesItsCharacters() {
+        val text = "ab\n```kt\nxy\n```\ncd"
+        val shown = shown(text, 0)
+        val block = shown.codeBlocks.single()
+        assertEquals(TextRange(1, block.codeStart + 1), CodeBlockCaret.drawn(shown, 1, block.codeStart + 1))
+        assertEquals(TextRange(block.codeStart, 19), CodeBlockCaret.drawn(shown, block.codeStart, 19), "from the code out of it")
+        assertEquals(null, CodeBlockCaret.drawn(shown, 0, 2), "in the text alone: the field's own")
+    }
 }

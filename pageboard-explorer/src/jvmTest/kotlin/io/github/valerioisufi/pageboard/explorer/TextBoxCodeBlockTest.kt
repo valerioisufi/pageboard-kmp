@@ -10,6 +10,7 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.withKeyDown
 import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.click
@@ -82,6 +83,20 @@ class TextBoxCodeBlockTest {
         assertTrue(offsets.none { it in text.indexOf("```") until firstCode || it in closing until closing + 3 }, "never on a fence: $offsets")
         assertTrue(text.indexOf("Sotto") in offsets, "on to the line after: $offsets")
         assertEquals(offsets.size, offsets.toSet().size, "every press moves: $offsets")
+    }
+
+    @Test
+    fun shiftAndTheArrowsSelectIntoTheCodeByCharacters() = textBoxScene { controller ->
+        writeText(controller)
+        val before = text.indexOf("\n```")
+        caret(controller, before)
+        onNode(hasSetTextAction()).performKeyInput { withKeyDown(Key.ShiftLeft) { pressKey(Key.DirectionRight); pressKey(Key.DirectionRight); pressKey(Key.DirectionRight) } }
+        waitForIdle()
+        assertEquals(TextRange(before, firstCode + 2), controller.textEditorManager.value.selection, "over the fence, then two characters of the code")
+        onNode(hasSetTextAction()).performKeyInput { withKeyDown(Key.ShiftLeft) { pressKey(Key.DirectionDown) } }
+        waitForIdle()
+        val focus = controller.textEditorManager.value.selection.end
+        assertTrue(focus in secondCode..text.indexOf("\n```\n"), "a line of the code down: $focus")
     }
 
     @Test
