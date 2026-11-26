@@ -12,6 +12,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import io.github.valerioisufi.pageboard.canvas.geometry.toModel
 import io.github.valerioisufi.pageboard.canvas.text.InlineFormatting
 import io.github.valerioisufi.pageboard.canvas.text.RichTextEditing
+import io.github.valerioisufi.pageboard.canvas.text.PendingFormats
 import io.github.valerioisufi.pageboard.canvas.text.TableEditing
 import io.github.valerioisufi.pageboard.canvas.text.SeenDeletion
 import io.github.valerioisufi.pageboard.canvas.text.SelectionInput
@@ -192,7 +193,7 @@ public class TextEditorManager internal constructor(private val controller: Page
             activeFormats = InlineFormatting.formatsAt(current)
             formatsValue = current
         }
-        return format in activeFormats
+        return format in activeFormats || pendingFormats.has(current, format)
     }
 
     override val inHeading: Boolean get() = isEditing && RichTextEditing.inHeading(value)
@@ -255,6 +256,9 @@ public class TextEditorManager internal constructor(private val controller: Page
      * leaves nothing to undo.
      */
     private var writingNewText = false
+
+    /** The formats chosen at the caret, waiting for what is typed there. */
+    private val pendingFormats = PendingFormats()
 
     /** Saves the text written as it is written (see [saveWriting]). */
     private val saver = WritingSaver(controller.coroutineScope) { saveWriting() }
@@ -611,6 +615,7 @@ public class TextEditorManager internal constructor(private val controller: Page
     }
 
     private fun resetSession() {
+        pendingFormats.clear()
         activeTextItem = null
         activeTextPageIndex = -1
         itemPageIndex = -1
@@ -644,6 +649,11 @@ public class TextEditorManager internal constructor(private val controller: Page
             value = lastStep.before
             fitWidth()
             reportDraft()
+            return
+        }
+        // What is typed at the caret of the formats waiting there, written in them
+        pendingFormats.typed(newValue)?.let { written ->
+            updateValue(written, smartNewline = false)
             return
         }
         // A composition starting over a selection keeps it for its commit; a commit takes it
@@ -843,7 +853,23 @@ public class TextEditorManager internal constructor(private val controller: Page
     }
 
     /** Adds or removes [format] around the selection (or inserts its delimiters at the caret). */
-    override fun toggle(format: RichTextEditing.Format): Unit = updateValue(RichTextEditing.toggle(value, format), smartNewline = false)
+    /**
+     * Adds [format] to the selection or takes it off; at a caret not in it, the format waits there
+     * for what is typed next (see [PendingFormats]), nothing written.
+     */
+    override fun toggle(format: RichTextEditing.Format) {
+        val current = value
+        if (current.selection.collapsed && current.composition == null) {
+            val toggled = RichTextEditing.toggle(current, format)
+            if (pendingFormats.has(current, format) || (toggled.text != current.text && format !in InlineFormatting.formatsAt(current))) {
+                pendingFormats.toggle(current, format)
+                return
+            }
+            updateValue(toggled, smartNewline = false)
+            return
+        }
+        updateValue(RichTextEditing.toggle(current, format), smartNewline = false)
+    }
 
     /** Makes the line of the caret a heading, or plain text again. */
     override fun toggleHeading() {

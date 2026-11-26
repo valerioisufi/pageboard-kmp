@@ -66,7 +66,7 @@ The responsibilities are assigned following the GRASP principles.
 | Phase | Content | Status |
 |---|---|---|
 | 1 | A text removed elsewhere while written kept as a new text; tests | Done |
-| 2 | The formats waiting at the caret; tests | Pending |
+| 2 | The formats waiting at the caret; tests | Done |
 | 3 | The whole source on demand; tests | Pending |
 | 4 | The strip and the completions on small screens; tests, screenshots | Pending |
 | 5 | Selections into and across blocks of code; tests | Pending |
