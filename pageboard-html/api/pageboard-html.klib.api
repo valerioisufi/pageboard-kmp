@@ -18,3 +18,9 @@ final class io.github.valerioisufi.pageboard.html/HtmlToMarkdown { // io.github.
     final fun convert(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.html/HtmlToMarkdown.convert|convert(kotlin.String){}[0]
     final fun convertPage(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.html/HtmlToMarkdown.convertPage|convertPage(kotlin.String){}[0]
 }
+
+final class io.github.valerioisufi.pageboard.html/RtfToMarkdown { // io.github.valerioisufi.pageboard.html/RtfToMarkdown|null[0]
+    constructor <init>() // io.github.valerioisufi.pageboard.html/RtfToMarkdown.<init>|<init>(){}[0]
+
+    final fun convert(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.html/RtfToMarkdown.convert|convert(kotlin.String){}[0]
+}

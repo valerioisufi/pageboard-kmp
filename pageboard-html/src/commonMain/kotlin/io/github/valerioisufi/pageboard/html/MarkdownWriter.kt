@@ -148,6 +148,14 @@ internal class MarkdownWriter {
                         node.attr("alt").takeIf(::isSign)?.let { runs += InlineRun.Text(it, format) }
                         return
                     }
+                    // Shifted: in Unicode, else in a formula (see ScriptShift)
+                    "sup", "sub" -> {
+                        ScriptShift.of(node.text(), superscript = node.normalName() == "sup", format.inside(node))?.let {
+                            runs += it
+                            formatted = true
+                        }
+                        return
+                    }
                 }
                 val inner = format.inside(node)
                 if (depth >= MAX_DEPTH) {
@@ -444,7 +452,8 @@ internal class MarkdownWriter {
             when (node) {
                 is TextNode -> node.getWholeText().filterTo(out) { it.isLetterOrDigit() }
                 is Element -> when {
-                    HtmlFormula.of(node) != null || isIgnored(node) -> Unit
+                    // A formula, and a script shifted (in Unicode or a formula, see ScriptShift), are written their own way
+                    HtmlFormula.of(node) != null || isIgnored(node) || node.normalName() == "sup" || node.normalName() == "sub" -> Unit
                     depth >= MAX_DEPTH -> node.text().filterTo(out) { it.isLetterOrDigit() }
                     node.normalName() == "pre" -> for (child in codeOf(node).childNodes()) readableTextOf(child, out, depth + 1)
                     else -> for (child in node.childNodes()) readableTextOf(child, out, depth + 1)

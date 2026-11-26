@@ -6,3 +6,6 @@ internal actual fun htmlIn(clipboard: Clipboard): String? {
     val clip = clipboard.nativeClipboard.primaryClip ?: return null
     return (0 until clip.itemCount).firstNotNullOfOrNull { clip.getItemAt(it).htmlText }
 }
+
+/** The clipboard of Android holds no rich text: its applications copy HTML. */
+internal actual fun rtfIn(clipboard: Clipboard): String? = null

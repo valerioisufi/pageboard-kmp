@@ -13,3 +13,8 @@ public final class io/github/valerioisufi/pageboard/html/HtmlToMarkdown {
 	public final fun convertPage (Ljava/lang/String;)Ljava/lang/String;
 }
 
+public final class io/github/valerioisufi/pageboard/html/RtfToMarkdown {
+	public fun <init> ()V
+	public final fun convert (Ljava/lang/String;)Ljava/lang/String;
+}
+

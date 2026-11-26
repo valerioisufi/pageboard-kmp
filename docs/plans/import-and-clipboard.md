@@ -27,8 +27,9 @@ The responsibilities are assigned following the GRASP principles.
    after page, cleaned as a text from elsewhere; a PDF with no text says so.
 3. **Subscripts and superscripts** pasted or imported keep their shift: in Unicode when every
    character has one (`H₂O`, `x²`), else as a formula (`$x^{ab}$`).
-4. **RTF** is read when the clipboard has no HTML: paragraphs, bold, italic, underline as nothing,
-   the characters in any code page and in Unicode, the rest left out.
+4. **RTF** is read when the clipboard has no HTML (the desktop and iOS; Android's applications copy
+   HTML): paragraphs, bold, italic, strikethrough, the shifts, the characters in Unicode and in the
+   code page 1252, the rest left out.
 5. **Copying as HTML**: a text copied from the notebook goes to the other applications as HTML too
    (headings, lists, bold, italic, code, tables, links, formulas as their LaTeX), the plain text
    staying its notation.
@@ -54,7 +55,7 @@ The responsibilities are assigned following the GRASP principles.
 |---|---|---|
 | 1 | `.html` files imported; the ZIP entries and their inflating; `.docx` files imported; tests | Done |
 | 2 | The text of a PDF chosen as a text; tests | Done |
-| 3 | Subscripts and superscripts kept; RTF pasted; tests | Pending |
+| 3 | Subscripts and superscripts kept; RTF pasted; tests | Done |
 | 4 | Copying as HTML on every platform; tests | Pending |
 
 ## Decisions
@@ -75,6 +76,11 @@ Taken alone, revertible:
 5. **A PDF is a text only when chosen in the import of a text**: dropped, or chosen in the import of
    a PDF, it stays pages of PDF as before. The engine reads it from a file of its own, written in
    the resources and deleted after (`MediaManager.importPdfText`), since it reads files by their path.
+6. **A shift of Unicode wins over a formula**: `x²` stays text that searches and copies find; a
+   formula only for what Unicode has no shifted form of (`q`, most capitals of the subscripts), with
+   `\text{}` around letters; a script LaTeX would read as commands stays as it is, unshifted.
+7. **RTF is read in the code page 1252** whatever it says (`\ansicpg`): nearly every RTF is, and
+   the characters of the others come as `\u` escapes too.
 
 ## Left for later
 

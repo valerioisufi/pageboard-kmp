@@ -69,4 +69,12 @@ class ClipboardTextTest {
     fun aBusyClipboardLeavesThePlainText() {
         assertNull(ClipboardText("[eq]") { throw IllegalStateException("busy") }.markdown())
     }
+
+    @Test
+    fun theRichTextIsReadWhenThereIsNoHtml() {
+        val rtf = "{\\rtf1\\ansi A {\\b bold} word}"
+        assertEquals("A **bold** word", ClipboardText("[eq]", readRtf = { rtf }) { null }.markdown())
+        assertEquals("**Html**", ClipboardText("[eq]", readRtf = { rtf }) { "<b>Html</b>" }.markdown(), "the HTML first")
+        assertNull(ClipboardText("[eq]", readRtf = { throw IllegalStateException("busy") }) { null }.markdown())
+    }
 }
