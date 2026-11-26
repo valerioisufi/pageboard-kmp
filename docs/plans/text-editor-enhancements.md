@@ -108,8 +108,7 @@ Taken alone, revertible:
   - **D, blocks of code** (`docs/plans/code-blocks-more.md`): done.
   - **E, fidelity, autosave and conflicts** (`docs/plans/text-fidelity-more.md`): done (the
     conflicts of copies already converged, with their tests).
-  - **F, import, clipboard and assistant**: `.html`, `.docx` and the text of a PDF imported as
-    text, RTF and `<sup>`/`<sub>` pasted, images pasted as images, copying as HTML, a task of the
-    assistant for notes from a text.
+  - **F, import, clipboard and assistant** (`docs/plans/import-and-clipboard.md`): done but the
+    images pasted as images and the task of the assistant of its own, left for later there.
   - **G, writing suggestions**: the next words from a local model, the lecture being transcribed,
     suggestions over lines, in handwriting.

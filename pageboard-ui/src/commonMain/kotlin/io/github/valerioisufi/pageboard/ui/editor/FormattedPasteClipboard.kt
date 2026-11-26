@@ -9,7 +9,8 @@ internal expect fun plainClipEntry(text: String): ClipEntry
 
 /**
  * The [Clipboard] given to the field of a text: what it pastes is the formatted text of the
- * clipboard in the notation, without the field knowing. All the rest is the clipboard of [delegate].
+ * clipboard in the notation, without the field knowing; what it copies goes with its HTML. All the
+ * rest is the clipboard of [delegate].
  *
  * @param formattedText the formatted text of the clipboard, `null` to paste its plain text.
  * @param onFormatted told of the text given to the field, which comes back as it is when pasted.
@@ -25,7 +26,8 @@ internal class FormattedPasteClipboard(
         return plainClipEntry(formatted)
     }
 
-    override suspend fun setClipEntry(clipEntry: ClipEntry?) = delegate.setClipEntry(clipEntry)
+    /** What the field copies, with its HTML for the other applications (see [withHtml]). */
+    override suspend fun setClipEntry(clipEntry: ClipEntry?) = delegate.setClipEntry(clipEntry?.let(::withHtml))
 
     override val nativeClipboard: NativeClipboard get() = delegate.nativeClipboard
 }

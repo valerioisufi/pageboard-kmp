@@ -18,6 +18,8 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
+import io.github.valerioisufi.pageboard.html.MarkdownToHtml
+import io.github.valerioisufi.pageboard.ui.editor.htmlClipEntry
 import androidx.compose.ui.text.AnnotatedString
 import io.github.valerioisufi.pageboard.canvas.controller.PageboardController
 import io.github.valerioisufi.pageboard.canvas.controller.EditorClipboard
@@ -219,7 +221,11 @@ internal class EditorCommands internal constructor(
      * wins (see [EditorClipboard.systemText]).
      */
     private fun shareCopied(text: String?) {
-        if (text != null) clipboard.setText(AnnotatedString(text))
+        if (text != null) {
+            clipboard.setText(AnnotatedString(text))
+            // As HTML too, for the applications that take it (see MarkdownToHtml)
+            htmlClipEntry(text, MarkdownToHtml.convert(text))?.let(clipboard::setClip)
+        }
         controller.clipboard.systemText = clipboard.getText()?.text
     }
 

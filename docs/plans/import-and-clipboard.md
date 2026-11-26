@@ -56,7 +56,7 @@ The responsibilities are assigned following the GRASP principles.
 | 1 | `.html` files imported; the ZIP entries and their inflating; `.docx` files imported; tests | Done |
 | 2 | The text of a PDF chosen as a text; tests | Done |
 | 3 | Subscripts and superscripts kept; RTF pasted; tests | Done |
-| 4 | Copying as HTML on every platform; tests | Pending |
+| 4 | Copying as HTML on every platform; tests | Done |
 
 ## Decisions
 
@@ -81,8 +81,14 @@ Taken alone, revertible:
    `\text{}` around letters; a script LaTeX would read as commands stays as it is, unshifted.
 7. **RTF is read in the code page 1252** whatever it says (`\ansicpg`): nearly every RTF is, and
    the characters of the others come as `\u` escapes too.
+8. **HTML goes with the copies of the canvas and of the field**: `EditorCommands.shareCopied` and the
+   clipboard of the field (`FormattedPasteClipboard`) put the notation and its HTML in one entry;
+   on iOS the pasteboard gets both types in one item, since its clip entries hold plain text. The
+   copies of the field on iOS go through the pasteboard of the system and stay plain text.
 
 ## Left for later
+
+- HTML with the copies of the field on iOS (its own menu copies through the system).
 
 - Images pasted or imported as image elements next to the text: a plan of their own (where they go,
   their size, an image pasted alone).

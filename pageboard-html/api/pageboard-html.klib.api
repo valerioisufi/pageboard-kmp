@@ -24,3 +24,7 @@ final class io.github.valerioisufi.pageboard.html/RtfToMarkdown { // io.github.v
 
     final fun convert(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.html/RtfToMarkdown.convert|convert(kotlin.String){}[0]
 }
+
+final object io.github.valerioisufi.pageboard.html/MarkdownToHtml { // io.github.valerioisufi.pageboard.html/MarkdownToHtml|null[0]
+    final fun convert(kotlin/String): kotlin/String // io.github.valerioisufi.pageboard.html/MarkdownToHtml.convert|convert(kotlin.String){}[0]
+}
