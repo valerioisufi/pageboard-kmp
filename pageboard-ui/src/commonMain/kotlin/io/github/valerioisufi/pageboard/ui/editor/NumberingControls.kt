@@ -201,7 +201,7 @@ private fun RowScope.StyleTile(style: NumberingStyle, name: StringResource, sele
 
 /** A small button of the picker, on its own or as a choice. */
 @Composable
-private fun Chip(text: String, selected: Boolean, enabled: Boolean = true, description: String? = null, onClick: () -> Unit) {
+internal fun Chip(text: String, selected: Boolean, enabled: Boolean = true, description: String? = null, onClick: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     Box(
         contentAlignment = Alignment.Center,

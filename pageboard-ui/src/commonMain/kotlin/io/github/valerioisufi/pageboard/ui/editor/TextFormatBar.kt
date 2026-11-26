@@ -48,7 +48,7 @@ internal fun TextFormatBar(
             FormatButton(commands.strikethrough, PageboardIcons.Strikethrough)
             FormatButton(commands.code, PageboardIcons.Code)
             FormatButton(commands.codeBlock, PageboardIcons.SquareCode)
-            if (target.inCodeBlock) FormatButton(commands.lineNumbers, PageboardIcons.Hash)
+            if (target.inCodeBlock) LineNumbersButton(target, commands)
             if (commands.copyCode.isEnabled()) FormatButton(commands.copyCode, PageboardIcons.Copy)
             HeadingButton(commands)
             BulletListButton(target, commands)

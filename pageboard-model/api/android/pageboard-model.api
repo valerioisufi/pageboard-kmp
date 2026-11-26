@@ -4036,6 +4036,8 @@ public final class io/github/valerioisufi/pageboard/model/text/PastedText {
 
 public final class io/github/valerioisufi/pageboard/model/text/RichTextParser {
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/text/RichTextParser;
+	public static final field MAX_FIRST_LINE I
+	public static final field START_FROM Ljava/lang/String;
 	public final fun getLINE_NUMBERS ()Ljava/util/Set;
 	public final fun imageUrl (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/text/RichTextParser$Span;)Ljava/lang/String;
 	public final fun linkUrl (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/text/RichTextParser$Span;)Ljava/lang/String;

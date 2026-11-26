@@ -115,6 +115,7 @@ import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_actio
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_normal_text
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_find
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_italic
+import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_code_first_line
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_copy_code
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_line_numbers
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_math
@@ -626,6 +627,15 @@ internal class EditorCommands internal constructor(
         isChecked = { textTarget?.codeLineNumbers == true }
     ) { textTarget?.toggleLineNumbers() }
 
+    /** Whether the number of the first line of the block of code is open, in the formatting bar. */
+    var codeFirstLineOpen: Boolean by mutableStateOf(false)
+
+    /** Opens the number of the first line of the numbered block of code of the caret. */
+    val codeFirstLine = Command(
+        "format-code-first-line", label(Res.string.text_editor_action_code_first_line), CommandGroup.FORMAT,
+        isEnabled = { textTarget.let { it != null && it.formatsCharacters && it.codeLineNumbers } }
+    ) { codeFirstLineOpen = true }
+
     /** Copies the code of the block of the caret alone, without its fences. */
     val copyCode = Command(
         "copy-code", label(Res.string.text_editor_action_copy_code), CommandGroup.EDIT, section = 1,
@@ -811,7 +821,7 @@ internal class EditorCommands internal constructor(
 
     /** The commands of the formatting bars and of the menu Format. */
     val formats: List<Command> = listOf(
-        bold, italic, strikethrough, code, codeBlock, lineNumbers, heading, heading2, heading3, normalText, headingLevels,
+        bold, italic, strikethrough, code, codeBlock, lineNumbers, codeFirstLine, heading, heading2, heading3, normalText, headingLevels,
         bulletList, bullets, numberedList, numbering, checklist, lineInItem, checkItem, numberedChecklist, moveCompletedChecklists, checklistOptions, quote, formula, table,
         alignStart, alignCenter, alignEnd, largerText, smallerText
     ) + tableActions.flatten()

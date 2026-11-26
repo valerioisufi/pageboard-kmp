@@ -4652,6 +4652,11 @@ final object io.github.valerioisufi.pageboard.model.text/PastedText { // io.gith
 }
 
 final object io.github.valerioisufi.pageboard.model.text/RichTextParser { // io.github.valerioisufi.pageboard.model.text/RichTextParser|null[0]
+    final const val MAX_FIRST_LINE // io.github.valerioisufi.pageboard.model.text/RichTextParser.MAX_FIRST_LINE|{}MAX_FIRST_LINE[0]
+        final fun <get-MAX_FIRST_LINE>(): kotlin/Int // io.github.valerioisufi.pageboard.model.text/RichTextParser.MAX_FIRST_LINE.<get-MAX_FIRST_LINE>|<get-MAX_FIRST_LINE>(){}[0]
+    final const val START_FROM // io.github.valerioisufi.pageboard.model.text/RichTextParser.START_FROM|{}START_FROM[0]
+        final fun <get-START_FROM>(): kotlin/String // io.github.valerioisufi.pageboard.model.text/RichTextParser.START_FROM.<get-START_FROM>|<get-START_FROM>(){}[0]
+
     final val LINE_NUMBERS // io.github.valerioisufi.pageboard.model.text/RichTextParser.LINE_NUMBERS|{}LINE_NUMBERS[0]
         final fun <get-LINE_NUMBERS>(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.pageboard.model.text/RichTextParser.LINE_NUMBERS.<get-LINE_NUMBERS>|<get-LINE_NUMBERS>(){}[0]
 

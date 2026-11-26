@@ -48,7 +48,7 @@ The responsibilities are assigned following the GRASP principles.
 | Phase | Content | Status |
 |---|---|---|
 | 1 | Copy the code of a block; indentation that knows the language; tests | Done |
-| 2 | The first line number (`startFrom`): read, drawn, written from the bar; tests | Pending |
+| 2 | The first line number (`startFrom`): read, drawn, written from the bar; tests | Done |
 | 3 | The language guessed for coloring; the names of the languages completed while typed; tests | Pending |
 
 ## Decisions
@@ -70,6 +70,12 @@ Taken alone, revertible:
 6. **Copying the code** is a command of the menu Edit and a button of the formatting bar while the
    caret is in a block: the text field has no context menu of its own, and the toolbar of a touch
    selection is the platform's (copy, cut, paste, select all).
+7. **`startFrom` is written as Pandoc writes it** (`startFrom="10"`, inside the braces of the
+   attributes when the information has them), only for a number other than 1, from 0 to 99 999;
+   choosing it numbers the lines. A number written wrong reads as 1, and an attribute (a word with
+   `=`, or `#id`) is never taken for the language.
+8. **The first number is chosen by steps of 1 and 10** in a picker of the bar beside the numbers
+   of the lines, as the start of a list is: a field to type in would take the focus from the text.
 
 ## Left for later
 

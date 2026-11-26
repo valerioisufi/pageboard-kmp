@@ -109,6 +109,8 @@
     <string name="text_editor_action_code_block">コードブロック</string>
     <string name="text_editor_action_line_numbers">行番号</string>
     <string name="text_editor_action_copy_code">コードをコピー</string>
+    <string name="code_first_line">最初の行</string>
+    <string name="text_editor_action_code_first_line">最初の行番号…</string>
     <string name="text_editor_action_heading">見出し</string>
     <string name="text_editor_action_bullet_list">箇条書き</string>
     <string name="text_editor_action_checklist">チェックリスト</string>

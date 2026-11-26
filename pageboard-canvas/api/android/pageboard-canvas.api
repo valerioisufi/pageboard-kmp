@@ -888,6 +888,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextEditor
 	public final fun getChainComesFrom ()Z
 	public final fun getChainGoesOn ()Z
 	public fun getChecklistProgress ()Lkotlin/Pair;
+	public fun getCodeFirstLine ()I
 	public fun getCodeLineNumbers ()Z
 	public final fun getCodeOfBlock ()Ljava/lang/String;
 	public fun getColor ()I
@@ -935,6 +936,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextEditor
 	public final fun reportLayoutHeight (F)V
 	public final fun saveWriting ()V
 	public fun setBullet (Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;)V
+	public fun setCodeFirstLine (I)V
 	public fun setContinuesNumbering (Z)V
 	public final fun setFormattedPaste (Ljava/lang/String;)V
 	public fun setHeading (I)V
@@ -978,6 +980,7 @@ public abstract interface class io/github/valerioisufi/pageboard/canvas/controll
 	public fun getBulletStyle ()Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;
 	public fun getCanContinueNumbering ()Z
 	public fun getChecklistProgress ()Lkotlin/Pair;
+	public fun getCodeFirstLine ()I
 	public fun getCodeLineNumbers ()Z
 	public abstract fun getColor ()I
 	public fun getContinuesNumbering ()Z
@@ -1002,6 +1005,7 @@ public abstract interface class io/github/valerioisufi/pageboard/canvas/controll
 	public fun moveCompletedChecklistsToBottom ()V
 	public fun outdent ()V
 	public fun setBullet (Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;)V
+	public fun setCodeFirstLine (I)V
 	public fun setContinuesNumbering (Z)V
 	public fun setHeading (I)V
 	public fun setMoveCompletedToBottom (Z)V
@@ -1026,6 +1030,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextFormat
 	public static fun getBulletStyle (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;
 	public static fun getCanContinueNumbering (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Z
 	public static fun getChecklistProgress (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Lkotlin/Pair;
+	public static fun getCodeFirstLine (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)I
 	public static fun getCodeLineNumbers (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Z
 	public static fun getContinuesNumbering (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Z
 	public static fun getFontFamily (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)Ljava/lang/String;
@@ -1048,6 +1053,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextFormat
 	public static fun moveCompletedChecklistsToBottom (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)V
 	public static fun outdent (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;)V
 	public static fun setBullet (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;)V
+	public static fun setCodeFirstLine (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;I)V
 	public static fun setContinuesNumbering (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Z)V
 	public static fun setHeading (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;I)V
 	public static fun setMoveCompletedToBottom (Lio/github/valerioisufi/pageboard/canvas/controller/TextFormatTarget;Z)V
@@ -1824,6 +1830,7 @@ public final class io/github/valerioisufi/pageboard/canvas/text/RichTextEditing 
 	public final fun numberingStyleOf (Landroidx/compose/ui/text/input/TextFieldValue;)Lio/github/valerioisufi/pageboard/model/text/NumberingStyle;
 	public final fun outdent (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun setBullet (Landroidx/compose/ui/text/input/TextFieldValue;Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;)Landroidx/compose/ui/text/input/TextFieldValue;
+	public final fun setCodeFirstLine (Landroidx/compose/ui/text/input/TextFieldValue;I)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun setHeading (Landroidx/compose/ui/text/input/TextFieldValue;I)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun setNumbering (Landroidx/compose/ui/text/input/TextFieldValue;Lio/github/valerioisufi/pageboard/model/text/NumberingStyle;I)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun toggle (Landroidx/compose/ui/text/input/TextFieldValue;Lio/github/valerioisufi/pageboard/canvas/text/RichTextEditing$Format;)Landroidx/compose/ui/text/input/TextFieldValue;

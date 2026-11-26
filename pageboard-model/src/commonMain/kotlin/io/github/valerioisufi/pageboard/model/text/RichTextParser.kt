@@ -41,7 +41,8 @@ public object RichTextParser {
      * @property display a formula written `$$…$$`, drawn in display style.
      * @property block a display formula alone on its lines: a centered line of its own.
      * @property ordered whether a list item is ordered (numbered).
-     * @property number the sequence number of an ordered list item.
+     * @property number the sequence number of an ordered list item; the number of the first line of
+     *   a block of code ([numbered] or not), 1 unless written after its fence (see [START_FROM]).
      * @property style the style its marker asks for (see [ListMarker]), `null` for a number by level.
      * @property language the language of a block of code, the first word after its opening fence
      *   that is not [numbered] (empty when there is none).
@@ -546,7 +547,9 @@ public object RichTextParser {
             .map { it.trimStart('{', '.').trimEnd('}') }
             .filter { it.isNotEmpty() }
         val numbered = words.any { it.lowercase() in LINE_NUMBERS }
-        val language = words.firstOrNull { it.lowercase() !in LINE_NUMBERS }.orEmpty()
+        // An attribute (`startFrom="10"`, `#id`) is no language
+        val language = words.firstOrNull { it.lowercase() !in LINE_NUMBERS && '=' !in it && !it.startsWith('#') }.orEmpty()
+        val first = words.firstNotNullOfOrNull { firstLineOf(it) } ?: 1
         val indent = fence.end - fence.length - start
         val contentStart = min(openingEnd + 1, text.length)
         var line = contentStart
@@ -555,18 +558,31 @@ public object RichTextParser {
             if (closingEnd >= 0) {
                 // The line break before the closing fence belongs to it
                 val contentEnd = if (line > contentStart) line - 1 else contentStart
-                return Span(Kind.CODE_BLOCK, start, closingEnd, contentStart, contentEnd, level = indent, language = language, numbered = numbered, listItem = item)
+                return Span(Kind.CODE_BLOCK, start, closingEnd, contentStart, contentEnd, level = indent, number = first, language = language, numbered = numbered, listItem = item)
             }
             if (fence.base > 0 && isLessIndented(text, line, fence.base)) {
                 // The item ends, and its block with it, before the line
                 val end = line - 1
-                return Span(Kind.CODE_BLOCK, start, end, min(contentStart, end), end, level = indent, language = language, numbered = numbered, listItem = item)
+                return Span(Kind.CODE_BLOCK, start, end, min(contentStart, end), end, level = indent, number = first, language = language, numbered = numbered, listItem = item)
             }
             val next = text.indexOf('\n', line)
             if (next < 0) break
             line = next + 1
         }
-        return Span(Kind.CODE_BLOCK, start, text.length, contentStart, text.length, level = indent, language = language, numbered = numbered, listItem = item)
+        return Span(Kind.CODE_BLOCK, start, text.length, contentStart, text.length, level = indent, number = first, language = language, numbered = numbered, listItem = item)
+    }
+
+    /**
+     * The number of the first line [word] (a word of the information after a fence) asks for:
+     * `startFrom="10"` or `startFrom=10` of Pandoc, from 0 to [MAX_FIRST_LINE]; `null` for any
+     * other word.
+     */
+    private fun firstLineOf(word: String): Int? {
+        val equals = word.indexOf('=')
+        if (equals < 0 || !word.substring(0, equals).equals(START_FROM, ignoreCase = true)) return null
+        val digits = word.substring(equals + 1).trim('"', '\'')
+        if (digits.isEmpty() || digits.length > MAX_FIRST_LINE.toString().length || digits.any { it !in '0'..'9' }) return null
+        return digits.toInt().takeIf { it <= MAX_FIRST_LINE }
     }
 
     /** Whether the line starting at [lineStart] of [text] is not blank and indented less than [column] (a tab counted as 2). */
@@ -1092,6 +1108,12 @@ public object RichTextParser {
      * `{.numberLines}`), `linenums`.
      */
     public val LINE_NUMBERS: Set<String> = setOf("showlinenumbers", "numberlines", "linenums")
+
+    /** The attribute after a fence giving the number of the first line of its block (`startFrom="10"`), as Pandoc writes it. */
+    public const val START_FROM: String = "startFrom"
+
+    /** The largest number a block of code may start its lines from. */
+    public const val MAX_FIRST_LINE: Int = 99_999
 
     /** The fewest backticks or tildes of a fence, and the most spaces before it. */
     private const val MIN_FENCE = 3

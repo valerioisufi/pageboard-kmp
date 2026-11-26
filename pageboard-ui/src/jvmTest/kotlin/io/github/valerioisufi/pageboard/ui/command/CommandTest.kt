@@ -371,6 +371,24 @@ class CommandTest {
         assertEquals("Before\n```kotlin\nval a = 1\n```", editor.value.text, "the text unchanged")
     }
 
+    @Test
+    fun theFirstLineOfANumberedBlockIsChosenFromTheBar() {
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val commands = editorCommands(controller)
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 10f, 10f)
+        editor.updateValue(TextFieldValue("```kotlin\nval a = 1\n```", TextRange(12)))
+        assertFalse(commands.codeFirstLine.isEnabled(), "no numbers, no first line")
+
+        commands.lineNumbers.perform()
+        assertTrue(commands.codeFirstLine.isEnabled())
+        commands.codeFirstLine.perform()
+        assertTrue(commands.codeFirstLineOpen)
+        editor.setCodeFirstLine(20)
+        assertEquals("```kotlin showLineNumbers startFrom=\"20\"\nval a = 1\n```", editor.value.text)
+        assertEquals(20, editor.codeFirstLine)
+    }
+
     /** The clipboard of the system in a test: the text set last. */
     private class FakeClipboard : ClipboardManager {
         var text: String? = null

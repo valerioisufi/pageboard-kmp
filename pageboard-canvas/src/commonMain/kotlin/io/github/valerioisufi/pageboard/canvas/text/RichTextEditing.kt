@@ -126,14 +126,12 @@ public object RichTextEditing {
      */
     public fun toggleLineNumbers(value: TextFieldValue): TextFieldValue {
         val block = codeBlockAt(value) ?: return value
-        val text = value.text
-        // The information after the characters of the fence, to the end of its line
-        var infoStart = block.start + block.level
-        val fence = text[infoStart]
-        while (infoStart < text.length && text[infoStart] == fence) infoStart++
-        val infoEnd = text.indexOf('\n', infoStart).let { if (it < 0) text.length else it }
-        val info = text.substring(infoStart, infoEnd)
-        val newInfo = if (block.numbered) {
+        return withInfo(value, block) { info -> lineNumbersToggled(info, block.numbered) }
+    }
+
+    /** [info] (the information after a fence) asking for the numbers of the lines, or not any more when [numbered]. */
+    private fun lineNumbersToggled(info: String, numbered: Boolean): String =
+        if (numbered) {
             val kept = info.split(' ', '\t')
                 .filter { it.isNotEmpty() && it.trimStart('{', '.').trimEnd('}').lowercase() !in RichTextParser.LINE_NUMBERS }
                 .joinToString(" ")
@@ -144,6 +142,47 @@ public object RichTextEditing {
             val written = info.trimEnd()
             if (written.isBlank()) LINE_NUMBERS_WORD else "$written $LINE_NUMBERS_WORD"
         }
+
+    /**
+     * The block of code of the selection of [value] numbering its lines from [first] (written
+     * `startFrom="10"` after its fence, as Pandoc does; nothing written for 1), its lines numbered
+     * if they were not. [first] is kept from 0 to [RichTextParser.MAX_FIRST_LINE].
+     */
+    public fun setCodeFirstLine(value: TextFieldValue, first: Int): TextFieldValue {
+        val block = codeBlockAt(value) ?: return value
+        val number = first.coerceIn(0, RichTextParser.MAX_FIRST_LINE)
+        return withInfo(value, block) { info ->
+            val numbered = if (block.numbered) info else lineNumbersToggled(info, numbered = false)
+            val words = numbered.trim().split(' ', '\t').filter { it.isNotEmpty() }
+            val kept = words.filterNot { word ->
+                '=' in word && word.trimStart('{').substringBefore('=').equals(RichTextParser.START_FROM, ignoreCase = true)
+            }
+            var written = kept.joinToString(" ")
+            // The brace closing the attributes, gone with the attribute it was written after
+            if ('{' in written && '}' !in written) written += "}"
+            val attribute = "${RichTextParser.START_FROM}=\"$number\""
+            val newInfo = when {
+                number == 1 -> written
+                written.isEmpty() -> attribute
+                '{' in written && written.endsWith('}') -> written.dropLast(1).trimEnd() + " " + attribute + "}"
+                else -> "$written $attribute"
+            }
+            if (newInfo.isEmpty()) "" else numbered.takeWhile { it == ' ' || it == '\t' } + newInfo
+        }
+    }
+
+    /**
+     * [value] with the information after the opening fence of [block] (to the end of its line)
+     * made [transform] of it, the selection on the same characters (in the information: kept in it).
+     */
+    private fun withInfo(value: TextFieldValue, block: RichTextParser.Span, transform: (String) -> String): TextFieldValue {
+        val text = value.text
+        var infoStart = block.start + block.level
+        val fence = text[infoStart]
+        while (infoStart < text.length && text[infoStart] == fence) infoStart++
+        val infoEnd = text.indexOf('\n', infoStart).let { if (it < 0) text.length else it }
+        val info = text.substring(infoStart, infoEnd)
+        val newInfo = transform(info)
         val shift = newInfo.length - info.length
         fun moved(offset: Int) = when {
             offset <= infoStart -> offset

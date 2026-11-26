@@ -88,14 +88,15 @@ internal class CodeTheme private constructor(val text: Color, paper: Color?, pri
 /**
  * What a block of code is laid out from: its [code] (the lines between its fences), its
  * [language], the [indent] spaces of its fence taken off its lines, whether it shows the numbers of
- * its lines ([numbered]), and the [widthPx] it takes in its text.
+ * its lines ([numbered]) from [firstLine], and the [widthPx] it takes in its text.
  */
 public data class CodeBlockSource(
     val code: String,
     val language: String,
     val indent: Int,
     val numbered: Boolean,
-    val widthPx: Float
+    val widthPx: Float,
+    val firstLine: Int = 1
 )
 
 /**
@@ -260,7 +261,7 @@ public class CodeBlockLayout internal constructor(
             val padding = fontPx * PADDING_X
             // The column of the numbers: as many digits as the last line has, then one free
             val lineCount = shownCode.lineStarts.size
-            val gutter = if (source.numbered) (lineCount.toString().length + 1) * advance else 0f
+            val gutter = if (source.numbered) ((source.firstLine + lineCount - 1).toString().length + 1) * advance else 0f
             val layout = measurer.measure(
                 text = buildAnnotatedString {
                     append(shown)
@@ -285,7 +286,7 @@ public class CodeBlockLayout internal constructor(
             val labelTop = paddingY * 0.5f
             val codeTop = if (label != null) labelTop + label.size.height + paddingY * 0.25f else paddingY
             val numbers = if (source.numbered) {
-                lineNumbers(measurer, layout, shownCode.lineStarts, style.copy(color = theme.label), padding + gutter - advance, codeTop)
+                lineNumbers(measurer, layout, shownCode.lineStarts, style.copy(color = theme.label), padding + gutter - advance, codeTop, source.firstLine)
             } else {
                 emptyList()
             }
@@ -312,7 +313,7 @@ public class CodeBlockLayout internal constructor(
          * The numbers of the lines of the code laid out in [layout] (its paragraphs starting at
          * [lineStarts]), right aligned on [right], each on the first line of its paragraph (a
          * wrapped line has none), its baseline on the one of the code, the code [codeTop] below the
-         * top of the block.
+         * top of the block, the first one [first].
          */
         private fun lineNumbers(
             measurer: TextMeasurer,
@@ -320,7 +321,8 @@ public class CodeBlockLayout internal constructor(
             lineStarts: IntArray,
             style: TextStyle,
             right: Float,
-            codeTop: Float
+            codeTop: Float,
+            first: Int
         ): List<LineNumber> {
             val numbers = ArrayList<LineNumber>(lineStarts.size)
             // The lines of the layout in order: a line starting where the next paragraph starts is its first one
@@ -330,7 +332,7 @@ public class CodeBlockLayout internal constructor(
                     if (paragraph + 1 >= lineStarts.size || layout.getLineStart(line) != lineStarts[paragraph + 1]) continue
                     paragraph++
                 }
-                val number = measurer.measure(AnnotatedString((paragraph + 1).toString()), style, softWrap = false, skipCache = true)
+                val number = measurer.measure(AnnotatedString((first + paragraph).toString()), style, softWrap = false, skipCache = true)
                 numbers += LineNumber(number, right - number.size.width, codeTop + layout.getLineBaseline(line) - number.firstBaseline)
             }
             return numbers

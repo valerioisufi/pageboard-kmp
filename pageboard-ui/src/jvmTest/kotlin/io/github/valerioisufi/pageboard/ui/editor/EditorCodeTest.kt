@@ -38,8 +38,8 @@ class EditorCodeTest {
 
     private val measurer = TextMeasurer(createFontFamilyResolver(), Density(1f, 1f), LayoutDirection.Ltr, cacheSize = 0)
 
-    private fun layout(code: String, language: String = "kotlin", indent: Int = 0, widthPx: Float = 600f, numbered: Boolean = false) =
-        CodeBlockLayout.layout(measurer, FontFamily.Monospace, CodeBlockSource(code, language, indent, numbered, widthPx), 20f, Color.Black, BuiltInCodeHighlighter, 0xFFFFFFFF.toInt())
+    private fun layout(code: String, language: String = "kotlin", indent: Int = 0, widthPx: Float = 600f, numbered: Boolean = false, firstLine: Int = 1) =
+        CodeBlockLayout.layout(measurer, FontFamily.Monospace, CodeBlockSource(code, language, indent, numbered, widthPx, firstLine), 20f, Color.Black, BuiltInCodeHighlighter, 0xFFFFFFFF.toInt())
 
     private val struts = Struts(null, null, FontFamily.Default, FontRoom(ascent = 0.9f, descent = 0.3f, advance = 1f))
 
@@ -52,7 +52,7 @@ class EditorCodeTest {
             lineWidthPx = 600f,
             monospace = FontFamily.Monospace,
             highlighter = BuiltInCodeHighlighter,
-            layoutCodeBlock = { source -> layout(source.code, source.language, source.indent, source.widthPx, source.numbered) }
+            layoutCodeBlock = { source -> layout(source.code, source.language, source.indent, source.widthPx, source.numbered, source.firstLine) }
         ) { _, _ -> null },
         reveal = TextRange(caret)
     )
@@ -170,5 +170,14 @@ class EditorCodeTest {
             keyUp(primary)
         }
         runOnIdle { assertEquals("Hello world", editor.value.text) }
+    }
+
+    @Test
+    fun theNumbersStartFromTheFirstLineOfTheBlock() {
+        val block = layout("a\nb\nc", numbered = true, firstLine = 98)
+        assertEquals(listOf("98", "99", "100"), block.numbers.map { it.layout.layoutInput.text.text })
+        assertTrue(block.codeLeftPx > layout("a\nb\nc", numbered = true).codeLeftPx, "a column as wide as the last number")
+        val shown = shown("Text\n```kotlin showLineNumbers startFrom=\"10\"\na\nb\n```", 0)
+        assertEquals(listOf("10", "11"), shown.codeBlocks.single().layout.numbers.map { it.layout.layoutInput.text.text }, "read after the fence")
     }
 }

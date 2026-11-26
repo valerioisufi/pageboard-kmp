@@ -827,7 +827,7 @@ internal object RichTextPresenter {
 
     /** What the block of code [span] of [text] is laid out from, [widthPx] wide. */
     private fun codeBlockSource(text: String, span: Span, widthPx: Float) =
-        CodeBlockSource(text.substring(span.contentStart, span.contentEnd), span.language, span.level, span.numbered, widthPx)
+        CodeBlockSource(text.substring(span.contentStart, span.contentEnd), span.language, span.level, span.numbered, widthPx, span.number)
 
     /** The object replacement character: the struts of an object. */
     const val OBJECT: String = "￼"

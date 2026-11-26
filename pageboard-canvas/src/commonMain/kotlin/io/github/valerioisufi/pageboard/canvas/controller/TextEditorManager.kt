@@ -158,6 +158,8 @@ public class TextEditorManager internal constructor(private val controller: Page
 
     override val codeLineNumbers: Boolean get() = selectedCodeBlock?.numbered == true
 
+    override val codeFirstLine: Int get() = selectedCodeBlock?.number ?: 1
+
     /** The code of the block of code of the caret, without its fences (see [RichTextEditing.codeOfBlockAt]); `null` out of a block. */
     public val codeOfBlock: String? get() = selectedCodeBlock?.let { RichTextEditing.codeOf(value.text, it) }
 
@@ -832,6 +834,8 @@ public class TextEditorManager internal constructor(private val controller: Page
 
     /** Asks for the numbers of the lines of the block of code of the selection, or not any more. */
     override fun toggleLineNumbers(): Unit = updateValue(RichTextEditing.toggleLineNumbers(value), smartNewline = false)
+
+    override fun setCodeFirstLine(first: Int): Unit = updateValue(RichTextEditing.setCodeFirstLine(value, first), smartNewline = false)
 
     /** Makes the lines of the selection bullet list items, or plain text again. */
     override fun toggleBulletList() {

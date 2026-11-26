@@ -48,6 +48,20 @@ class CodeBlockEditingTest {
     }
 
     @Test
+    fun theFirstLineIsWrittenAfterTheFence() {
+        fun first(text: String, number: Int) = RichTextEditing.setCodeFirstLine(at(text), number).text
+        assertEquals("```kotlin showLineNumbers startFrom=\"10\"\nx\n```", first("```kotlin\nx|\n```", 10), "numbered if it was not")
+        assertEquals("```kotlin showLineNumbers startFrom=\"12\"\nx\n```", first("```kotlin showLineNumbers startFrom=\"10\"\nx|\n```", 12), "the one written replaced")
+        assertEquals("```kotlin showLineNumbers\nx\n```", first("```kotlin showLineNumbers startFrom=\"10\"\nx|\n```", 1), "nothing for 1")
+        assertEquals("``` {.kotlin .numberLines startFrom=\"5\"}\nx\n```", first("``` {.kotlin .numberLines}\nx|\n```", 5), "in the attributes of Pandoc")
+        assertEquals("``` {.kotlin .numberLines}\nx\n```", first("``` {.kotlin .numberLines startFrom=\"5\"}\nx|\n```", 1), "the brace kept")
+        assertEquals("```showLineNumbers startFrom=\"0\"\nx\n```", first("```\nx|\n```", -3), "not below 0")
+        assertEquals("Text", first("Te|xt", 10), "out of a block")
+        val moved = RichTextEditing.setCodeFirstLine(at("```kotlin\nx|\n```"), 10)
+        assertEquals(moved.text.indexOf('x') + 1, moved.selection.start, "the caret on the same character")
+    }
+
+    @Test
     fun aCloserTypedAloneGoesOneStepBack() {
         fun typed(text: String, char: Char): String? {
             val before = at(text)

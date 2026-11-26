@@ -55,6 +55,12 @@ public interface TextFormatTarget {
     /** Whether the block of code of the selection shows the numbers of its lines. */
     public val codeLineNumbers: Boolean get() = false
 
+    /** The number of the first line of the block of code of the selection (see `RichTextParser.START_FROM`). */
+    public val codeFirstLine: Int get() = 1
+
+    /** Numbers the lines of the block of code of the selection from [first]. */
+    public fun setCodeFirstLine(first: Int) {}
+
     /** Whether the selection of the text being written has [format]. */
     public fun isActive(format: RichTextEditing.Format): Boolean = false
 
