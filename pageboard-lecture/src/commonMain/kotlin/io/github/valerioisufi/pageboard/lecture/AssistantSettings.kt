@@ -118,6 +118,8 @@ public data class TaskModel(
  * @param whisperModel path of the ggml model of whisper.cpp (e.g. ggml-large-v3-turbo.bin).
  * @param spokenLanguage language spoken, ISO code ("it", "en") or "auto" (recognized).
  * @param reviewAtTheEnd the final review is written when a lecture ends (otherwise on request).
+ * @param writingFromModel the model of the device suggests the next words of a text while it is
+ *   written (see `docs/plans/writing-suggestions-more.md`); off unless chosen.
  * @param localEngine which engine answers the local requests (see [LocalEngine]).
  * @param version the version of the file of the settings: a file without one is version 1, whose
  *   local requests stay with Ollama ([AssistantSettingsStore]).
@@ -138,6 +140,7 @@ public data class AssistantSettings(
     /** What to do with the lectures received from devices without the models (see [ReceivedLectures]). */
     val receivedLectures: ReceivedLectures = ReceivedLectures.ASK,
     val reviewAtTheEnd: Boolean = true,
+    val writingFromModel: Boolean = false,
     @EncodeDefault val localEngine: LocalEngine = LocalEngine.DEVICE,
     @EncodeDefault val version: Int = CURRENT_VERSION
 ) {

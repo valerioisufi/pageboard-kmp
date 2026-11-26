@@ -291,6 +291,13 @@ private fun LocalSection(draft: AssistantSettings, localModels: LocalModels, dev
                 onSelect = { onChange(draft.copy(localEngine = it)) }
             )
             Hint(stringResource(Res.string.lecture_engine_hint))
+            // The next words of a text from the model of the device, while it is written
+            SwitchRow(
+                text = stringResource(Res.string.lecture_settings_writing_from_model),
+                hint = stringResource(Res.string.lecture_settings_writing_from_model_hint),
+                checked = draft.writingFromModel,
+                onCheckedChange = { onChange(draft.copy(writingFromModel = it)) }
+            )
         }
     }
     SettingsCard(Res.string.lecture_settings_ollama) {

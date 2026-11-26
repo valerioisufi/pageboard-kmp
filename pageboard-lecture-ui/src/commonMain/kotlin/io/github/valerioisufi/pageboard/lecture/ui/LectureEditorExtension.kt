@@ -92,8 +92,10 @@ public fun LectureAssistant.editorExtension(): EditorExtension {
         }
         commands { context -> (if (isRecordingSupported) listOf(panel) else emptyList()) + textToNotesCommand(textNotes, context) }
         panels { context -> listOf(lecturePanel(this@editorExtension, context.documentId, context, panelState)) }
-        // The words of the lecture being recorded (see docs/plans/writing-suggestions-more.md)
-        textSuggestions(LectureWordSuggester(this@editorExtension))
+        // The words of the lecture being recorded, else the next words from the model (see docs/plans/writing-suggestions-more.md)
+        val words = LectureWordSuggester(this@editorExtension)
+        val model = ModelWordsSuggester(this@editorExtension)
+        textSuggestions { context, writing -> words.suggest(context, writing) ?: model.suggest(context, writing) }
     }
 }
 

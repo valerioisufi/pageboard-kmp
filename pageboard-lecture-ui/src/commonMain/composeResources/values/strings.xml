@@ -225,6 +225,8 @@
     <string name="lecture_review_on_request">When the recording stops you can ask for the review of the whole lecture: organized notes and what is missing from yours.</string>
     <string name="lecture_settings_review_at_end">Write it at the end of every lecture</string>
     <string name="lecture_settings_review_on_request_hint">Off: you ask for it from the Review tab, when you need it.</string>
+    <string name="lecture_settings_writing_from_model">Suggest the next words while writing</string>
+    <string name="lecture_settings_writing_from_model_hint">After each word of a text, the model of this device suggests how the sentence goes on (Tab takes it). It stays in memory while you write, never during a lecture.</string>
     <string name="lecture_retranscribe_local">Transcribe again on this computer (whisper)</string>
     <string name="lecture_problem_quota_day_in">Your Gemini plan allows no more requests to %1$s today: they come back in %2$s. Meanwhile you can transcribe on this computer (Settings). What was transcribed is kept.</string>
     <string name="lecture_problem_quota_day">Your Gemini plan allows no more requests to %1$s today. Meanwhile you can transcribe on this computer (Settings). What was transcribed is kept.</string>

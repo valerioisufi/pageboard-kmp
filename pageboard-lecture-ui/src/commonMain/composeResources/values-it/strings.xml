@@ -225,6 +225,8 @@
     <string name="lecture_review_on_request">Quando la registrazione si ferma potrai chiedere la revisione dell\'intera lezione: appunti ordinati e ciò che manca ai tuoi.</string>
     <string name="lecture_settings_review_at_end">Scrivila al termine di ogni lezione</string>
     <string name="lecture_settings_review_on_request_hint">Spento: la chiedi tu dalla scheda Revisione, quando ti serve.</string>
+    <string name="lecture_settings_writing_from_model">Suggerisci le parole successive mentre scrivi</string>
+    <string name="lecture_settings_writing_from_model_hint">Dopo ogni parola di un testo, il modello di questo dispositivo suggerisce come prosegue la frase (Tab la accetta). Resta in memoria mentre scrivi, mai durante una lezione.</string>
     <string name="lecture_retranscribe_local">Trascrivi di nuovo su questo computer (whisper)</string>
     <string name="lecture_problem_quota_day_in">Il tuo piano Gemini non permette altre richieste a %1$s per oggi: tornano tra %2$s. Nel frattempo puoi trascrivere su questo computer (Impostazioni). Ciò che è stato trascritto resta.</string>
     <string name="lecture_problem_quota_day">Il tuo piano Gemini non permette altre richieste a %1$s per oggi. Nel frattempo puoi trascrivere su questo computer (Impostazioni). Ciò che è stato trascritto resta.</string>

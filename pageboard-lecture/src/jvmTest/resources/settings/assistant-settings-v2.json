@@ -1,0 +1,14 @@
+{
+    "generateHere": true,
+    "chunkSeconds": 45,
+    "notesSeconds": 300,
+    "notesLanguage": "",
+    "thinkingLevel": "low",
+    "tasks": {},
+    "localUrl": "http://localhost:11434",
+    "whisperModel": "",
+    "spokenLanguage": "auto",
+    "reviewAtTheEnd": true,
+    "localEngine": "DEVICE",
+    "version": 2
+}

@@ -719,6 +719,16 @@ public class LectureAssistant(
     }
 
     /** Whether this device can generate lecture topic titles locally (a generation model is installed). */
+    /**
+     * The next words of [textBefore], a text being written, from the model of the device (see
+     * `docs/plans/writing-suggestions-more.md`): `null` when the setting is off, while a lecture is
+     * recorded (the model and the transcription would compete), or with no generation model.
+     */
+    public suspend fun nextWords(textBefore: String): String? {
+        if (!settingsStore.settings.writingFromModel || activeRecorder != null) return null
+        return NextWordsWriter.nextWords(textBefore, deviceModels)
+    }
+
     public val canGenerateLectureTitleLocally: Boolean
         get() = LectureTitleGenerator.installedModel(deviceModels) != null
 

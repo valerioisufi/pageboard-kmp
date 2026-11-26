@@ -41,7 +41,7 @@ The responsibilities are assigned following the GRASP principles.
 |---|---|---|
 | The word being written before the caret | `WritingWords.prefixAt` (`pageboard-search`, moved from `NoteWordSuggester`) | Information Expert |
 | The words of the lecture being recorded | `LectureWordSuggester` (`pageboard-lecture-ui`), `WordCounts` | Information Expert, Low Coupling |
-| The next words from the model | `ModelWordsSuggester` (`pageboard-lecture-ui`), `AssistantSettings.writingFromModel` | Pure Fabrication, Protected Variations |
+| The next words from the model | `NextWordsWriter`, `LectureAssistant.nextWords` (`pageboard-lecture`), `ModelWordsSuggester` (`pageboard-lecture-ui`), `AssistantSettings.writingFromModel` | Pure Fabrication, Protected Variations |
 | A suggestion at the end of a line | `GhostText.insert` (`pageboard-ui`), `TextBoxEditor` | Information Expert |
 
 ## Phases
@@ -49,7 +49,7 @@ The responsibilities are assigned following the GRASP principles.
 | Phase | Content | Status |
 |---|---|---|
 | 1 | The words of the lecture being recorded; tests | Done |
-| 2 | The next words from a local model, its switch; the setting read from before; tests | Pending |
+| 2 | The next words from a local model, its switch; the setting read from before; tests | Done |
 | 3 | A suggestion at the end of a line in the middle of a text; tests, screenshots | Pending |
 
 ## Decisions
@@ -63,6 +63,10 @@ Taken alone, revertible:
 3. **A word of the lecture wins when it was heard more often than any other** with the same start, a
    tie suggesting nothing; it is read from the transcript of the lecture of the document being
    recorded only (`LectureAssistant.activeRecorder`), so a lecture of another notebook says nothing.
+4. **The model is asked after a word ended** (a space after it), the word being written being the
+   words' own (the notes, the lecture): the two never ask at once. Its switch is with the engine of
+   the device in the settings of the assistant (the card shown when the device runs models); the
+   model is the first generation model installed, as for the titles of the lectures.
 
 ## Left for later
 
