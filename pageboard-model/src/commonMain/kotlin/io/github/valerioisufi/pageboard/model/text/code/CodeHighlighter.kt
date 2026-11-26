@@ -49,6 +49,12 @@ public interface CodeHighlighter {
      */
     public fun tokens(code: String, language: String): List<CodeToken>
 
+    /**
+     * The language [code] looks like, as a name [tokens] knows, for a block with none written:
+     * only shown, never written into the text. `null` when it cannot tell, the default.
+     */
+    public fun guess(code: String): String? = null
+
     public companion object {
         /** The longest code highlighted: a longer one is drawn in one color, whatever the engine. */
         public const val MAX_HIGHLIGHTED: Int = 64 * 1024
@@ -71,4 +77,6 @@ public object BuiltInCodeHighlighter : CodeHighlighter {
         val grammar = CodeGrammars.byName[language.lowercase()] ?: return emptyList()
         return CodeLexer(grammar, code).tokens()
     }
+
+    override fun guess(code: String): String? = CodeGuess.guess(code)
 }

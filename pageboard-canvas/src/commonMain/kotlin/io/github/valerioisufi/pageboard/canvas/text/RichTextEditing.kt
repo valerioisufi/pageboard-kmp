@@ -9,6 +9,7 @@ import io.github.valerioisufi.pageboard.model.text.ListRenumbering
 import io.github.valerioisufi.pageboard.model.text.NumberingStyle
 import io.github.valerioisufi.pageboard.model.text.RichTextParser
 import io.github.valerioisufi.pageboard.model.text.TaskBox
+import io.github.valerioisufi.pageboard.model.text.code.BuiltInCodeHighlighter
 import io.github.valerioisufi.pageboard.model.text.code.CodeIndent
 import kotlin.math.max
 import kotlin.math.min
@@ -992,10 +993,11 @@ public object RichTextEditing {
         }
         if (start < block.contentStart || start > block.contentEnd) return null
         val indent = text.substring(lineStart, start).takeWhile { it == ' ' || it == '\t' }
-        val opener = CodeIndent.openerAtEnd(text.substring(block.contentStart, start), block.language)
+        val language = languageOf(text, block)
+        val opener = CodeIndent.openerAtEnd(text.substring(block.contentStart, start), language)
             ?: return TextFieldValue(text.substring(0, start) + "\n" + indent + text.substring(start), TextRange(start + 1 + indent.length))
         // After a line opening a block of the language: one step more
-        val deeper = indent + CodeIndent.stepOf(text.substring(block.contentStart, block.contentEnd), block.language, block.level)
+        val deeper = indent + CodeIndent.stepOf(text.substring(block.contentStart, block.contentEnd), language, block.level)
         val lineEnd = text.indexOf('\n', start).let { if (it < 0) text.length else it }
         val rest = text.substring(start, lineEnd)
         val closer = CodeIndent.closerOf(opener)
@@ -1007,6 +1009,10 @@ public object RichTextEditing {
         }
         return TextFieldValue(text.substring(0, start) + "\n" + deeper + text.substring(start), TextRange(start + 1 + deeper.length))
     }
+
+    /** The language of [block] of [text]: the one written after its fence, else the one its code looks like. */
+    private fun languageOf(text: String, block: RichTextParser.Span): String =
+        block.language.ifEmpty { BuiltInCodeHighlighter.guess(text.substring(block.contentStart, block.contentEnd)).orEmpty() }
 
     /**
      * [newValue], when it types a character closing a block of the language of a block of code
@@ -1022,13 +1028,14 @@ public object RichTextEditing {
         val typed = text[caret]
         if (typed != '}' && typed != ')' && typed != ']') return null
         val block = codeBlockAt(newValue) ?: return null
-        if (caret < block.contentStart || caret >= block.contentEnd || !CodeIndent.closes(typed, block.language)) return null
+        val language = languageOf(text, block)
+        if (caret < block.contentStart || caret >= block.contentEnd || !CodeIndent.closes(typed, language)) return null
         val lineStart = text.lastIndexOf('\n', caret - 1) + 1
         val indent = text.substring(lineStart, caret)
         if (indent.isEmpty() || indent.any { it != ' ' && it != '\t' }) return null
         val lineEnd = text.indexOf('\n', caret).let { if (it < 0) text.length else it }
         if (text.substring(caret + 1, lineEnd).isNotBlank()) return null
-        val step = CodeIndent.stepOf(text.substring(block.contentStart, block.contentEnd), block.language, block.level)
+        val step = CodeIndent.stepOf(text.substring(block.contentStart, block.contentEnd), language, block.level)
         // The spaces of the fence stay: the block keeps its place in its list item
         if (!indent.endsWith(step) || indent.length - step.length < block.level) return null
         val back = text.substring(0, lineStart) + indent.dropLast(step.length) + text.substring(caret)

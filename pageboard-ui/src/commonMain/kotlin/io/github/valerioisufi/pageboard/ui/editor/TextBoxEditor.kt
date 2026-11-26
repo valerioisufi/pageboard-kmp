@@ -91,6 +91,7 @@ import io.github.valerioisufi.pageboard.canvas.text.TableEditing
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
 import io.github.valerioisufi.pageboard.model.geometry.Point
 import io.github.valerioisufi.pageboard.model.text.LatexCommands
+import io.github.valerioisufi.pageboard.model.text.code.CodeLanguages
 import io.github.valerioisufi.pageboard.model.text.RichTextParser
 import io.github.valerioisufi.pageboard.model.text.TextBackground
 import io.github.valerioisufi.pageboard.model.text.TextSizes.PT_TO_MM
@@ -274,15 +275,29 @@ internal fun TextBoxEditor(
     }
     val hidden = shown.hiddenAtCaret ?: cellAtCaret?.presented?.hiddenAtCaret
     val linkAtCaret = shown.linkAtCaret ?: cellAtCaret?.presented?.linkAtCaret
-    val latexDismissed = remember { mutableStateOf<Pair<Int, String>?>(null) }
-    val latexMatch = if (hidden?.kind == RichTextParser.Kind.FORMULA && hidden.caretIn && value.selection.collapsed) {
-        val from = hidden.source.first + if (shown.hiddenAtCaret == null && cellAtCaret != null) cellAtCaret.source.first else 0
-        val formulaEnd = (from + hidden.length).coerceAtMost(value.text.length)
-        LatexCommands.match(value.text, value.selection.start, from until formulaEnd)
-            ?.takeIf { latexDismissed.value != (it.tokenStart to it.prefix) }
+    // The words completed at the caret: a command of LaTeX in a formula, the language after a fence
+    val completionDismissed = remember { mutableStateOf<Pair<Int, String>?>(null) }
+    val completion = if (hidden != null && hidden.caretIn && value.selection.collapsed) {
+        when (hidden.kind) {
+            RichTextParser.Kind.FORMULA -> {
+                val from = hidden.source.first + if (shown.hiddenAtCaret == null && cellAtCaret != null) cellAtCaret.source.first else 0
+                val formulaEnd = (from + hidden.length).coerceAtMost(value.text.length)
+                LatexCommands.match(value.text, value.selection.start, from until formulaEnd)?.let { match ->
+                    Completion(match.tokenStart to match.prefix, match.candidates.map { CompletionItem("\\${it.name}", it.preview) }) { text, index ->
+                        LatexCommands.apply(text, match, match.candidates[index])
+                    }
+                }
+            }
+            RichTextParser.Kind.CODE_BLOCK -> CodeLanguages.match(value.text, value.selection.start)?.let { match ->
+                Completion(match.tokenStart to match.prefix, match.candidates.map { CompletionItem(it) }) { text, index ->
+                    CodeLanguages.apply(text, match, match.candidates[index])
+                }
+            }
+            else -> null
+        }?.takeIf { completionDismissed.value != it.key }
     } else null
-    val currentLatexMatch by rememberUpdatedState(latexMatch)
-    val latexSelectedIndex = remember(latexMatch?.tokenStart, latexMatch?.prefix) { mutableIntStateOf(0) }
+    val currentCompletion by rememberUpdatedState(completion)
+    val completionIndex = remember(completion?.key) { mutableIntStateOf(0) }
     val accent = MaterialTheme.colorScheme.primary
     val selectionColor = LocalTextSelectionColors.current.backgroundColor
     val currentShown by rememberUpdatedState(shown)
@@ -518,28 +533,26 @@ internal fun TextBoxEditor(
                     }
                 }
                 .onPreviewKeyEvent { event ->
-                    // Active LaTeX completion: arrows move selection, Tab/Enter accept, Escape dismisses
-                    val activeLatex = currentLatexMatch
-                    if (activeLatex != null && event.type == KeyEventType.KeyDown && !event.isShiftPressed) {
-                        val size = activeLatex.candidates.size
+                    // A completion shown: arrows move selection, Tab/Enter accept, Escape dismisses
+                    val active = currentCompletion
+                    if (active != null && event.type == KeyEventType.KeyDown && !event.isShiftPressed) {
+                        val size = active.items.size
                         when (event.key) {
                             Key.DirectionDown -> {
-                                latexSelectedIndex.intValue = (latexSelectedIndex.intValue + 1) % size
+                                completionIndex.intValue = (completionIndex.intValue + 1) % size
                                 return@onPreviewKeyEvent true
                             }
                             Key.DirectionUp -> {
-                                latexSelectedIndex.intValue = (latexSelectedIndex.intValue - 1 + size) % size
+                                completionIndex.intValue = (completionIndex.intValue - 1 + size) % size
                                 return@onPreviewKeyEvent true
                             }
                             Key.Tab, Key.Enter, Key.NumPadEnter -> {
-                                val chosen = activeLatex.candidates.getOrElse(latexSelectedIndex.intValue) { activeLatex.candidates.first() }
-                                val currentVal = editor.value
-                                val (nextText, nextCaret) = LatexCommands.apply(currentVal.text, activeLatex, chosen)
+                                val (nextText, nextCaret) = active.apply(editor.value.text, completionIndex.intValue.coerceIn(0, size - 1))
                                 change(TextFieldValue(nextText, TextRange(nextCaret)), smartNewline = false)
                                 return@onPreviewKeyEvent true
                             }
                             Key.Escape -> {
-                                latexDismissed.value = activeLatex.tokenStart to activeLatex.prefix
+                                completionDismissed.value = active.key
                                 return@onPreviewKeyEvent true
                             }
                             else -> {}
@@ -792,15 +805,15 @@ internal fun TextBoxEditor(
                 monospace = notesFonts.monospace,
                 onOpenLink = linkAtCaret?.let { url -> { openLink(url) } }
             )
-            if (latexMatch != null) {
-                LatexCompletionPopup(
-                    match = latexMatch,
-                    selectedIndex = latexSelectedIndex.intValue.coerceIn(0, latexMatch.candidates.lastIndex),
+            if (completion != null) {
+                CompletionPopup(
+                    completion = completion,
+                    selectedIndex = completionIndex.intValue.coerceIn(0, completion.items.lastIndex),
                     anchor = stripAnchor,
                     avoid = barBounds,
                     monospace = notesFonts.monospace,
-                    onSelect = { cmd ->
-                        val (nextText, nextCaret) = LatexCommands.apply(value.text, latexMatch, cmd)
+                    onSelect = { index ->
+                        val (nextText, nextCaret) = completion.apply(value.text, index)
                         change(TextFieldValue(nextText, TextRange(nextCaret)), smartNewline = false)
                     }
                 )

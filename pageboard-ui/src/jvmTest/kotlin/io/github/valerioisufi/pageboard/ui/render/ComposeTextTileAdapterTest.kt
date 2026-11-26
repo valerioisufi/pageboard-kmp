@@ -154,8 +154,14 @@ class ComposeTextTileAdapterTest {
 
     @Test
     fun aBlockWithoutALanguageKnownIsInOneColor() {
-        val words = words(text("```\nfun f() = 1\n```")) + words(text("```brainfuck\nfun f() = 1\n```"))
+        val words = words(text("```\nhello world\n```")) + words(text("```brainfuck\nfun f() = 1\n```"))
         assertTrue(words.filter { it.text.trim() != "brainfuck" }.all { it.color == 0xFF000000.toInt() }, "${words.map { it.text to it.color }}")
+    }
+
+    @Test
+    fun aBlockWithNoLanguageWrittenIsInTheColorsOfTheOneItLooksLike() {
+        val words = words(text("```\nfun main() {\n    val a = 1\n}\n```"))
+        assertTrue(words.any { it.color != 0xFF000000.toInt() }, "${words.map { it.text to it.color }}")
     }
 
     @Test

@@ -105,8 +105,7 @@ Taken alone, revertible:
 - The stages after this one, each in a plan of its own:
   - **B, checklists and lists** (`docs/plans/checklists-and-lists.md`): done.
   - **C, boxes, chains, tables and quotes** (`docs/plans/boxes-tables-quotes.md`): done.
-  - **D, blocks of code**: the language detected and completed, copying the code alone,
-    indentation that knows the language, a number to start the lines from.
+  - **D, blocks of code** (`docs/plans/code-blocks-more.md`): done.
   - **E, fidelity, autosave and conflicts**: a format chosen at the caret before typing, the whole
     source on demand, the strip of the source on small screens, selecting into and across blocks
     of code, conflicts of copies converging, a text deleted elsewhere while written kept as new.

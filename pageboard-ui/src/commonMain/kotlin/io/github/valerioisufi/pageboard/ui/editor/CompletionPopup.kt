@@ -23,22 +23,35 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.valerioisufi.pageboard.model.text.LatexCommand
-import io.github.valerioisufi.pageboard.model.text.LatexCommands
 import kotlin.math.roundToInt
 
 /**
- * Compact completion popup shown while typing a `\command` inside a formula, anchored near
- * [anchor] without stealing focus from the text field.
+ * What the popup of the completions offers at the caret: the commands of LaTeX in a formula, the
+ * names of the languages after the fence of a block of code. [key] tells one dismissed (where its
+ * word starts, what is typed of it); [apply] gives the text and the caret with the item of an index
+ * chosen.
+ */
+internal class Completion(
+    val key: Pair<Int, String>,
+    val items: List<CompletionItem>,
+    val apply: (text: String, index: Int) -> Pair<String, Int>
+)
+
+/** An item of a [Completion]: its [label] and, on its right, a [preview] of what it gives. */
+internal class CompletionItem(val label: String, val preview: String = "")
+
+/**
+ * Compact completion popup shown while typing a word the editor can complete (see [Completion]),
+ * anchored near [anchor] without stealing focus from the text field.
  */
 @Composable
-internal fun LatexCompletionPopup(
-    match: LatexCommands.Match,
+internal fun CompletionPopup(
+    completion: Completion,
     selectedIndex: Int,
     anchor: () -> Rect?,
     avoid: () -> Rect?,
     monospace: FontFamily,
-    onSelect: (LatexCommand) -> Unit
+    onSelect: (Int) -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
     Surface(
@@ -73,7 +86,7 @@ internal fun LatexCompletionPopup(
         color = colors.surface
     ) {
         Column(modifier = Modifier.padding(4.dp), verticalArrangement = Arrangement.spacedBy(1.dp)) {
-            match.candidates.forEachIndexed { index, cmd ->
+            completion.items.forEachIndexed { index, item ->
                 val active = index == selectedIndex
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -83,17 +96,17 @@ internal fun LatexCompletionPopup(
                         .clip(RoundedCornerShape(6.dp))
                         .background(if (active) colors.primaryContainer else Color.Transparent)
                         .keepsTextFocus()
-                        .clickable { onSelect(cmd) }
+                        .clickable { onSelect(index) }
                         .padding(horizontal = 8.dp, vertical = 5.dp)
                 ) {
                     Text(
-                        text = "\\${cmd.name}",
+                        text = item.label,
                         style = MaterialTheme.typography.bodyMedium.copy(fontFamily = monospace, fontSize = 13.sp),
                         color = if (active) colors.onPrimaryContainer else colors.onSurface
                     )
-                    if (cmd.preview.isNotEmpty()) {
+                    if (item.preview.isNotEmpty()) {
                         Text(
-                            text = cmd.preview,
+                            text = item.preview,
                             style = MaterialTheme.typography.labelMedium,
                             color = if (active) colors.onPrimaryContainer else colors.onSurfaceVariant,
                             modifier = Modifier.padding(start = 12.dp)

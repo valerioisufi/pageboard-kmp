@@ -180,4 +180,13 @@ class EditorCodeTest {
         val shown = shown("Text\n```kotlin showLineNumbers startFrom=\"10\"\na\nb\n```", 0)
         assertEquals(listOf("10", "11"), shown.codeBlocks.single().layout.numbers.map { it.layout.layoutInput.text.text }, "read after the fence")
     }
+
+    @Test
+    fun aBlockWithNoLanguageIsColoredInTheOneItLooksLike() {
+        val code = "def area(r):\n    if r < 0:\n        return None\n    return 3.14 * r * r"
+        val guessed = layout(code, language = "")
+        assertTrue(guessed.code.layoutInput.text.spanStyles.any { it.item.color != Color.Unspecified }, "colored")
+        assertEquals(null, guessed.label, "no name written: none shown")
+        assertTrue(layout("hello world", language = "").code.layoutInput.text.spanStyles.none { it.item.color != Color.Unspecified }, "like no language: one color")
+    }
 }

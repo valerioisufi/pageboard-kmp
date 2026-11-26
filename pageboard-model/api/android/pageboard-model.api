@@ -4257,17 +4257,23 @@ public final class io/github/valerioisufi/pageboard/model/text/TextSymbols {
 public final class io/github/valerioisufi/pageboard/model/text/code/BuiltInCodeHighlighter : io/github/valerioisufi/pageboard/model/text/code/CodeHighlighter {
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/text/code/BuiltInCodeHighlighter;
 	public final fun getLanguages ()Ljava/util/Set;
+	public fun guess (Ljava/lang/String;)Ljava/lang/String;
 	public fun tokens (Ljava/lang/String;Ljava/lang/String;)Ljava/util/List;
 }
 
 public abstract interface class io/github/valerioisufi/pageboard/model/text/code/CodeHighlighter {
 	public static final field Companion Lio/github/valerioisufi/pageboard/model/text/code/CodeHighlighter$Companion;
 	public static final field MAX_HIGHLIGHTED I
+	public fun guess (Ljava/lang/String;)Ljava/lang/String;
 	public abstract fun tokens (Ljava/lang/String;Ljava/lang/String;)Ljava/util/List;
 }
 
 public final class io/github/valerioisufi/pageboard/model/text/code/CodeHighlighter$Companion {
 	public static final field MAX_HIGHLIGHTED I
+}
+
+public final class io/github/valerioisufi/pageboard/model/text/code/CodeHighlighter$DefaultImpls {
+	public static fun guess (Lio/github/valerioisufi/pageboard/model/text/code/CodeHighlighter;Ljava/lang/String;)Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/pageboard/model/text/code/CodeIndent {
@@ -4277,6 +4283,29 @@ public final class io/github/valerioisufi/pageboard/model/text/code/CodeIndent {
 	public final fun openerAtEnd (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Character;
 	public final fun stepOf (Ljava/lang/String;Ljava/lang/String;I)Ljava/lang/String;
 	public static synthetic fun stepOf$default (Lio/github/valerioisufi/pageboard/model/text/code/CodeIndent;Ljava/lang/String;Ljava/lang/String;IILjava/lang/Object;)Ljava/lang/String;
+}
+
+public final class io/github/valerioisufi/pageboard/model/text/code/CodeLanguages {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/text/code/CodeLanguages;
+	public final fun apply (Ljava/lang/String;Lio/github/valerioisufi/pageboard/model/text/code/CodeLanguages$Match;Ljava/lang/String;)Lkotlin/Pair;
+	public final fun match (Ljava/lang/String;I)Lio/github/valerioisufi/pageboard/model/text/code/CodeLanguages$Match;
+}
+
+public final class io/github/valerioisufi/pageboard/model/text/code/CodeLanguages$Match {
+	public fun <init> (IILjava/lang/String;Ljava/util/List;)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/util/List;
+	public final fun copy (IILjava/lang/String;Ljava/util/List;)Lio/github/valerioisufi/pageboard/model/text/code/CodeLanguages$Match;
+	public static synthetic fun copy$default (Lio/github/valerioisufi/pageboard/model/text/code/CodeLanguages$Match;IILjava/lang/String;Ljava/util/List;ILjava/lang/Object;)Lio/github/valerioisufi/pageboard/model/text/code/CodeLanguages$Match;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCandidates ()Ljava/util/List;
+	public final fun getPrefix ()Ljava/lang/String;
+	public final fun getTokenEnd ()I
+	public final fun getTokenStart ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class io/github/valerioisufi/pageboard/model/text/code/CodeToken {

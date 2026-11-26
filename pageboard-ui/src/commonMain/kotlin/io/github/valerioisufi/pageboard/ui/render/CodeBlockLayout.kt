@@ -256,7 +256,9 @@ public class CodeBlockLayout internal constructor(
             val theme = CodeTheme.of(color, paperColor)
             val style = TextStyle(color = color, fontSize = fontPx.sp, fontFamily = monospace, letterSpacing = 0.sp, textAlign = TextAlign.Start)
             val advance = advance(measurer, style)
-            val shownCode = shownCode(code, source.indent, advance, tokens(highlighter, code, language), theme)
+            // A block with no language written is colored in the one it looks like, its label left empty
+            val colored = language.ifEmpty { guessed(highlighter, code) }
+            val shownCode = shownCode(code, source.indent, advance, tokens(highlighter, code, colored), theme)
             val shown = shownCode.text
             val padding = fontPx * PADDING_X
             // The column of the numbers: as many digits as the last line has, then one free
@@ -348,6 +350,16 @@ public class CodeBlockLayout internal constructor(
          * The tokens of [code], those of an engine kept only sorted, apart and in the code (an
          * engine failing draws the code in one color).
          */
+        /** The language [code] looks like to [highlighter], empty when it cannot tell (see [CodeHighlighter.guess]). */
+        private fun guessed(highlighter: CodeHighlighter?, code: String): String {
+            if (highlighter == null || code.isBlank()) return ""
+            return try {
+                highlighter.guess(code).orEmpty()
+            } catch (_: Exception) {
+                ""
+            }
+        }
+
         fun tokens(highlighter: CodeHighlighter?, code: String, language: String): List<CodeToken> {
             if (highlighter == null || language.isEmpty() || code.length > CodeHighlighter.MAX_HIGHLIGHTED) return emptyList()
             val tokens = try {

@@ -43,6 +43,7 @@ class CodeBlockEditingTest {
     fun enterKeepsTheIndentationOtherwise() {
         assertEquals("```kotlin\n    a()\n    |\n```", shown(RichTextEditing.handleEnter(at("```kotlin\n    a()|\n```"))))
         assertEquals("```\n  x {\n  |\n```", shown(RichTextEditing.handleEnter(at("```\n  x {|\n```"))), "no language")
+        assertEquals("```\ndef f(x):\n    return x\n\ndef g(y):\n    |\n```", shown(RichTextEditing.handleEnter(at("```\ndef f(x):\n    return x\n\ndef g(y):|\n```"))), "no language written: the one the code looks like")
         assertEquals("```kotlin\na() // {\n|\n```", shown(RichTextEditing.handleEnter(at("```kotlin\na() // {|\n```"))), "an opener in a comment")
         assertEquals("```kotlin\nf {\n    |a\n```", shown(RichTextEditing.handleEnter(at("```kotlin\nf {|a\n```"))), "the rest of the line on the new one")
     }

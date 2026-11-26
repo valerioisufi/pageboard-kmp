@@ -261,6 +261,7 @@ abstract interface io.github.valerioisufi.pageboard.model.change/DocumentPersist
 
 abstract interface io.github.valerioisufi.pageboard.model.text.code/CodeHighlighter { // io.github.valerioisufi.pageboard.model.text.code/CodeHighlighter|null[0]
     abstract fun tokens(kotlin/String, kotlin/String): kotlin.collections/List<io.github.valerioisufi.pageboard.model.text.code/CodeToken> // io.github.valerioisufi.pageboard.model.text.code/CodeHighlighter.tokens|tokens(kotlin.String;kotlin.String){}[0]
+    open fun guess(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.model.text.code/CodeHighlighter.guess|guess(kotlin.String){}[0]
 
     final object Companion { // io.github.valerioisufi.pageboard.model.text.code/CodeHighlighter.Companion|null[0]
         final const val MAX_HIGHLIGHTED // io.github.valerioisufi.pageboard.model.text.code/CodeHighlighter.Companion.MAX_HIGHLIGHTED|{}MAX_HIGHLIGHTED[0]
@@ -4474,6 +4475,7 @@ final object io.github.valerioisufi.pageboard.model.text.code/BuiltInCodeHighlig
     final val languages // io.github.valerioisufi.pageboard.model.text.code/BuiltInCodeHighlighter.languages|{}languages[0]
         final fun <get-languages>(): kotlin.collections/Set<kotlin/String> // io.github.valerioisufi.pageboard.model.text.code/BuiltInCodeHighlighter.languages.<get-languages>|<get-languages>(){}[0]
 
+    final fun guess(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.model.text.code/BuiltInCodeHighlighter.guess|guess(kotlin.String){}[0]
     final fun tokens(kotlin/String, kotlin/String): kotlin.collections/List<io.github.valerioisufi.pageboard.model.text.code/CodeToken> // io.github.valerioisufi.pageboard.model.text.code/BuiltInCodeHighlighter.tokens|tokens(kotlin.String;kotlin.String){}[0]
 }
 
@@ -4482,6 +4484,33 @@ final object io.github.valerioisufi.pageboard.model.text.code/CodeIndent { // io
     final fun closes(kotlin/Char, kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text.code/CodeIndent.closes|closes(kotlin.Char;kotlin.String){}[0]
     final fun openerAtEnd(kotlin/String, kotlin/String): kotlin/Char? // io.github.valerioisufi.pageboard.model.text.code/CodeIndent.openerAtEnd|openerAtEnd(kotlin.String;kotlin.String){}[0]
     final fun stepOf(kotlin/String, kotlin/String, kotlin/Int = ...): kotlin/String // io.github.valerioisufi.pageboard.model.text.code/CodeIndent.stepOf|stepOf(kotlin.String;kotlin.String;kotlin.Int){}[0]
+}
+
+final object io.github.valerioisufi.pageboard.model.text.code/CodeLanguages { // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages|null[0]
+    final fun apply(kotlin/String, io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match, kotlin/String): kotlin/Pair<kotlin/String, kotlin/Int> // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.apply|apply(kotlin.String;io.github.valerioisufi.pageboard.model.text.code.CodeLanguages.Match;kotlin.String){}[0]
+    final fun match(kotlin/String, kotlin/Int): io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match? // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.match|match(kotlin.String;kotlin.Int){}[0]
+
+    final class Match { // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match|null[0]
+        constructor <init>(kotlin/Int, kotlin/Int, kotlin/String, kotlin.collections/List<kotlin/String>) // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match.<init>|<init>(kotlin.Int;kotlin.Int;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+
+        final val candidates // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match.candidates|{}candidates[0]
+            final fun <get-candidates>(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match.candidates.<get-candidates>|<get-candidates>(){}[0]
+        final val prefix // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match.prefix|{}prefix[0]
+            final fun <get-prefix>(): kotlin/String // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match.prefix.<get-prefix>|<get-prefix>(){}[0]
+        final val tokenEnd // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match.tokenEnd|{}tokenEnd[0]
+            final fun <get-tokenEnd>(): kotlin/Int // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match.tokenEnd.<get-tokenEnd>|<get-tokenEnd>(){}[0]
+        final val tokenStart // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match.tokenStart|{}tokenStart[0]
+            final fun <get-tokenStart>(): kotlin/Int // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match.tokenStart.<get-tokenStart>|<get-tokenStart>(){}[0]
+
+        final fun component1(): kotlin/Int // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match.component1|component1(){}[0]
+        final fun component2(): kotlin/Int // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match.component2|component2(){}[0]
+        final fun component3(): kotlin/String // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match.component3|component3(){}[0]
+        final fun component4(): kotlin.collections/List<kotlin/String> // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match.component4|component4(){}[0]
+        final fun copy(kotlin/Int = ..., kotlin/Int = ..., kotlin/String = ..., kotlin.collections/List<kotlin/String> = ...): io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match.copy|copy(kotlin.Int;kotlin.Int;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // io.github.valerioisufi.pageboard.model.text.code/CodeLanguages.Match.toString|toString(){}[0]
+    }
 }
 
 final object io.github.valerioisufi.pageboard.model.text/BlockQuote { // io.github.valerioisufi.pageboard.model.text/BlockQuote|null[0]

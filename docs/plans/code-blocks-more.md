@@ -49,7 +49,7 @@ The responsibilities are assigned following the GRASP principles.
 |---|---|---|
 | 1 | Copy the code of a block; indentation that knows the language; tests | Done |
 | 2 | The first line number (`startFrom`): read, drawn, written from the bar; tests | Done |
-| 3 | The language guessed for coloring; the names of the languages completed while typed; tests | Pending |
+| 3 | The language guessed for coloring; the names of the languages completed while typed; tests | Done |
 
 ## Decisions
 
@@ -76,7 +76,19 @@ Taken alone, revertible:
    `=`, or `#id`) is never taken for the language.
 8. **The first number is chosen by steps of 1 and 10** in a picker of the bar beside the numbers
    of the lines, as the start of a list is: a field to type in would take the focus from the text.
+9. **The guess is a sum of marks** (`CodeGuess`): patterns with no nested repetition over the first
+   4 KiB, each worth some points to some languages, counted five times at most; a language needs
+   4 points and half again those of the next, else the block stays plain. TypeScript counts its own
+   marks (types, interfaces) plus all those of JavaScript, of which it is a superset.
+10. **The guess belongs to the highlighter** (`CodeHighlighter.guess`, `null` by default): an engine
+    given by the application guesses the languages it knows, or none. The label of a block shows
+    only the name written; the indentation of phase 1 uses the guess too.
+11. **The names completed are those of the grammars**, the usual name of each language first, then
+    the aliases, in the popup of the commands of LaTeX made for any completion (`CompletionPopup`):
+    the same keys (arrows, Tab and Enter, Escape) and the same place, under the strip of the fence.
 
 ## Left for later
 
 - Real-device checks of the completion on soft keyboards, left to the maintainer.
+- A test of the popup of the names on the screen (the explorer): its pieces are tested apart, the
+  match and the names in `CodeLanguagesTest`, the popup with the commands of LaTeX.
