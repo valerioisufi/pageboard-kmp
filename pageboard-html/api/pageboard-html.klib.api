@@ -6,8 +6,15 @@
 // - Show declarations: true
 
 // Library unique name: <pageboard-kmp:pageboard-html>
+final class io.github.valerioisufi.pageboard.html/DocxToMarkdown { // io.github.valerioisufi.pageboard.html/DocxToMarkdown|null[0]
+    constructor <init>(kotlin/String = ...) // io.github.valerioisufi.pageboard.html/DocxToMarkdown.<init>|<init>(kotlin.String){}[0]
+
+    final fun convert(kotlin/ByteArray): kotlin/String? // io.github.valerioisufi.pageboard.html/DocxToMarkdown.convert|convert(kotlin.ByteArray){}[0]
+}
+
 final class io.github.valerioisufi.pageboard.html/HtmlToMarkdown { // io.github.valerioisufi.pageboard.html/HtmlToMarkdown|null[0]
     constructor <init>(kotlin/String = ...) // io.github.valerioisufi.pageboard.html/HtmlToMarkdown.<init>|<init>(kotlin.String){}[0]
 
     final fun convert(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.html/HtmlToMarkdown.convert|convert(kotlin.String){}[0]
+    final fun convertPage(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.html/HtmlToMarkdown.convertPage|convertPage(kotlin.String){}[0]
 }

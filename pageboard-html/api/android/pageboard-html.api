@@ -1,7 +1,15 @@
+public final class io/github/valerioisufi/pageboard/html/DocxToMarkdown {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun convert ([B)Ljava/lang/String;
+}
+
 public final class io/github/valerioisufi/pageboard/html/HtmlToMarkdown {
 	public fun <init> ()V
 	public fun <init> (Ljava/lang/String;)V
 	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun convert (Ljava/lang/String;)Ljava/lang/String;
+	public final fun convertPage (Ljava/lang/String;)Ljava/lang/String;
 }
 

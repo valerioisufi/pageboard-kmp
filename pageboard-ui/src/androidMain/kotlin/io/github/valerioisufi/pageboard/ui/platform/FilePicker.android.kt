@@ -28,16 +28,23 @@ public actual fun rememberFilePicker(type: PickerType, onPicked: (PickedFile) ->
             }
         }
     }
-    return {
-        launcher.launch(
-            when (type) {
-                PickerType.IMAGE -> "image/*"
-                PickerType.PDF -> "application/pdf"
-                PickerType.TEXT -> "text/*"
-                // An archive has an extension of its own, which the systems do not know
-                PickerType.ARCHIVE -> "*/*"
+    // The texts, the pages of HTML and the Word documents: by their media types
+    val documentLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            scope.launch {
+                val file = withContext(Dispatchers.IO) { readUri(context, uri) }
+                if (file != null) currentOnPicked(file)
             }
-        )
+        }
+    }
+    return {
+        when (type) {
+            PickerType.TEXT -> documentLauncher.launch(PickedFile.TEXT_MIME_TYPES.toTypedArray())
+            PickerType.IMAGE -> launcher.launch("image/*")
+            PickerType.PDF -> launcher.launch("application/pdf")
+            // An archive has an extension of its own, which the systems do not know
+            PickerType.ARCHIVE -> launcher.launch("*/*")
+        }
     }
 }
 

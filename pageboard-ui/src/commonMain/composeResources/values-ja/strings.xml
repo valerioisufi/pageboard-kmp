@@ -102,6 +102,7 @@
     <string name="message_import_image_failed">画像を読み込めませんでした</string>
     <string name="message_pasted_without_missing_files">一部の画像またはPDFはまだこのデバイスにないため、貼り付けられませんでした</string>
     <string name="message_import_pdf_failed">PDFを読み込めませんでした</string>
+    <string name="message_import_text_failed">このファイルをテキストとして読み込めませんでした</string>
     <string name="message_pdf_not_supported">このプラットフォームではPDFの読み込みは利用できません</string>
     <string name="message_pdf_page_without_text">このページには選択できるテキストがありません（スキャンかもしれません）</string>
     <string name="text_editor_action_strikethrough">取り消し線</string>

@@ -13,8 +13,16 @@ public class PickedFile(public val name: String, public val bytes: ByteArray) {
     public fun text(): String = bytes.decodeToString().removePrefix("\uFEFF")
 
     public companion object {
-        /** The extensions of the text files that are imported as text (see `docs/plans/text-import.md`). */
-        public val TEXT_EXTENSIONS: Set<String> = setOf("md", "markdown", "txt", "text")
+        /**
+         * The extensions of the files that are imported as text (see `docs/plans/text-import.md`): the
+         * texts, the pages of HTML and the Word documents (see `docs/plans/import-and-clipboard.md`).
+         */
+        public val TEXT_EXTENSIONS: Set<String> = setOf("md", "markdown", "txt", "text", "html", "htm", "xhtml", "docx")
+
+        /** The media types of the files imported as text, for the pickers that choose by type. */
+        public val TEXT_MIME_TYPES: List<String> = listOf(
+            "text/*", "application/xhtml+xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
     }
 }
 

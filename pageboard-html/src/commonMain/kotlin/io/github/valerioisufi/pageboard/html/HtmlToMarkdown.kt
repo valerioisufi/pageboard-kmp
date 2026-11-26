@@ -33,6 +33,20 @@ public class HtmlToMarkdown(private val equationPlaceholder: String = "[equation
         }
     }
 
+    /**
+     * [html], a page of HTML imported as a file, in the notation, or its plain text when it holds no
+     * formatting; `null` when it cannot be read or holds no text.
+     */
+    public fun convertPage(html: String): String? {
+        convert(html)?.let { return it }
+        if (html.length > MAX_HTML_CHARS) return null
+        return try {
+            Ksoup.parse(html).body().wholeText().trim().takeIf { it.isNotEmpty() }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     private companion object {
         /** Beyond this size, the plain text. */
         const val MAX_HTML_CHARS = 2_000_000

@@ -103,6 +103,7 @@
     <string name="message_import_image_failed">Unable to import the image</string>
     <string name="message_pasted_without_missing_files">Some images or PDFs are not on this device yet: they were not pasted</string>
     <string name="message_import_pdf_failed">Unable to import the PDF</string>
+    <string name="message_import_text_failed">This file could not be read as a text</string>
     <string name="message_pdf_not_supported">PDF import is not available on this platform</string>
     <string name="message_pdf_page_without_text">This page has no selectable text (it may be a scan)</string>
     <string name="text_editor_action_strikethrough">Strikethrough</string>

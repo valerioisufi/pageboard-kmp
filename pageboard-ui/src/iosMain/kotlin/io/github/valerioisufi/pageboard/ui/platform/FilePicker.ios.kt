@@ -24,6 +24,7 @@ import platform.UIKit.UIViewController
 import platform.UIKit.UIWindow
 import platform.UniformTypeIdentifiers.UTTypeData
 import platform.UniformTypeIdentifiers.UTTypePDF
+import platform.UniformTypeIdentifiers.UTType
 import platform.UniformTypeIdentifiers.UTTypeText
 import platform.darwin.NSObject
 import platform.darwin.dispatch_async
@@ -58,7 +59,8 @@ public actual fun rememberFilePicker(type: PickerType, onPicked: (PickedFile) ->
                     PickerType.PDF, PickerType.TEXT, PickerType.ARCHIVE -> {
                         val types = when (type) {
                             PickerType.PDF -> listOf(UTTypePDF)
-                            PickerType.TEXT -> listOf(UTTypeText)
+                            // The texts (the pages of HTML among them) and the Word documents
+                            PickerType.TEXT -> listOfNotNull(UTTypeText, UTType.typeWithIdentifier(WORD_DOCUMENT))
                             // An archive has an extension of its own, which the system does not know
                             else -> listOf(UTTypeData)
                         }
@@ -137,3 +139,6 @@ private fun NSData.toByteArray(): ByteArray {
     }
     return result
 }
+
+/** The type of the Word documents, imported as text. */
+private const val WORD_DOCUMENT = "org.openxmlformats.wordprocessingml.document"

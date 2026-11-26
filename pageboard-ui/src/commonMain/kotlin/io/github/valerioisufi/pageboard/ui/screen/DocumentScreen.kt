@@ -4,7 +4,6 @@ import io.github.valerioisufi.pageboard.ui.adaptive.AdaptiveDialog
 import io.github.valerioisufi.pageboard.ui.components.ToolSizes
 import io.github.valerioisufi.pageboard.ui.editor.TEXT_TO_NOTES_COMMAND_ID
 import io.github.valerioisufi.pageboard.ui.editor.TextImportSheet
-import io.github.valerioisufi.pageboard.model.text.TextCleanup
 import io.github.valerioisufi.pageboard.canvas.controller.TextImport
 import io.github.valerioisufi.pageboard.ui.platform.LocalHiddenSystemBars
 import io.github.valerioisufi.pageboard.ui.platform.PickedFile
@@ -102,6 +101,9 @@ import io.github.valerioisufi.pageboard.ui.theme.rememberNotesFonts
 import io.github.valerioisufi.pageboard.ui.window.LocalWindowDecorInsets
 import org.jetbrains.compose.resources.getPluralString
 import org.jetbrains.compose.resources.getString
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import io.github.valerioisufi.pageboard.ui.generated.resources.message_import_text_failed
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -199,6 +201,7 @@ private fun DocumentScreenContent(
 
     // One-shot messages of the editor
     val snackbarHostState = remember { SnackbarHostState() }
+    val messageScope = rememberCoroutineScope()
     LaunchedEffect(controller) {
         controller.messages.collect { message ->
             val text = when (message) {
@@ -230,12 +233,12 @@ private fun DocumentScreenContent(
     }
     // A text file: the student says where it goes (its sheet)
     val importTextFile = { file: PickedFile ->
-        val text = file.text()
-        controller.pendingTextImport = TextImport(
-            text, controller.viewport.mostVisiblePageIndex(),
-            isMarkdown = file.extension == "md" || file.extension == "markdown" || TextCleanup.looksLikeMarkdown(text),
-            name = file.name.substringBeforeLast('.')
-        )
+        val imported = importedText(file, controller.viewport.mostVisiblePageIndex())
+        if (imported != null) {
+            controller.pendingTextImport = imported
+        } else {
+            messageScope.launch { snackbarHostState.showSnackbar(getString(Res.string.message_import_text_failed)) }
+        }
     }
     val textPicker = rememberFilePicker(PickerType.TEXT) { importTextFile(it) }
     // Template dialogs

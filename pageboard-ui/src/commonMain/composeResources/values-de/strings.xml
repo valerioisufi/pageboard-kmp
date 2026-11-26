@@ -102,6 +102,7 @@
     <string name="message_import_image_failed">Das Bild konnte nicht importiert werden</string>
     <string name="message_pasted_without_missing_files">Einige Bilder oder PDFs sind noch nicht auf diesem Gerät: Sie wurden nicht eingefügt</string>
     <string name="message_import_pdf_failed">Das PDF konnte nicht importiert werden</string>
+    <string name="message_import_text_failed">Diese Datei konnte nicht als Text gelesen werden</string>
     <string name="message_pdf_not_supported">Der PDF-Import ist auf dieser Plattform nicht verfügbar</string>
     <string name="message_pdf_page_without_text">Diese Seite hat keinen auswählbaren Text (vielleicht ein Scan)</string>
     <string name="text_editor_action_strikethrough">Durchgestrichen</string>
