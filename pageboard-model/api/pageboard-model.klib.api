@@ -4477,6 +4477,13 @@ final object io.github.valerioisufi.pageboard.model.text.code/BuiltInCodeHighlig
     final fun tokens(kotlin/String, kotlin/String): kotlin.collections/List<io.github.valerioisufi.pageboard.model.text.code/CodeToken> // io.github.valerioisufi.pageboard.model.text.code/BuiltInCodeHighlighter.tokens|tokens(kotlin.String;kotlin.String){}[0]
 }
 
+final object io.github.valerioisufi.pageboard.model.text.code/CodeIndent { // io.github.valerioisufi.pageboard.model.text.code/CodeIndent|null[0]
+    final fun closerOf(kotlin/Char): kotlin/Char? // io.github.valerioisufi.pageboard.model.text.code/CodeIndent.closerOf|closerOf(kotlin.Char){}[0]
+    final fun closes(kotlin/Char, kotlin/String): kotlin/Boolean // io.github.valerioisufi.pageboard.model.text.code/CodeIndent.closes|closes(kotlin.Char;kotlin.String){}[0]
+    final fun openerAtEnd(kotlin/String, kotlin/String): kotlin/Char? // io.github.valerioisufi.pageboard.model.text.code/CodeIndent.openerAtEnd|openerAtEnd(kotlin.String;kotlin.String){}[0]
+    final fun stepOf(kotlin/String, kotlin/String, kotlin/Int = ...): kotlin/String // io.github.valerioisufi.pageboard.model.text.code/CodeIndent.stepOf|stepOf(kotlin.String;kotlin.String;kotlin.Int){}[0]
+}
+
 final object io.github.valerioisufi.pageboard.model.text/BlockQuote { // io.github.valerioisufi.pageboard.model.text/BlockQuote|null[0]
     final const val MARKER // io.github.valerioisufi.pageboard.model.text/BlockQuote.MARKER|{}MARKER[0]
         final fun <get-MARKER>(): kotlin/String // io.github.valerioisufi.pageboard.model.text/BlockQuote.MARKER.<get-MARKER>|<get-MARKER>(){}[0]

@@ -354,6 +354,23 @@ class CommandTest {
         assertTrue(commands.bold.isEnabled())
     }
 
+    @Test
+    fun theCodeOfTheBlockOfTheCaretIsCopiedAlone() {
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val clipboard = FakeClipboard()
+        val commands = editorCommands(controller, clipboard)
+        val editor = controller.textEditorManager
+        editor.startNewText(0, 10f, 10f)
+        editor.updateValue(TextFieldValue("Before\n```kotlin\nval a = 1\n```", TextRange(2)))
+        assertFalse(commands.copyCode.isEnabled(), "out of a block")
+
+        editor.updateValue(editor.value.copy(selection = TextRange(20)))
+        assertTrue(commands.copyCode.isEnabled())
+        commands.copyCode.perform()
+        assertEquals("val a = 1", clipboard.text, "without the fences")
+        assertEquals("Before\n```kotlin\nval a = 1\n```", editor.value.text, "the text unchanged")
+    }
+
     /** The clipboard of the system in a test: the text set last. */
     private class FakeClipboard : ClipboardManager {
         var text: String? = null

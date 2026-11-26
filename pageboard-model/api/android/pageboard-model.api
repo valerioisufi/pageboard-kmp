@@ -4268,6 +4268,15 @@ public final class io/github/valerioisufi/pageboard/model/text/code/CodeHighligh
 	public static final field MAX_HIGHLIGHTED I
 }
 
+public final class io/github/valerioisufi/pageboard/model/text/code/CodeIndent {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/model/text/code/CodeIndent;
+	public final fun closerOf (C)Ljava/lang/Character;
+	public final fun closes (CLjava/lang/String;)Z
+	public final fun openerAtEnd (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Character;
+	public final fun stepOf (Ljava/lang/String;Ljava/lang/String;I)Ljava/lang/String;
+	public static synthetic fun stepOf$default (Lio/github/valerioisufi/pageboard/model/text/code/CodeIndent;Ljava/lang/String;Ljava/lang/String;IILjava/lang/Object;)Ljava/lang/String;
+}
+
 public final class io/github/valerioisufi/pageboard/model/text/code/CodeToken {
 	public fun <init> (Lio/github/valerioisufi/pageboard/model/text/code/CodeTokenKind;II)V
 	public final fun component1 ()Lio/github/valerioisufi/pageboard/model/text/code/CodeTokenKind;

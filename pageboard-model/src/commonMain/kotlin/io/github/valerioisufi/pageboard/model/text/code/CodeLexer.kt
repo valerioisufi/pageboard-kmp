@@ -38,6 +38,9 @@ internal class Quote(
  * @property keys a string followed by `:` is a key (JSON, YAML); [plainKeys]: so is the word
  *   starting a line before `: ` (YAML); [nodes]: `&anchor`, `*alias` and `!tag` of YAML.
  * @property dollarInNames `$` is part of the names (JavaScript).
+ * @property openers the characters that, ending a line, open a block indented one step more (see
+ *   [CodeIndent]): the brackets in most languages, `:` too in Python and YAML.
+ * @property indentStep the spaces of a step of indentation when a block shows none.
  */
 internal class CodeGrammar(
     val keywords: Set<String>,
@@ -66,7 +69,9 @@ internal class CodeGrammar(
     val keys: Boolean = false,
     val plainKeys: Boolean = false,
     val nodes: Boolean = false,
-    val dollarInNames: Boolean = false
+    val dollarInNames: Boolean = false,
+    val openers: String = "{([",
+    val indentStep: Int = 4
 ) {
     /** The strings, the longest opening first (`"""` before `"`). */
     val quotes: List<Quote> = quotes.sortedByDescending { it.open.length }

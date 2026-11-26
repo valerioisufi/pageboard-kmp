@@ -115,6 +115,7 @@ import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_actio
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_normal_text
 import io.github.valerioisufi.pageboard.ui.generated.resources.command_find
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_italic
+import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_copy_code
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_line_numbers
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_math
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_numbered_list
@@ -624,6 +625,15 @@ internal class EditorCommands internal constructor(
         isEnabled = { textTarget?.inCodeBlock == true },
         isChecked = { textTarget?.codeLineNumbers == true }
     ) { textTarget?.toggleLineNumbers() }
+
+    /** Copies the code of the block of the caret alone, without its fences. */
+    val copyCode = Command(
+        "copy-code", label(Res.string.text_editor_action_copy_code), CommandGroup.EDIT, section = 1,
+        icon = { rememberVectorPainter(PageboardIcons.Copy) },
+        isEnabled = { controller.textEditorManager.codeOfBlock != null }
+    ) {
+        controller.textEditorManager.codeOfBlock?.let { clipboard.setText(AnnotatedString(it)) }
+    }
     val formula = characterFormat(Format.FORMULA, Res.string.text_editor_action_math, PageboardIcons.Sigma, Shortcut(Key.M, primary = true, shift = true))
 
     val heading = Command(
@@ -845,7 +855,7 @@ internal class EditorCommands internal constructor(
     /** Every command, in the order of the menus. */
     val all: List<Command> = listOfNotNull(
         close, rename,
-        undo, redo, cut, copy, paste, pastePlain, delete, find,
+        undo, redo, cut, copy, copyCode, paste, pastePlain, delete, find,
         zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly, quickPan, scrollAxisLock, snapping, shapes, ruler, protractor, layers, textSuggestions,
         addPage, importPdf, importImage, importText, insertShape,
         documentBackground,

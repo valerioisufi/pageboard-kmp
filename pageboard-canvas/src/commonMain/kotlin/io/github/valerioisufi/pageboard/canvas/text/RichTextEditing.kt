@@ -9,6 +9,7 @@ import io.github.valerioisufi.pageboard.model.text.ListRenumbering
 import io.github.valerioisufi.pageboard.model.text.NumberingStyle
 import io.github.valerioisufi.pageboard.model.text.RichTextParser
 import io.github.valerioisufi.pageboard.model.text.TaskBox
+import io.github.valerioisufi.pageboard.model.text.code.CodeIndent
 import kotlin.math.max
 import kotlin.math.min
 
@@ -16,7 +17,8 @@ import kotlin.math.min
  * The formatting of a text being written, as changes of its notation (see [RichTextParser]): the
  * delimiters around the selection, the heading of a line, the lists, the blocks of code. Inside a
  * block of code the text is code: the formats do not apply, Enter keeps the indentation of the
- * line and continues no list, Tab moves by the columns of the code.
+ * line (one step more after a line opening a block of its language, see [CodeIndent]) and
+ * continues no list, Tab moves by the columns of the code.
  */
 public object RichTextEditing {
 
@@ -51,6 +53,25 @@ public object RichTextEditing {
 
     /** Whether the selection of [value] is in a block of code (its fences included). */
     public fun inCodeBlock(value: TextFieldValue): Boolean = codeBlockAt(value) != null
+
+    /**
+     * The code of the block of code of the selection of [value], without its fences and without the
+     * spaces its lines take under an indented fence (a block in a list item), as it is copied
+     * alone; `null` when the selection is in no block.
+     */
+    public fun codeOfBlockAt(value: TextFieldValue): String? {
+        val block = codeBlockAt(value) ?: return null
+        return codeOf(value.text, block)
+    }
+
+    /** The code of [block] of [text]: its lines without the [RichTextParser.Span.level] spaces of its fence. */
+    internal fun codeOf(text: String, block: RichTextParser.Span): String {
+        val code = text.substring(block.contentStart, block.contentEnd)
+        if (block.level == 0) return code
+        return code.split('\n').joinToString("\n") { line ->
+            line.drop(line.take(block.level).takeWhile { it == ' ' }.length)
+        }
+    }
 
     /**
      * Removes the fences of the block of code of the selection, or puts the lines of the selection
@@ -932,7 +953,47 @@ public object RichTextEditing {
         }
         if (start < block.contentStart || start > block.contentEnd) return null
         val indent = text.substring(lineStart, start).takeWhile { it == ' ' || it == '\t' }
-        return TextFieldValue(text.substring(0, start) + "\n" + indent + text.substring(start), TextRange(start + 1 + indent.length))
+        val opener = CodeIndent.openerAtEnd(text.substring(block.contentStart, start), block.language)
+            ?: return TextFieldValue(text.substring(0, start) + "\n" + indent + text.substring(start), TextRange(start + 1 + indent.length))
+        // After a line opening a block of the language: one step more
+        val deeper = indent + CodeIndent.stepOf(text.substring(block.contentStart, block.contentEnd), block.language, block.level)
+        val lineEnd = text.indexOf('\n', start).let { if (it < 0) text.length else it }
+        val rest = text.substring(start, lineEnd)
+        val closer = CodeIndent.closerOf(opener)
+        val closing = rest.trimStart(' ', '\t')
+        if (closer != null && closing.startsWith(closer)) {
+            // Between `{` and `}`: the caret on a line of its own, the `}` on the next at the indentation of the `{`
+            val after = start + rest.length - closing.length
+            return TextFieldValue(text.substring(0, start) + "\n" + deeper + "\n" + indent + text.substring(after), TextRange(start + 1 + deeper.length))
+        }
+        return TextFieldValue(text.substring(0, start) + "\n" + deeper + text.substring(start), TextRange(start + 1 + deeper.length))
+    }
+
+    /**
+     * [newValue], when it types a character closing a block of the language of a block of code
+     * (`}`, `)` or `]`, see [CodeIndent.closes]) alone on an indented line of [oldValue], with that
+     * line one step of the block back, the caret after the character. `null` for any other edit.
+     */
+    public fun closerTyped(oldValue: TextFieldValue, newValue: TextFieldValue): TextFieldValue? {
+        val caret = oldValue.selection.start
+        if (!oldValue.selection.collapsed || !newValue.selection.collapsed || newValue.selection.start != caret + 1) return null
+        val text = newValue.text
+        if (text.length != oldValue.text.length + 1 || text.substring(0, caret) != oldValue.text.substring(0, caret)) return null
+        if (text.substring(caret + 1) != oldValue.text.substring(caret)) return null
+        val typed = text[caret]
+        if (typed != '}' && typed != ')' && typed != ']') return null
+        val block = codeBlockAt(newValue) ?: return null
+        if (caret < block.contentStart || caret >= block.contentEnd || !CodeIndent.closes(typed, block.language)) return null
+        val lineStart = text.lastIndexOf('\n', caret - 1) + 1
+        val indent = text.substring(lineStart, caret)
+        if (indent.isEmpty() || indent.any { it != ' ' && it != '\t' }) return null
+        val lineEnd = text.indexOf('\n', caret).let { if (it < 0) text.length else it }
+        if (text.substring(caret + 1, lineEnd).isNotBlank()) return null
+        val step = CodeIndent.stepOf(text.substring(block.contentStart, block.contentEnd), block.language, block.level)
+        // The spaces of the fence stay: the block keeps its place in its list item
+        if (!indent.endsWith(step) || indent.length - step.length < block.level) return null
+        val back = text.substring(0, lineStart) + indent.dropLast(step.length) + text.substring(caret)
+        return TextFieldValue(back, TextRange(caret + 1 - step.length))
     }
 
     /**

@@ -889,6 +889,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextEditor
 	public final fun getChainGoesOn ()Z
 	public fun getChecklistProgress ()Lkotlin/Pair;
 	public fun getCodeLineNumbers ()Z
+	public final fun getCodeOfBlock ()Ljava/lang/String;
 	public fun getColor ()I
 	public final fun getContinuedListStart ()Ljava/lang/Integer;
 	public fun getContinuesNumbering ()Z
@@ -1800,7 +1801,9 @@ public final class io/github/valerioisufi/pageboard/canvas/text/RichTextEditing 
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/canvas/text/RichTextEditing;
 	public final fun bulletOf (Landroidx/compose/ui/text/input/TextFieldValue;)Lio/github/valerioisufi/pageboard/model/text/ListNumbering$Bullet;
 	public final fun checklistProgressOf (Landroidx/compose/ui/text/input/TextFieldValue;)Lkotlin/Pair;
+	public final fun closerTyped (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun codeBlockAt (Landroidx/compose/ui/text/input/TextFieldValue;)Lio/github/valerioisufi/pageboard/model/text/RichTextParser$Span;
+	public final fun codeOfBlockAt (Landroidx/compose/ui/text/input/TextFieldValue;)Ljava/lang/String;
 	public final fun handleConcealedDeletion (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun handleEnter (Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;
 	public final fun handleSmartNewline (Landroidx/compose/ui/text/input/TextFieldValue;Landroidx/compose/ui/text/input/TextFieldValue;)Landroidx/compose/ui/text/input/TextFieldValue;

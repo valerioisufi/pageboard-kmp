@@ -158,6 +158,9 @@ public class TextEditorManager internal constructor(private val controller: Page
 
     override val codeLineNumbers: Boolean get() = selectedCodeBlock?.numbered == true
 
+    /** The code of the block of code of the caret, without its fences (see [RichTextEditing.codeOfBlockAt]); `null` out of a block. */
+    public val codeOfBlock: String? get() = selectedCodeBlock?.let { RichTextEditing.codeOf(value.text, it) }
+
     /** The value whose inline formats were last read, and those formats. */
     private var formatsValue: TextFieldValue? = null
     private var activeFormats: Set<RichTextEditing.Format> = emptySet()
@@ -638,6 +641,7 @@ public class TextEditorManager internal constructor(private val controller: Page
             textChanged && smartNewline -> typedMarkerTakenBack(newValue)
                 ?: TableEditing.keepInCells(value, newValue)
                 ?: RichTextEditing.handleSmartNewline(value, newValue)
+                ?: RichTextEditing.closerTyped(value, newValue)
                 ?: RichTextEditing.listFromTypedMarker(value, newValue)?.also { typedMarker = newValue to it }
                 ?: RichTextEditing.handleConcealedDeletion(value, newValue)
                 ?: SeenDeletion.of(value, newValue)

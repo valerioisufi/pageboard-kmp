@@ -108,6 +108,7 @@
     <string name="text_editor_action_code">Código</string>
     <string name="text_editor_action_code_block">Bloque de código</string>
     <string name="text_editor_action_line_numbers">Números de línea</string>
+    <string name="text_editor_action_copy_code">Copiar código</string>
     <string name="text_editor_action_heading">Título</string>
     <string name="text_editor_action_bullet_list">Lista con viñetas</string>
     <string name="text_editor_action_checklist">Lista de verificación</string>

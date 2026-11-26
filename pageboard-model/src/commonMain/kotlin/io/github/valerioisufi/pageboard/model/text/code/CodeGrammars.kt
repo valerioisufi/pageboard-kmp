@@ -210,7 +210,8 @@ internal object CodeGrammars {
         lineComments = listOf("#"),
         quotes = listOf(Quote("\"\"\"", multiline = true), Quote("'''", multiline = true), DOUBLE, Quote("'")),
         stringPrefixes = words("r u b f br rb fr rf"),
-        annotations = true
+        annotations = true,
+        openers = "{([:"
     )
 
     val shell = CodeGrammar(
@@ -222,7 +223,8 @@ internal object CodeGrammars {
         literals = words("true false"),
         hashComments = true,
         quotes = listOf(Quote("\"", multiline = true), Quote("'", escapes = false, multiline = true)),
-        variables = true
+        variables = true,
+        openers = "{("
     )
 
     val sql = CodeGrammar(
@@ -241,7 +243,8 @@ internal object CodeGrammars {
         caseSensitive = false,
         lineComments = listOf("--"),
         blockComment = C_BLOCK,
-        quotes = listOf(Quote("'", escapes = false, doubled = true, multiline = true), Quote("\"", escapes = false, doubled = true))
+        quotes = listOf(Quote("'", escapes = false, doubled = true, multiline = true), Quote("\"", escapes = false, doubled = true)),
+        openers = "("
     )
 
     val json = CodeGrammar(
@@ -251,7 +254,9 @@ internal object CodeGrammars {
         lineComments = C_COMMENTS,
         blockComment = C_BLOCK,
         quotes = listOf(DOUBLE),
-        keys = true
+        keys = true,
+        openers = "{[",
+        indentStep = 2
     )
 
     val yaml = CodeGrammar(
@@ -263,7 +268,9 @@ internal object CodeGrammars {
         quotes = listOf(DOUBLE, Quote("'", escapes = false, doubled = true)),
         keys = true,
         plainKeys = true,
-        nodes = true
+        nodes = true,
+        openers = ":{[",
+        indentStep = 2
     )
 
     /** The grammars by the names and aliases of their languages, in lowercase. */
