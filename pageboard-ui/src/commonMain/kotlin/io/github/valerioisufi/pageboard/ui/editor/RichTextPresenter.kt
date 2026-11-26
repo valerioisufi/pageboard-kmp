@@ -328,6 +328,17 @@ internal class SourceMapping(
  */
 internal object RichTextPresenter {
 
+    /**
+     * [text] shown as it is written, its whole notation in [monospace] (see
+     * `docs/plans/text-fidelity-more.md`): every offset of the source is one of the text shown, and
+     * nothing is drawn over it.
+     */
+    fun <T> source(text: String, monospace: FontFamily): PresentedText<T> {
+        val offsets = IntArray(text.length + 1) { it }
+        val shown = AnnotatedString(text, listOf(AnnotatedString.Range(SpanStyle(fontFamily = monospace), 0, text.length)))
+        return PresentedText(shown, SourceMapping(offsets, offsets.copyOf()), emptyList(), emptyList(), emptyList(), hiddenAtCaret = null)
+    }
+
     /** [text] as [presentation] shows it, the source of what [reveal] touches shown (`null`: nothing). */
     fun <T> present(text: String, presentation: Presentation<T>, reveal: TextRange? = null): PresentedText<T> {
         val p = presentation

@@ -389,6 +389,24 @@ class CommandTest {
         assertEquals(20, editor.codeFirstLine)
     }
 
+    @Test
+    fun theWholeSourceIsShownOnDemandWhileWriting() {
+        val controller = PageboardController(document = Document(), coroutineScope = CoroutineScope(Dispatchers.Unconfined))
+        val commands = editorCommands(controller)
+        val host = CommandHost().apply { register(commands.all) }
+        val editor = controller.textEditorManager
+        assertFalse(commands.viewSource.isEnabled(), "nothing written")
+        editor.startNewText(0, 10f, 10f)
+        editor.updateValue(TextFieldValue("**a**", TextRange(2)))
+        assertTrue(host.dispatch(press(Key.U, meta = true, alt = true), apple))
+        assertTrue(editor.showsSource)
+        assertTrue(commands.viewSource.isChecked!!.invoke())
+        assertEquals("**a**", editor.value.text, "the text unchanged")
+        editor.finishEditing()
+        editor.startNewText(0, 10f, 40f)
+        assertFalse(editor.showsSource, "the next text opens formatted")
+    }
+
     /** The clipboard of the system in a test: the text set last. */
     private class FakeClipboard : ClipboardManager {
         var text: String? = null

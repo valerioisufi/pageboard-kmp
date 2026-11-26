@@ -1467,6 +1467,8 @@ final class io.github.valerioisufi.pageboard.canvas.controller/TextEditorManager
         final fun <get-maxHeight>(): kotlin/Float? // io.github.valerioisufi.pageboard.canvas.controller/TextEditorManager.maxHeight.<get-maxHeight>|<get-maxHeight>(){}[0]
     final var sessionId // io.github.valerioisufi.pageboard.canvas.controller/TextEditorManager.sessionId|{}sessionId[0]
         final fun <get-sessionId>(): kotlin/Int // io.github.valerioisufi.pageboard.canvas.controller/TextEditorManager.sessionId.<get-sessionId>|<get-sessionId>(){}[0]
+    final var showsSource // io.github.valerioisufi.pageboard.canvas.controller/TextEditorManager.showsSource|{}showsSource[0]
+        final fun <get-showsSource>(): kotlin/Boolean // io.github.valerioisufi.pageboard.canvas.controller/TextEditorManager.showsSource.<get-showsSource>|<get-showsSource>(){}[0]
     final var value // io.github.valerioisufi.pageboard.canvas.controller/TextEditorManager.value|{}value[0]
         final fun <get-value>(): androidx.compose.ui.text.input/TextFieldValue // io.github.valerioisufi.pageboard.canvas.controller/TextEditorManager.value.<get-value>|<get-value>(){}[0]
 
@@ -1517,6 +1519,7 @@ final class io.github.valerioisufi.pageboard.canvas.controller/TextEditorManager
     final fun toggleNumberedChecklist() // io.github.valerioisufi.pageboard.canvas.controller/TextEditorManager.toggleNumberedChecklist|toggleNumberedChecklist(){}[0]
     final fun toggleNumberedList() // io.github.valerioisufi.pageboard.canvas.controller/TextEditorManager.toggleNumberedList|toggleNumberedList(){}[0]
     final fun toggleQuote() // io.github.valerioisufi.pageboard.canvas.controller/TextEditorManager.toggleQuote|toggleQuote(){}[0]
+    final fun toggleSource() // io.github.valerioisufi.pageboard.canvas.controller/TextEditorManager.toggleSource|toggleSource(){}[0]
     final fun typedBeforeFlow(kotlin/Int, kotlin/String, androidx.compose.ui.text.input/TextFieldValue) // io.github.valerioisufi.pageboard.canvas.controller/TextEditorManager.typedBeforeFlow|typedBeforeFlow(kotlin.Int;kotlin.String;androidx.compose.ui.text.input.TextFieldValue){}[0]
     final fun updateValue(androidx.compose.ui.text.input/TextFieldValue) // io.github.valerioisufi.pageboard.canvas.controller/TextEditorManager.updateValue|updateValue(androidx.compose.ui.text.input.TextFieldValue){}[0]
     final fun updateValue(androidx.compose.ui.text.input/TextFieldValue, kotlin/Boolean) // io.github.valerioisufi.pageboard.canvas.controller/TextEditorManager.updateValue|updateValue(androidx.compose.ui.text.input.TextFieldValue;kotlin.Boolean){}[0]

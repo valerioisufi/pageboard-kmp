@@ -109,6 +109,7 @@
     <string name="text_editor_action_code_block">Codeblock</string>
     <string name="text_editor_action_line_numbers">Zeilennummern</string>
     <string name="text_editor_action_copy_code">Code kopieren</string>
+    <string name="text_editor_action_view_source">Quelltext anzeigen</string>
     <string name="code_first_line">Erste Zeile</string>
     <string name="text_editor_action_code_first_line">Nummer der ersten Zeile…</string>
     <string name="text_editor_action_heading">Überschrift</string>

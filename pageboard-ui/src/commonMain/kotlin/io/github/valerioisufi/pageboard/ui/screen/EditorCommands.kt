@@ -117,6 +117,7 @@ import io.github.valerioisufi.pageboard.ui.generated.resources.command_find
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_italic
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_code_first_line
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_copy_code
+import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_view_source
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_line_numbers
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_math
 import io.github.valerioisufi.pageboard.ui.generated.resources.text_editor_action_numbered_list
@@ -391,6 +392,15 @@ internal class EditorCommands internal constructor(
         shortcuts = listOf(primary(Key.G)),
         isChecked = { controller.isPageGridVisible }
     ) { controller.togglePageGrid() }
+
+    /** Shows the whole source of the text being written, or the text formatted again (⌥⌘U). */
+    val viewSource = Command(
+        "view-source", label(Res.string.text_editor_action_view_source), CommandGroup.VIEW, section = 2,
+        icon = { rememberVectorPainter(PageboardIcons.Code) },
+        shortcuts = listOf(Shortcut(Key.U, primary = true, alt = true)),
+        isEnabled = { controller.textEditorManager.isEditing },
+        isChecked = { controller.textEditorManager.showsSource }
+    ) { controller.textEditorManager.toggleSource() }
 
     val stylusOnly = Command(
         "stylus-only", label(Res.string.draw_menu_stylus_only), CommandGroup.VIEW, section = 2,
@@ -866,7 +876,7 @@ internal class EditorCommands internal constructor(
     val all: List<Command> = listOfNotNull(
         close, rename,
         undo, redo, cut, copy, copyCode, paste, pastePlain, delete, find,
-        zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, stylusOnly, quickPan, scrollAxisLock, snapping, shapes, ruler, protractor, layers, textSuggestions,
+        zoomIn, zoomOut, fitWidth, previousPage, nextPage, pageGrid, viewSource, stylusOnly, quickPan, scrollAxisLock, snapping, shapes, ruler, protractor, layers, textSuggestions,
         addPage, importPdf, importImage, importText, insertShape,
         documentBackground,
         bringToFront, bringForward, sendBackward, sendToBack, lockSelection,

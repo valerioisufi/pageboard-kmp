@@ -110,6 +110,7 @@
     <string name="text_editor_action_code_block">Code block</string>
     <string name="text_editor_action_line_numbers">Line numbers</string>
     <string name="text_editor_action_copy_code">Copy code</string>
+    <string name="text_editor_action_view_source">Show source</string>
     <string name="code_first_line">First line</string>
     <string name="text_editor_action_code_first_line">First line number…</string>
     <string name="text_editor_action_heading">Heading</string>

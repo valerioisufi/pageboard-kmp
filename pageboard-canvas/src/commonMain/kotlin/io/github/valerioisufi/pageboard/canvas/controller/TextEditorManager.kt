@@ -257,6 +257,19 @@ public class TextEditorManager internal constructor(private val controller: Page
      */
     private var writingNewText = false
 
+    /**
+     * Whether the text being written is shown as it is written, its whole notation (see
+     * `docs/plans/text-fidelity-more.md`): a view of the editor only, not saved; the next text opens
+     * formatted.
+     */
+    public var showsSource: Boolean by mutableStateOf(false)
+        private set
+
+    /** Shows the whole source of the text being written, or the text formatted again. */
+    public fun toggleSource() {
+        if (isEditing) showsSource = !showsSource
+    }
+
     /** The formats chosen at the caret, waiting for what is typed there. */
     private val pendingFormats = PendingFormats()
 
@@ -616,6 +629,7 @@ public class TextEditorManager internal constructor(private val controller: Page
 
     private fun resetSession() {
         pendingFormats.clear()
+        showsSource = false
         activeTextItem = null
         activeTextPageIndex = -1
         itemPageIndex = -1

@@ -109,6 +109,7 @@
     <string name="text_editor_action_code_block">Blocco di codice</string>
     <string name="text_editor_action_line_numbers">Numeri di riga</string>
     <string name="text_editor_action_copy_code">Copia codice</string>
+    <string name="text_editor_action_view_source">Mostra sorgente</string>
     <string name="code_first_line">Prima riga</string>
     <string name="text_editor_action_code_first_line">Numero della prima riga…</string>
     <string name="text_editor_action_heading">Titolo</string>

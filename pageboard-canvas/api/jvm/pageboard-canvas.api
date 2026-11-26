@@ -913,6 +913,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextEditor
 	public fun getNumberingStyle ()Lio/github/valerioisufi/pageboard/model/text/NumberingStyle;
 	public final fun getRotation ()F
 	public final fun getSessionId ()I
+	public final fun getShowsSource ()Z
 	public final fun getTableCaret ()Lio/github/valerioisufi/pageboard/canvas/text/TableEditing$Caret;
 	public fun getTakesBackground ()Z
 	public final fun getValue ()Landroidx/compose/ui/text/input/TextFieldValue;
@@ -963,6 +964,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/TextEditor
 	public fun toggleNumberedChecklist ()V
 	public fun toggleNumberedList ()V
 	public fun toggleQuote ()V
+	public final fun toggleSource ()V
 	public final fun typedBeforeFlow (ILjava/lang/String;Landroidx/compose/ui/text/input/TextFieldValue;)V
 	public final fun updateValue (Landroidx/compose/ui/text/input/TextFieldValue;)V
 	public final fun updateValue (Landroidx/compose/ui/text/input/TextFieldValue;Z)V

@@ -207,8 +207,11 @@ internal fun TextBoxEditor(
     val bodyFont = remember(notesFonts, editor.fontFamily) { notesFonts.familyFor(editor.fontFamily) }
     // A list going on from another text counts from it (see ListContinuation)
     val listStart = editor.continuedListStart
-    val bareShown = remember(value.text, value.selection, fontSizePx, editor.color, widthPx, struts, latexReady, codeLayouts, paper, bodyFont, listStart) {
+    val showsSource = editor.showsSource
+    val bareShown = remember(value.text, value.selection, fontSizePx, editor.color, widthPx, struts, latexReady, codeLayouts, paper, bodyFont, listStart, showsSource) {
         formulaSizes.clear()
+        // The whole source on demand: the text as it is written
+        if (showsSource) return@remember RichTextPresenter.source(value.text, notesFonts.monospace)
         val selection = value.selection
         val atCaret = RichTextParser.parse(value.text).firstOrNull { it.kind == RichTextParser.Kind.FORMULA && selection.min > it.start && selection.max < it.end }
         val caretLatex = atCaret?.let { MarkdownTextUtil.formulaSource(value.text, it) }
