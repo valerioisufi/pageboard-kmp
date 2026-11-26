@@ -105,6 +105,7 @@
     <string name="message_import_text_failed">Impossible de lire ce fichier comme un texte</string>
     <string name="message_pdf_not_supported">L\'importation de PDF n\'est pas disponible sur cette plateforme</string>
     <string name="message_pdf_page_without_text">Cette page n\'a pas de texte sélectionnable (c\'est peut-être un scan)</string>
+    <string name="message_pdf_without_text">Ce PDF n\'a pas de texte sélectionnable (c\'est peut-être un scan)</string>
     <string name="text_editor_action_strikethrough">Barré</string>
     <string name="text_editor_action_code">Code</string>
     <string name="text_editor_action_code_block">Bloc de code</string>

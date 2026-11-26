@@ -105,6 +105,7 @@
     <string name="message_import_text_failed">No se pudo leer este archivo como texto</string>
     <string name="message_pdf_not_supported">La importación de PDF no está disponible en esta plataforma</string>
     <string name="message_pdf_page_without_text">Esta página no tiene texto seleccionable (quizá es un escaneo)</string>
+    <string name="message_pdf_without_text">Este PDF no tiene texto seleccionable (puede ser un escaneo)</string>
     <string name="text_editor_action_strikethrough">Tachado</string>
     <string name="text_editor_action_code">Código</string>
     <string name="text_editor_action_code_block">Bloque de código</string>

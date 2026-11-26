@@ -103,6 +103,49 @@ public class MediaManager internal constructor(private val controller: Pageboard
     }
 
     /**
+     * The text of the PDF [bytes], a file [name] chosen as a text (see
+     * `docs/plans/import-and-clipboard.md`): its pages one after the other, waiting for the student
+     * to say where it goes ([PageboardController.pendingTextImport]), cleaned as a text from
+     * elsewhere. It is read from a file of its own, deleted after; a PDF with no text says so.
+     */
+    public fun importPdfText(bytes: ByteArray, name: String) {
+        val adapter = controller.tileManager.tileRenderer.pdfAdapter
+        if (adapter == null) {
+            controller.emitMessage(PageboardController.Message.PDF_NOT_SUPPORTED)
+            return
+        }
+        val pageIndex = controller.viewport.mostVisiblePageIndex()
+        controller.coroutineScope.launch {
+            val text = withContext(Dispatchers.Default) {
+                val path = newResourcePath("import", "pdf")
+                if (!PlatformFiles.writeBytes(path, bytes)) return@withContext null
+                try {
+                    val pages = try {
+                        adapter.getPageSizesMm(path).size
+                    } catch (_: Throwable) {
+                        0
+                    }
+                    if (pages == 0) return@withContext null
+                    (0 until pages).mapNotNull { index ->
+                        try {
+                            adapter.getPageText(path, index)?.trim()?.takeIf { it.isNotEmpty() }
+                        } catch (_: Throwable) {
+                            null
+                        }
+                    }.joinToString("\n\n")
+                } finally {
+                    PlatformFiles.delete(path)
+                }
+            }
+            when {
+                text == null -> controller.emitMessage(PageboardController.Message.IMPORT_PDF_FAILED)
+                text.isBlank() -> controller.emitMessage(PageboardController.Message.PDF_WITHOUT_TEXT)
+                else -> controller.pendingTextImport = TextImport(text, pageIndex, isMarkdown = false, name = name)
+            }
+        }
+    }
+
+    /**
      * Imports a PDF document, appending one page per PDF page at the end of the document; a
      * document of one empty page (a note just made) becomes the PDF, without that page.
      */

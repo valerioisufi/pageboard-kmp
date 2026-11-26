@@ -104,6 +104,7 @@ import org.jetbrains.compose.resources.getString
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import io.github.valerioisufi.pageboard.ui.generated.resources.message_import_text_failed
+import io.github.valerioisufi.pageboard.ui.generated.resources.message_pdf_without_text
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -211,6 +212,7 @@ private fun DocumentScreenContent(
                 PageboardController.Message.PDF_NOT_SUPPORTED -> getString(Res.string.message_pdf_not_supported)
                 PageboardController.Message.PDF_PAGE_WITHOUT_TEXT -> getString(Res.string.message_pdf_page_without_text)
                 PageboardController.Message.PASTED_WITHOUT_MISSING_FILES -> getString(Res.string.message_pasted_without_missing_files)
+                PageboardController.Message.PDF_WITHOUT_TEXT -> getString(Res.string.message_pdf_without_text)
             }
             snackbarHostState.showSnackbar(text)
         }
@@ -233,8 +235,11 @@ private fun DocumentScreenContent(
     }
     // A text file: the student says where it goes (its sheet)
     val importTextFile = { file: PickedFile ->
-        val imported = importedText(file, controller.viewport.mostVisiblePageIndex())
-        if (imported != null) {
+        val imported = if (file.extension == "pdf") null else importedText(file, controller.viewport.mostVisiblePageIndex())
+        if (file.extension == "pdf") {
+            // A PDF chosen as a text: its text, read by the PDF engine
+            controller.mediaManager.importPdfText(file.bytes, file.name.substringBeforeLast('.'))
+        } else if (imported != null) {
             controller.pendingTextImport = imported
         } else {
             messageScope.launch { snackbarHostState.showSnackbar(getString(Res.string.message_import_text_failed)) }

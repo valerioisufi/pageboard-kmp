@@ -241,7 +241,7 @@ public class PageboardController(
      * One-shot messages for the UI (snackbars/toasts); [PASTED_WITHOUT_MISSING_FILES]: elements of
      * an image or a PDF not on this device were left out of a paste.
      */
-    public enum class Message { STYLUS_MODE_ACTIVATED, IMPORT_IMAGE_FAILED, IMPORT_PDF_FAILED, PDF_NOT_SUPPORTED, PDF_PAGE_WITHOUT_TEXT, PASTED_WITHOUT_MISSING_FILES }
+    public enum class Message { STYLUS_MODE_ACTIVATED, IMPORT_IMAGE_FAILED, IMPORT_PDF_FAILED, PDF_NOT_SUPPORTED, PDF_PAGE_WITHOUT_TEXT, PASTED_WITHOUT_MISSING_FILES, PDF_WITHOUT_TEXT }
 
     private val _messages = MutableSharedFlow<Message>(extraBufferCapacity = 8, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     public val messages: SharedFlow<Message> = _messages.asSharedFlow()

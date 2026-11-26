@@ -23,7 +23,7 @@ public actual fun rememberFilePicker(type: PickerType, onPicked: (PickedFile) ->
             val extensions = when (type) {
                 PickerType.IMAGE -> MediaManager.IMAGE_EXTENSIONS
                 PickerType.PDF -> setOf("pdf")
-                PickerType.TEXT -> PickedFile.TEXT_EXTENSIONS
+                PickerType.TEXT -> PickedFile.TEXT_PICKED_EXTENSIONS
                 PickerType.ARCHIVE -> setOf("pageboard", "zip")
             }
             val dialog = FileDialog(null as Frame?, null, FileDialog.LOAD).apply {

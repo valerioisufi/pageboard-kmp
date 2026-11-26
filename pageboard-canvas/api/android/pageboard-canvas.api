@@ -421,6 +421,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/MediaManag
 	public final fun importImage-b0fnrdo ([BLjava/lang/String;Landroidx/compose/ui/geometry/Offset;)V
 	public static synthetic fun importImage-b0fnrdo$default (Lio/github/valerioisufi/pageboard/canvas/controller/MediaManager;[BLjava/lang/String;Landroidx/compose/ui/geometry/Offset;ILjava/lang/Object;)V
 	public final fun importPdf ([B)V
+	public final fun importPdfText ([BLjava/lang/String;)V
 }
 
 public final class io/github/valerioisufi/pageboard/canvas/controller/MediaManager$Companion {
@@ -579,6 +580,7 @@ public final class io/github/valerioisufi/pageboard/canvas/controller/PageboardC
 	public static final field PASTED_WITHOUT_MISSING_FILES Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController$Message;
 	public static final field PDF_NOT_SUPPORTED Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController$Message;
 	public static final field PDF_PAGE_WITHOUT_TEXT Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController$Message;
+	public static final field PDF_WITHOUT_TEXT Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController$Message;
 	public static final field STYLUS_MODE_ACTIVATED Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController$Message;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lio/github/valerioisufi/pageboard/canvas/controller/PageboardController$Message;

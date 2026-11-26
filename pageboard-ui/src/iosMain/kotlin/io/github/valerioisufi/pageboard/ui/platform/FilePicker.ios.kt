@@ -59,8 +59,8 @@ public actual fun rememberFilePicker(type: PickerType, onPicked: (PickedFile) ->
                     PickerType.PDF, PickerType.TEXT, PickerType.ARCHIVE -> {
                         val types = when (type) {
                             PickerType.PDF -> listOf(UTTypePDF)
-                            // The texts (the pages of HTML among them) and the Word documents
-                            PickerType.TEXT -> listOfNotNull(UTTypeText, UTType.typeWithIdentifier(WORD_DOCUMENT))
+                            // The texts (the pages of HTML among them), the Word documents, a PDF whose text is taken
+                            PickerType.TEXT -> listOfNotNull(UTTypeText, UTType.typeWithIdentifier(WORD_DOCUMENT), UTTypePDF)
                             // An archive has an extension of its own, which the system does not know
                             else -> listOf(UTTypeData)
                         }

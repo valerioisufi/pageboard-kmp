@@ -818,6 +818,7 @@ final class io.github.valerioisufi.pageboard.canvas.controller/MediaManager { //
     final fun importFile(kotlin/ByteArray, kotlin/String, androidx.compose.ui.geometry/Offset? = ...): kotlin/Boolean // io.github.valerioisufi.pageboard.canvas.controller/MediaManager.importFile|importFile(kotlin.ByteArray;kotlin.String;androidx.compose.ui.geometry.Offset?){}[0]
     final fun importImage(kotlin/ByteArray, kotlin/String = ..., androidx.compose.ui.geometry/Offset? = ...) // io.github.valerioisufi.pageboard.canvas.controller/MediaManager.importImage|importImage(kotlin.ByteArray;kotlin.String;androidx.compose.ui.geometry.Offset?){}[0]
     final fun importPdf(kotlin/ByteArray) // io.github.valerioisufi.pageboard.canvas.controller/MediaManager.importPdf|importPdf(kotlin.ByteArray){}[0]
+    final fun importPdfText(kotlin/ByteArray, kotlin/String) // io.github.valerioisufi.pageboard.canvas.controller/MediaManager.importPdfText|importPdfText(kotlin.ByteArray;kotlin.String){}[0]
 
     final object Companion { // io.github.valerioisufi.pageboard.canvas.controller/MediaManager.Companion|null[0]
         final val IMAGE_EXTENSIONS // io.github.valerioisufi.pageboard.canvas.controller/MediaManager.Companion.IMAGE_EXTENSIONS|{}IMAGE_EXTENSIONS[0]
@@ -1029,6 +1030,7 @@ final class io.github.valerioisufi.pageboard.canvas.controller/PageboardControll
         enum entry PASTED_WITHOUT_MISSING_FILES // io.github.valerioisufi.pageboard.canvas.controller/PageboardController.Message.PASTED_WITHOUT_MISSING_FILES|null[0]
         enum entry PDF_NOT_SUPPORTED // io.github.valerioisufi.pageboard.canvas.controller/PageboardController.Message.PDF_NOT_SUPPORTED|null[0]
         enum entry PDF_PAGE_WITHOUT_TEXT // io.github.valerioisufi.pageboard.canvas.controller/PageboardController.Message.PDF_PAGE_WITHOUT_TEXT|null[0]
+        enum entry PDF_WITHOUT_TEXT // io.github.valerioisufi.pageboard.canvas.controller/PageboardController.Message.PDF_WITHOUT_TEXT|null[0]
         enum entry STYLUS_MODE_ACTIVATED // io.github.valerioisufi.pageboard.canvas.controller/PageboardController.Message.STYLUS_MODE_ACTIVATED|null[0]
 
         final val entries // io.github.valerioisufi.pageboard.canvas.controller/PageboardController.Message.entries|#static{}entries[0]

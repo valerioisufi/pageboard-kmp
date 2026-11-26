@@ -717,6 +717,7 @@ public final class io/github/valerioisufi/pageboard/ui/generated/resources/Strin
 	public static final fun getMessage_pasted_without_missing_files (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getMessage_pdf_not_supported (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getMessage_pdf_page_without_text (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
+	public static final fun getMessage_pdf_without_text (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getName_error_empty (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getName_error_exists (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getName_error_invalid_chars (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -769,10 +770,10 @@ public final class io/github/valerioisufi/pageboard/ui/generated/resources/Strin
 	public static final fun getPlacement_confirm (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getPlacement_hint (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getPlacement_hint_tap (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getPlacement_new_page (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
 public final class io/github/valerioisufi/pageboard/ui/generated/resources/String2_commonMainKt {
+	public static final fun getPlacement_new_page (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getPlacement_next (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getPlacement_previous (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getPlacement_spot (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -872,10 +873,10 @@ public final class io/github/valerioisufi/pageboard/ui/generated/resources/Strin
 	public static final fun getText_font_jakarta (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_font_mono (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_font_sans (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
-	public static final fun getText_font_serif (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 }
 
 public final class io/github/valerioisufi/pageboard/ui/generated/resources/String3_commonMainKt {
+	public static final fun getText_font_serif (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_font_size_points (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_markup_highlight (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
 	public static final fun getText_markup_strikeout (Lio/github/valerioisufi/pageboard/ui/generated/resources/Res$string;)Lorg/jetbrains/compose/resources/StringResource;
@@ -950,6 +951,7 @@ public final class io/github/valerioisufi/pageboard/ui/platform/PickedFile {
 public final class io/github/valerioisufi/pageboard/ui/platform/PickedFile$Companion {
 	public final fun getTEXT_EXTENSIONS ()Ljava/util/Set;
 	public final fun getTEXT_MIME_TYPES ()Ljava/util/List;
+	public final fun getTEXT_PICKED_EXTENSIONS ()Ljava/util/Set;
 }
 
 public final class io/github/valerioisufi/pageboard/ui/platform/PickerType : java/lang/Enum {

@@ -105,6 +105,7 @@
     <string name="message_import_text_failed">このファイルをテキストとして読み込めませんでした</string>
     <string name="message_pdf_not_supported">このプラットフォームではPDFの読み込みは利用できません</string>
     <string name="message_pdf_page_without_text">このページには選択できるテキストがありません（スキャンかもしれません）</string>
+    <string name="message_pdf_without_text">このPDFには選択できるテキストがありません（スキャンかもしれません）</string>
     <string name="text_editor_action_strikethrough">取り消し線</string>
     <string name="text_editor_action_code">コード</string>
     <string name="text_editor_action_code_block">コードブロック</string>

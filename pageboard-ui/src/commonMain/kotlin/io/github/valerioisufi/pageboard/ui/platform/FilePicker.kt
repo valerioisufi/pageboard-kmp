@@ -21,8 +21,11 @@ public class PickedFile(public val name: String, public val bytes: ByteArray) {
 
         /** The media types of the files imported as text, for the pickers that choose by type. */
         public val TEXT_MIME_TYPES: List<String> = listOf(
-            "text/*", "application/xhtml+xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            "text/*", "application/xhtml+xml", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/pdf"
         )
+
+        /** The extensions the picker of a text chooses: the texts, and a PDF whose text is taken. */
+        public val TEXT_PICKED_EXTENSIONS: Set<String> = TEXT_EXTENSIONS + "pdf"
     }
 }
 

@@ -53,7 +53,7 @@ The responsibilities are assigned following the GRASP principles.
 | Phase | Content | Status |
 |---|---|---|
 | 1 | `.html` files imported; the ZIP entries and their inflating; `.docx` files imported; tests | Done |
-| 2 | The text of a PDF chosen as a text; tests | Pending |
+| 2 | The text of a PDF chosen as a text; tests | Done |
 | 3 | Subscripts and superscripts kept; RTF pasted; tests | Pending |
 | 4 | Copying as HTML on every platform; tests | Pending |
 
@@ -72,6 +72,9 @@ Taken alone, revertible:
    more, at most 64 MiB and 1000 times the compressed size.
 4. **On Android the text is chosen by its media types** (`OpenDocument`): `GetContent` takes one type,
    and a Word document is not `text/*`.
+5. **A PDF is a text only when chosen in the import of a text**: dropped, or chosen in the import of
+   a PDF, it stays pages of PDF as before. The engine reads it from a file of its own, written in
+   the resources and deleted after (`MediaManager.importPdfText`), since it reads files by their path.
 
 ## Left for later
 
