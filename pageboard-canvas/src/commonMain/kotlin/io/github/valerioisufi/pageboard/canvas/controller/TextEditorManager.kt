@@ -580,10 +580,34 @@ public class TextEditorManager internal constructor(private val controller: Page
         controller.historyManager.closeEntry()
     }
 
-    /** Closes the editor of a text that a change made on another device removed. */
+    /**
+     * A change made on another device: the text being written, when it removed it, goes on as a new
+     * text with what was written here, where it was (see `docs/plans/text-fidelity-more.md`); the
+     * editor closes when what was written is what the other device removed, or nothing.
+     */
     internal fun onChange(effects: ChangeEffects) {
         val item = activeTextItem ?: return
-        if (item in effects.deletedElements) cancelEditing()
+        if (item !in effects.deletedElements) return
+        val page = controller.document.pages.getOrNull(activeTextPageIndex)
+        if (page == null || value.text.isBlank() || value.text == item.text || controller.session.isReadOnly) {
+            cancelEditing()
+            return
+        }
+        controller.hiddenElements.setDragged(listOf(item.id), false)
+        // A new identifier: the removal stays on every device, the text written travels as a text added
+        val kept = placedDraft(page).copy(id = newElementId(), versions = Versions.NONE, order = null)
+        controller.hiddenElements.setDragged(listOf(kept.id), true)
+        val addedElement = kept.toElement().apply { layerId = controller.layers.writableActiveLayerId(page) }
+        submit(AddElements.of(page, listOf(addedElement)))
+        val added = page.texts.firstOrNull { it.id == kept.id }
+        if (added == null) {
+            controller.hiddenElements.setDragged(listOf(kept.id), false)
+            cancelEditing()
+            return
+        }
+        activeTextItem = added
+        itemPageIndex = activeTextPageIndex
+        editedFrom = added.toData().copy(order = null)
     }
 
     private fun resetSession() {

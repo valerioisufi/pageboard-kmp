@@ -12,6 +12,7 @@ import io.github.valerioisufi.pageboard.canvas.render.tile.TextTileAdapter
 import io.github.valerioisufi.pageboard.model.Document
 import io.github.valerioisufi.pageboard.model.TextElement
 import io.github.valerioisufi.pageboard.model.change.CommittedChange
+import io.github.valerioisufi.pageboard.model.change.RemoveElements
 import io.github.valerioisufi.pageboard.model.change.UpdateTexts
 import io.github.valerioisufi.pageboard.model.change.toData
 import io.github.valerioisufi.pageboard.model.geometry.Matrix2D
@@ -221,6 +222,40 @@ class TextAutosaveTest {
         val texts = page.texts.map { it.text }
         assertEquals("abc here, more", page.texts.first { it.id == text.id }.text)
         assertTrue("abc there" in texts, "the other device's text kept as a copy: $texts")
+    }
+
+    @Test
+    fun aTextRemovedElsewhereWhileWrittenGoesOnAsANewText() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        val text = existingText(controller, "abc")
+        val page = controller.document.pages[0]
+        editor.startEditing(text, 0)
+        editor.type("abc here")
+        assertTrue(controller.session.receive(remoteOperation(RemoveElements(page.id, listOf(text.id)))))
+
+        assertTrue(editor.isEditing, "the editor stays open")
+        val kept = page.texts.single()
+        assertTrue(kept.id != text.id, "a new text: the removal stays")
+        assertEquals("abc here", kept.text)
+        assertEquals(text.x, kept.x)
+        assertEquals(text.y, kept.y)
+        editor.type("abc here, more")
+        editor.finishEditing()
+        assertEquals("abc here, more", page.texts.single { it.id == kept.id }.text)
+        assertTrue(page.texts.none { it.id == text.id })
+    }
+
+    @Test
+    fun aTextRemovedElsewhereWithNothingWrittenClosesTheEditor() = runTest(UnconfinedTestDispatcher()) {
+        val controller = controller(backgroundScope)
+        val editor = controller.textEditorManager
+        val text = existingText(controller, "abc")
+        val page = controller.document.pages[0]
+        editor.startEditing(text, 0)
+        assertTrue(controller.session.receive(remoteOperation(RemoveElements(page.id, listOf(text.id)))))
+        assertFalse(editor.isEditing)
+        assertTrue(page.texts.isEmpty())
     }
 
     @Test
