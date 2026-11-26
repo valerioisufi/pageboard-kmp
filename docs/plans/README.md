@@ -90,6 +90,7 @@ who uses the applications or the libraries.
 | [play-console](play-console.md) | PencilNotes on Google Play: the answers of the Play Console |
 | [pointer-selection](pointer-selection.md) | Selecting with a pointer at the ends of a format |
 | [quiescent-compaction](quiescent-compaction.md) | Compaction while connected |
+| [relative-resource-paths](relative-resource-paths.md) | Relative paths for stored document resources |
 | [search-snippet-latex](search-snippet-latex.md) | Search snippets without the LaTeX source |
 | [search](search.md) | Search in the notes: words, meaning, and questions |
 | [selection-formatting](selection-formatting.md) | Formatting a selection |
