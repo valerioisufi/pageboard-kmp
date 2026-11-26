@@ -110,5 +110,5 @@ Taken alone, revertible:
     conflicts of copies already converged, with their tests).
   - **F, import, clipboard and assistant** (`docs/plans/import-and-clipboard.md`): done but the
     images pasted as images and the task of the assistant of its own, left for later there.
-  - **G, writing suggestions**: the next words from a local model, the lecture being transcribed,
-    suggestions over lines, in handwriting.
+  - **G, writing suggestions** (`docs/plans/writing-suggestions-more.md`): done but the
+    suggestions in handwriting, left for later there.

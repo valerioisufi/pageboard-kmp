@@ -46,6 +46,47 @@ internal object GhostText {
     }
 
     /**
+     * [presented] with [suggestion] at [caret] of the source (the end of a line, see
+     * `docs/plans/writing-suggestions-more.md`), in [color] made lighter: what is shown after it,
+     * and every object placed there, moves on by its length. At the end of the text, [append].
+     */
+    fun <T> insert(presented: PresentedText<T>, caret: Int, suggestion: String, color: Color): PresentedText<T> {
+        if (caret >= presented.mapping.sourceLength) return append(presented, suggestion, color)
+        if (suggestion.isEmpty()) return presented
+        val shown = shownOf(suggestion)
+        val count = shown.length
+        val base = presented.text
+        val at = presented.mapping.originalToTransformed(caret).coerceIn(0, base.length)
+        fun moved(offset: Int) = if (offset >= at) offset + count else offset
+        fun movedRange(range: IntRange) = moved(range.first)..(if (range.last >= at) range.last + count else range.last)
+        val text = AnnotatedString.Builder(base.text.substring(0, at) + shown + base.text.substring(at)).apply {
+            // A style going on through the place of the suggestion takes it in
+            base.spanStyles.forEach { addStyle(it.item, moved(it.start), if (it.end > at) it.end + count else it.end) }
+            base.paragraphStyles.forEach { addStyle(it.item, moved(it.start), if (it.end >= at && it.start <= at) it.end + count else moved(it.end)) }
+            addStyle(SpanStyle(color = color.copy(alpha = color.alpha * ALPHA)), at, at + count)
+        }.toAnnotatedString()
+        return PresentedText(
+            text = text,
+            mapping = presented.mapping.withShownAt(caret, count),
+            formulas = presented.formulas.map { PresentedFormula(moved(it.offset), it.image, it.widthPx, it.heightPx, it.baselineRatio, it.latex, it.block, it.sourceEnd) },
+            codeBlocks = presented.codeBlocks.map { PresentedCodeBlock(moved(it.offset), it.layout, it.codeStart, it.leftPx, it.codeEnd, it.start, it.end) },
+            inlineCode = presented.inlineCode.map { MarkdownTextUtil.InlineCode(moved(it.start), if (it.end > at) it.end + count else it.end, it.fontSizePx) },
+            hiddenAtCaret = presented.hiddenAtCaret?.let { HiddenSource(it.kind, it.source, moved(it.anchor), it.caretIn) },
+            tables = presented.tables.map { PresentedTable(moved(it.offset), it.layout, it.span) },
+            quotes = presented.quotes.map { PresentedQuote(movedRange(it.range), it.level) },
+            boxes = presented.boxes.map { PresentedBox(movedRange(it.range), it.itemStart, it.checked) },
+            links = presented.links.map { PresentedLink(it.url, moved(it.shownStart), moved(it.shownEnd), it.sourceStart, it.sourceEnd) },
+            linkAtCaret = presented.linkAtCaret
+        )
+    }
+
+    /** The range of the shown text that is the suggestion, in [presented] made by [insert] at [caret]. */
+    fun rangeAt(presented: PresentedText<*>, caret: Int, suggestion: String): IntRange {
+        val start = presented.mapping.originalToTransformed(caret)
+        return start until start + shownOf(suggestion).length
+    }
+
+    /**
      * The suggestion as it is shown: on one line (a line break would start a paragraph the
      * presentation does not know), its marks of emphasis left out.
      */

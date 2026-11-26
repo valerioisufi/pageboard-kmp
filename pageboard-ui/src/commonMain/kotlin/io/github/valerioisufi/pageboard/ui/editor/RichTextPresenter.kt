@@ -301,6 +301,25 @@ internal class SourceMapping(
         val end = sourceLength
         return SourceMapping(toShown, toSource + IntArray(count) { end }, noCaret, inObject)
     }
+
+    /**
+     * This mapping with [count] characters shown at [caret] of the source that stand for no
+     * character of it: each of them for [caret], the characters after it shown [count] further
+     * (see [GhostText]).
+     */
+    fun withShownAt(caret: Int, count: Int): SourceMapping {
+        if (caret >= sourceLength) return withShownAtEnd(count)
+        val at = originalToTransformed(caret)
+        val shown = IntArray(toShown.size) { if (it <= caret) toShown[it] else toShown[it] + count }
+        val source = IntArray(toSource.size + count) { i ->
+            when {
+                i < at -> toSource[i]
+                i < at + count -> caret
+                else -> toSource[i - count]
+            }
+        }
+        return SourceMapping(shown, source, noCaret, inObject)
+    }
 }
 
 /**

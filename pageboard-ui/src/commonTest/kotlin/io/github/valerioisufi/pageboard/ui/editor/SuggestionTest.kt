@@ -78,4 +78,35 @@ class SuggestionTest {
         for (offset in 5..11) assertEquals(5, ghost.mapping.transformedToOriginal(offset))
         assertEquals(2, ghost.mapping.transformedToOriginal(2))
     }
+
+    @Test
+    fun aGhostAtTheEndOfALineMovesWhatComesAfterIt() {
+        val source = "First\nSecond"
+        val identity = IntArray(source.length + 1) { it }
+        val presented = PresentedText<Unit>(
+            AnnotatedString(source), SourceMapping(identity, identity.copyOf()), emptyList(), emptyList(), emptyList(), null,
+            quotes = listOf(PresentedQuote(6..11, 1)),
+            links = listOf(PresentedLink("https://example.org", 6, 12, 6, 12))
+        )
+        val ghost = GhostText.insert(presented, 5, " line", Color.Black)
+
+        assertEquals("First line\nSecond", ghost.text.text)
+        assertEquals(5 until 10, GhostText.rangeAt(ghost, 5, " line"))
+        assertEquals(5, ghost.mapping.originalToTransformed(5), "the caret stays before the suggestion")
+        assertEquals(11, ghost.mapping.originalToTransformed(6), "the next line after it")
+        for (offset in 5..10) assertEquals(if (offset < 10) 5 else 5, ghost.mapping.transformedToOriginal(offset).coerceAtMost(5))
+        assertEquals(6, ghost.mapping.transformedToOriginal(11))
+        assertEquals(source.length + 5, ghost.mapping.originalToTransformed(source.length))
+        assertEquals(11..16, ghost.quotes.single().range, "a quote after it moved")
+        assertEquals(11, ghost.links.single().shownStart)
+        assertEquals(6, ghost.links.single().sourceStart, "its source the same")
+    }
+
+    @Test
+    fun aGhostAtTheEndOfTheTextIsAppended() {
+        val source = "Hello"
+        val identity = IntArray(source.length + 1) { it }
+        val presented = PresentedText<Unit>(AnnotatedString(source), SourceMapping(identity, identity.copyOf()), emptyList(), emptyList(), emptyList(), null)
+        assertEquals("Hello world", GhostText.insert(presented, 5, " world", Color.Black).text.text)
+    }
 }

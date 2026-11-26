@@ -124,6 +124,21 @@ class WritingSuggestionsTest {
     }
 
     @Test
+    fun aWordAtTheEndOfALineInTheMiddleIsSuggestedAndTakenThere() = scene(enabled = true) { controller ->
+        warmUp()
+        type("il cammino di Dij\nla riga dopo")
+        // The caret at the end of the first line
+        runOnIdle {
+            val editor = controller.textEditorManager
+            editor.updateValue(editor.value.copy(selection = androidx.compose.ui.text.TextRange(editor.value.text.indexOf('\n'))))
+        }
+        waitForIdle()
+        pause()
+        tab()
+        runOnIdle { assertEquals("Dij il cammino di Dijkstra\nla riga dopo", controller.textEditorManager.value.text) }
+    }
+
+    @Test
     fun turnedOffNothingIsSuggested() = scene(enabled = false) { controller ->
         warmUp()
         type("il cammino di Dij")

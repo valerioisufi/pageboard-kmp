@@ -192,7 +192,9 @@ internal fun TextBoxEditor(
     val suggestionSession = remember(suggestions, suggestionScope) {
         suggestions?.let { s -> SuggestionSession(suggestionScope) { writing -> s.suggester.suggest(s.context, writing) } }
     }
-    val asksSuggestion = suggestionSession != null && value.selection.collapsed && value.selection.start == value.text.length &&
+    val asksSuggestion = suggestionSession != null && value.selection.collapsed &&
+        // At the end of the text, or of one of its lines (see docs/plans/writing-suggestions-more.md)
+        (value.selection.start == value.text.length || value.text[value.selection.start] == '\n') &&
         value.text.isNotBlank() && !editor.inTable && !editor.inCodeBlock
     LaunchedEffect(suggestionSession, value.text, value.selection, asksSuggestion) {
         suggestionSession?.changed(
@@ -259,13 +261,14 @@ internal fun TextBoxEditor(
         RichTextPresenter.present(value.text, presentation, reveal = value.selection)
     }
     // The suggestion after the end, lighter, not part of the text
-    val shown = remember(bareShown, suggestion, textColor) { if (suggestion == null) bareShown else GhostText.append(bareShown, suggestion, textColor) }
+    val shown = remember(bareShown, suggestion, textColor) { if (suggestion == null) bareShown else GhostText.insert(bareShown, value.selection.start, suggestion, textColor) }
     /** Inserts the suggestion shown at the caret (the end), as if typed. */
     fun acceptSuggestion(): Boolean {
         val accepted = suggestion ?: return false
         val current = editor.value
         suggestionSession?.drop()
-        editor.updateValue(TextFieldValue(current.text + accepted, TextRange(current.text.length + accepted.length)))
+        val caret = current.selection.start
+        editor.updateValue(TextFieldValue(current.text.substring(0, caret) + accepted + current.text.substring(caret), TextRange(caret + accepted.length)))
         return true
     }
     // The presented text is what the field shows: a new one (a new size, the formulas ready) is
@@ -468,7 +471,7 @@ internal fun TextBoxEditor(
                         val current = layout ?: return@awaitEachGesture
                         val text = currentShown
                         if (current.layoutInput.text.text != text.text.text) return@awaitEachGesture
-                        if (current.getOffsetForPosition(down.position) !in GhostText.rangeIn(text, suggestion)) return@awaitEachGesture
+                        if (current.getOffsetForPosition(down.position) !in GhostText.rangeAt(text, editor.value.selection.start, suggestion)) return@awaitEachGesture
                         down.consume()
                         val up = waitForUpOrCancellation(PointerEventPass.Initial) ?: return@awaitEachGesture
                         up.consume()

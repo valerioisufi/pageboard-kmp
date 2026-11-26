@@ -50,7 +50,7 @@ The responsibilities are assigned following the GRASP principles.
 |---|---|---|
 | 1 | The words of the lecture being recorded; tests | Done |
 | 2 | The next words from a local model, its switch; the setting read from before; tests | Done |
-| 3 | A suggestion at the end of a line in the middle of a text; tests, screenshots | Pending |
+| 3 | A suggestion at the end of a line in the middle of a text; tests, screenshots | Done |
 
 ## Decisions
 
@@ -67,6 +67,10 @@ Taken alone, revertible:
    words' own (the notes, the lecture): the two never ask at once. Its switch is with the engine of
    the device in the settings of the assistant (the card shown when the device runs models); the
    model is the first generation model installed, as for the titles of the lectures.
+5. **A suggestion in the middle goes where the caret ends a line**, not inside one: the ghost is
+   inserted in what is shown (`GhostText.insert`), the formulas, the blocks, the tables, the quotes,
+   the boxes and the links after it moved on by its length; the source does not change until it
+   is taken.
 
 ## Left for later
 
