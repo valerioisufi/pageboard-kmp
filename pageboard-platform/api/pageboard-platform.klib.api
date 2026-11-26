@@ -46,6 +46,11 @@ final object io.github.valerioisufi.pageboard.platform/PlatformFiles { // io.git
     final fun writeBytes(kotlin/String, kotlin/ByteArray): kotlin/Boolean // io.github.valerioisufi.pageboard.platform/PlatformFiles.writeBytes|writeBytes(kotlin.String;kotlin.ByteArray){}[0]
 }
 
+final object io.github.valerioisufi.pageboard.platform/ResourcePaths { // io.github.valerioisufi.pageboard.platform/ResourcePaths|null[0]
+    final fun resolve(kotlin/String, kotlin/String = ...): kotlin/String // io.github.valerioisufi.pageboard.platform/ResourcePaths.resolve|resolve(kotlin.String;kotlin.String){}[0]
+    final fun toStored(kotlin/String, kotlin/String = ...): kotlin/String // io.github.valerioisufi.pageboard.platform/ResourcePaths.toStored|toStored(kotlin.String;kotlin.String){}[0]
+}
+
 final object io.github.valerioisufi.pageboard.platform/SecureStore { // io.github.valerioisufi.pageboard.platform/SecureStore|null[0]
     final fun read(kotlin/String): kotlin/String? // io.github.valerioisufi.pageboard.platform/SecureStore.read|read(kotlin.String){}[0]
     final fun write(kotlin/String, kotlin/String?): kotlin/Boolean // io.github.valerioisufi.pageboard.platform/SecureStore.write|write(kotlin.String;kotlin.String?){}[0]

@@ -36,5 +36,5 @@ public expect object PlatformFiles {
  */
 public fun newResourcePath(prefix: String, extension: String): String {
     val unique = Random.nextLong().toULong().toString(16) + Random.nextLong().toULong().toString(16)
-    return PlatformFiles.resourcesDirectory().trimEnd('/') + "/${prefix}_$unique.$extension"
+    return PlatformFiles.resourcesDirectory().trimEnd('/', '\\') + "/${prefix}_$unique.$extension"
 }

@@ -32,6 +32,14 @@ public final class io/github/valerioisufi/pageboard/platform/PlatformFilesKt {
 	public static final fun newResourcePath (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 }
 
+public final class io/github/valerioisufi/pageboard/platform/ResourcePaths {
+	public static final field INSTANCE Lio/github/valerioisufi/pageboard/platform/ResourcePaths;
+	public final fun resolve (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public static synthetic fun resolve$default (Lio/github/valerioisufi/pageboard/platform/ResourcePaths;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ljava/lang/String;
+	public final fun toStored (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public static synthetic fun toStored$default (Lio/github/valerioisufi/pageboard/platform/ResourcePaths;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ljava/lang/String;
+}
+
 public final class io/github/valerioisufi/pageboard/platform/SecureStore {
 	public static final field INSTANCE Lio/github/valerioisufi/pageboard/platform/SecureStore;
 	public final fun read (Ljava/lang/String;)Ljava/lang/String;
